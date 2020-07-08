@@ -1,0 +1,45 @@
+#ocnMenu {
+    margin: 0 0 1rem 0;
+}
+
+#errorMsg {
+    white-space: pre-wrap
+}
+
+code {
+    white-space: pre-line;
+}
+
+#overrides {
+    font-family: monospace;
+}
+
+#templateHint {
+    text-align: right;
+    display: block;
+}
+
+#titleInput {
+    width: 100%;
+    height: 2em;
+}
+
+.ui.sidebar {
+    overflow: visible !important;
+}
+
+.ui.inverted.dropdown .item {
+    color: white;
+}
+
+.buttontd {
+    text-align: center !important;
+}
+
+td button i {
+    margin: 0 !important;
+}
+
+#usernameInfo {
+    margin-left: 0.5em;
+}

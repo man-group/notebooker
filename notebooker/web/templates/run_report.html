@@ -1,0 +1,73 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/run_report.js') }}"></script>
+</head>
+<body>
+{{ header.sidebar(all_reports) }}
+<div class="ui grid">
+    <div class="one wide column"></div>
+    <div class="seven wide column">
+        <h1>Customise your report</h1>
+        <form class="ui form" id="run-check-form">
+            <div class="field">
+                <h3>Report Title:</h3>
+                <input name="report_title" placeholder="{{ report_name }}" id="titleInput" width="100%"/>
+            </div>
+            <div class="field">
+                <h3>Existing parameters:</h3>
+                <code>{{ parameters_as_html|safe }}</code>
+            </div>
+            <div class="field">
+                <h3>Override parameters:</h3>
+                <textarea name="overrides"
+                          id="overrides"
+                          placeholder="Write your overrides in python here.
+You can import anything, but ensure that in any x=y statements, y is JSON serialisable."
+                >{{ initialPythonParameters }}</textarea>
+            </div>
+            <div class="field">
+                <!-- Hidden field to inject the report_name from jinja !-->
+                <input name="report_name" value="{{ report_name }}" style="display:none">
+            </div>
+            <div class="field">
+                <h3>Email to:</h3>
+                <input name="mailto"
+                       placeholder="Comma-separated email addresses (optional)"
+                       id="titleInput"
+                       width="100%"/>
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input name="generatepdf" id="generatepdf" type="checkbox">
+                    <label>Generate PDF output</label>
+                </div>
+            </div>
+            <button class="positive ui button" id="runReportButton">Run Report</button>
+            <div class="ui right aligned container" id="parametersDimmer" style="display:none">
+                <div class="ui active inline loader"></div>
+                <span>Converting your parameters to JSON...</span>
+            </div>
+        </form>
+    </div>
+    <div class="seven wide column">
+        <h1>Notebook Template:</h1>
+        <div class="ui active inverted dimmer iframeLoadingDimmer">
+            <div class="ui text loader">Loading</div>
+        </div>
+
+        <iframe
+                class="iframeToLoad"
+                style="width:100%; border:none; display: none;"
+                scrolling="no"
+                src="/run_report/get_preview/{{ report_name }}"
+                onload="iframeLoaded(this)"></iframe>
+        <em id="templateHint" class="iframeToLoad" style="display:none">The "parameters" cell is highlighted in yellow</em>
+    </div>
+    <div class="one wide column"></div>
+</div>
+</body>
+</html>

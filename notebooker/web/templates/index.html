@@ -1,0 +1,39 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html>
+<head>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/index.js') }}"></script>
+</head>
+<body>
+
+    {{ header.sidebar(all_reports) }}
+    <span id="failedLoad" style="display: none;">
+        <h2>Couldn't load any reports!</h2>
+        Either we haven't run any reports yet, or you don't have permission to view any on this Notebooker
+        instance. Please check with the instance admin.
+    </span>
+    <div class="ui centered grid" style="display:none" id="indexTableContainer">
+        <div class="twelve wide column">
+            <table id="resultsTable" class="ui sortable selectable padded table">
+            </table>
+            <div>
+                <button class="ui button black" onclick="load_data(0)">
+                    Load all {{ n_results_available }} results
+                </button>
+            </div>
+        </div>
+        <div class="ui modal" id="deleteModal">
+          <div class="header">Delete report</div>
+          <div class="content">
+            <p>Are you sure you wish to delete this report?</p>
+          </div>
+          <div class="actions">
+            <div class="ui approve button red">Delete</div>
+            <div class="ui cancel button">Cancel</div>
+          </div>
+        </div>
+    </div>
+</body>
+</html>

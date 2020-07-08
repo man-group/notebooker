@@ -1,0 +1,29 @@
+{% import "header.html" as header %}
+
+{{ header.justHeader() }}
+
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='notebooker/loading.css') }}">
+    <script type="application/javascript">
+        var loc = "{{ location|safe }}";
+    </script>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/loading.js') }}"></script>
+</head>
+<body>
+    <div class="ui container center">
+        <div class="loader">
+          <div class="loader__bar"></div>
+          <div class="loader__bar"></div>
+          <div class="loader__bar"></div>
+          <div class="loader__bar"></div>
+          <div class="loader__bar"></div>
+          <div class="loader__ball"></div>
+        </div>
+
+        <h2 id="overallStatus">Your report will be ready soon. Current status: <span id="loadingStatus"></span></h2>
+        <h4>Job ID is {{ job_id }}.</h4>
+        <code id="run_output"></code>
+    </div>
+</body>
+</html>

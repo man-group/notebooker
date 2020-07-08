@@ -1,0 +1,151 @@
+defaults: &defaults
+    parallelism: 1
+    shell: /bin/bash --login
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      # CODECOV_TOKEN: b0d35139-0a75-427a-907b-2c78a762f8f0
+      VERSION: 0.0.1
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
+    steps:
+    - checkout
+    - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
+    # Restore the dependency cache
+    - restore_cache:
+        keys:
+        # This branch if available
+        - v1-dep-{{ .Branch }}-
+        # Default branch if not
+        - v1-dep-master-
+        # Any branch if there are none on the default branch - this should be unnecessary if you have your default branch configured correctly
+        - v1-dep-
+    - restore_cache:
+        name: Restore Yarn Package Cache
+        keys:
+          - yarn-packages-{{ checksum "notebooker/web/static/yarn.lock" }}
+    - run:
+        name: Install JS Dependencies
+        command: |
+          pushd $YARN_STATIC_DIR
+          yarn install --frozen-lockfile
+    - save_cache:
+        name: Save Yarn Package Cache
+        key: yarn-packages-{{ checksum "notebooker/web/static/yarn.lock" }}
+        paths:
+          - ~/.cache/yarn
+    - run:
+        name: Install MongoDB
+        command: |
+          # run "cat /etc/os-release" to view information about the OS
+          # this article really helped with this madness: https://linuxize.com/post/how-to-install-mongodb-on-debian-9/
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
+          echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-org
+    - run:
+        name: Lint & Format JS Code
+        command: |
+          pushd $YARN_STATIC_DIR
+          yarn run lint
+    - run:
+        name: Check for JS Formatting Diffs
+        command: |
+          git diff --name-status
+          git diff-files --quiet || (echo 'The files above have not been formatted!' && (exit 1))
+    - run:
+       name: Create and activate virtualenv
+       command: |
+         virtualenv ci
+         . ci/bin/activate
+         pip install six lxml flake8 tox pytest black
+         python setup.py develop
+    # Save dependency cache
+    - save_cache:
+        key: v1-dep-{{ .Branch }}-{{ epoch }}
+        paths:
+        - ~/ci
+    - run:
+        name: Run Flake8
+        command: |
+          . ci/bin/activate
+          flake8 notebooker tests
+    - run:
+        name: Run black
+        command: |
+          . ci/bin/activate
+          black --check -l 120 notebooker tests
+          if [ $? -eq 0 ]
+          then
+            echo "Black worked fine."
+          else
+            echo "Black found differences!"; exit $?
+          fi
+    # Test
+    - run:
+       name: Run all tests
+       command: |
+         . ci/bin/activate
+         pip install -e ".[prometheus]" ".[test]"
+         python -m ipykernel install --user --name=notebooker_kernel
+         pip install -r ./notebook_templates/notebook_requirements.txt
+         mkdir test-results
+         pytest --junitxml=test-results/junit.xml
+         # bash <(curl -s https://codecov.io/bash) -c -F python
+    - run:
+        name: Build Sphinx Documentation
+        command: |
+          set -e
+          . ci/bin/activate
+          pip install -e ".[docs]"
+          python setup.py build_sphinx
+          cp -r ./build /tmp/circleci-artifacts
+    # Build egg
+    - run:
+        name: Build egg
+        command: |
+          set -ex
+          . ci/bin/activate
+          pip install docutils
+          pip install Pygments
+          grep -q $VERSION notebooker/_version.py || (echo "ERROR: Version number not found in notebooker/_version.py: $VERSION"; exit 1)
+          grep -q $VERSION CHANGELOG.md || (echo "ERROR: Version number not found in CHANGES.md: $VERSION"; exit 1)
+          grep -q $VERSION docker/Dockerfile || (echo "ERROR: Version number not found in docker/Dockerfile: $VERSION"; exit 1)
+          grep -q $VERSION docs/conf.py || (echo "ERROR: Version number not found in docs/source/conf.py: $VERSION"; exit 1)
+          grep -q $VERSION notebooker/web/static/package.json || (echo "ERROR: Version number not found in package.json: $VERSION"; exit 1)
+          python setup.py --long-description > ../README.rst
+          cat ../README.rst | rst2html.py 1> ../README.html 2> ../log
+          cp ../README.rst /tmp/circleci-artifacts
+          cp ../log /tmp/circleci-artifacts
+          if [ -s ../log ] ; then
+            cat ../log
+            exit 1
+          fi # rst2html.py alwaysexits with 0, check log size
+          python setup.py bdist_wheel --universal
+          python setup.py bdist_egg
+          python setup.py sdist
+          cp -r ./dist /tmp/circleci-artifacts
+    # - run:
+    #     name: Build Docker image
+    #     command: docker build -t $IMAGE_NAME:latest .
+    # Save test results
+    - store_test_results:
+        path: test-results
+    # Save artifacts
+    - store_artifacts:
+        path: /tmp/circleci-artifacts
+    - store_artifacts:
+        path: test-results
+version: 2
+jobs:
+  build:
+    working_directory: ~/notebooker
+    docker:
+    - image: circleci/python:3.6-stretch-node-browsers
+    <<: *defaults
+workflows:
+  version: 2
+  build_all:
+    jobs:
+      - build
