@@ -46,6 +46,7 @@ setup(
     url="https://github.com/man-group/notebooker",
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
     setup_requires=["six", "numpy"],
+    python_requires=">=3.5",
     install_requires=[
         "gevent",
         "ipython",
@@ -56,7 +57,7 @@ setup(
         "nbconvert<6.0.0",  # Pin this because new template locations do not seem to work on OSX
         "nbformat",
         "jupytext>=1.2.0",
-        "ipykernel",
+        "ipykernel<=5.3.1",
         "typing",
         "stashy",
         "click",
