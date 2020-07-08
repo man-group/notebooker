@@ -48,6 +48,7 @@ setup(
     setup_requires=["six", "numpy"],
     install_requires=[
         "gevent",
+        "ipython",
         "pandas",
         "matplotlib",
         "pymongo",
