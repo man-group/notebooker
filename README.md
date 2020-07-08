@@ -1,6 +1,6 @@
 ![Notebooker](docs/images/notebooker_cropped.jpg)
 
-Productionise your Jupyter Notebooks, just as interactively as you wrote them.
+Productionise your Jupyter Notebooks, just as interactively as you wrote them. Notebooker is a webapp which can execute and parametrise Jupyter Notebooks as soon as they have been committed to git. The results are stored in MongoDB and searchable via the web interface, essentially turning your Jupyter Notebook into a production-style web-based report in a few clicks.
 
 [![CircleCI](https://circleci.com/gh/man-group/notebooker.svg?style=shield&circle-token=54008697f29eb7713d5f18d73ef785cb5ba858c9)](https://app.circleci.com/pipelines/github/man-group/notebooker)
 
@@ -18,7 +18,7 @@ Productionise your Jupyter Notebooks, just as interactively as you wrote them.
 
 
 ## Getting started
-See the (docs)[LINK THE DOCS HERE FIXME] for installation instructions.
+See the documentation at [https://notebooker.readthedocs.io/](https://notebooker.readthedocs.io/) for installation instructions.
 
 Notebooker has been tested on Linux, Windows 10, and OSX; the webapp has been tested on Google Chrome.
 
@@ -27,7 +27,6 @@ Notebooker has been actively maintained at Man Group since late 2018, with the o
 [Jon Bannister](https://github.com/jonbannister). 
 It would not have been possible without contributions from:
 
-* [Jon Bannister](https://github.com/jonbannister)
 * [Douglas Bruce](https://github.com/douglasbruce88)
 * [Franek Jemiolo](https://github.com/FranekJemiolo)
 * [Sam Ratcliff](https://github.com/sparks1372)
