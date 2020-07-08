@@ -1,0 +1,2 @@
+class NotebookRunException(Exception):
+    pass

@@ -1,0 +1,90 @@
+{% macro justHeader() %}
+<html xmlns="http://www.w3.org/1999/html">
+        <head>
+            <title>Notebooker</title>
+            <link rel="shortcut icon" href="{{ url_for('static', filename='notebooker/notebooker-icon-dark.png') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/fomantic-ui/dist/semantic.css') }}">
+            <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/datatables/media/css/jquery.dataTables.min.css') }}">
+            <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='node_modules/fomantic-ui/dist/semantic.js') }}"></script>
+            <script src="{{ url_for('static', filename='node_modules/datatables/media/js/jquery.dataTables.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='node_modules/bootstrap-table/dist/themes/semantic/bootstrap-table-semantic.js') }}"></script>
+            <script type="application/javascript" src="{{ url_for('static', filename='notebooker/iframe_loading.js') }}"></script>
+            <script type="application/javascript" src="{{ url_for('static', filename='notebooker/header.js') }}"></script>
+            <link rel="stylesheet" href="{{ url_for('static', filename='notebooker/one_click_notebooks.css') }}">
+        </head>
+        <body>
+        <div class="ui negative message" style="display:none;position: relative" id="errorPopup">
+              <i class="close icon"></i>
+              <div class="header">
+                There was an error processing your request
+              </div>
+              <p><span id="errorMsg"></span>
+        </p></div>
+        </body>
+    </html>
+{% endmacro %}
+
+
+{% macro ocnHeader() %}
+    <html>
+        {{ justHeader() }}
+        <body>
+        <div class="ui top attached menu inverted" id="ocnMenu">
+          <div class="header item white">
+            <a href="/"><h1>Notebooker</h1></a>
+          </div>
+          <a class="item" href="/">
+              Main Menu
+          </a>
+          <a class="item" id="runReport">
+              Execute a Notebook
+          </a>
+          <div class="right menu" id="authArea">
+            <div class="ui item loggedIn" style="display: none">
+                Logged in as: <span id="usernameInfo"></span>
+            </div>
+            <a class="ui item loggedIn" style="display: none" href="/oauth/logout?redirect=/">
+                Logout
+            </a>
+            <a class="ui item loggedOut" style="display: none" href="/oauth/authorize">
+              Log in
+            </a>
+          </div>
+
+        </div>
+        </body>
+    </html>
+{% endmacro %}
+
+{% macro sidebar(all_reports) %}
+    <html>
+        <body>
+        <div class="ui inverted left vertical sidebar menu runReportSidebar">
+            <div class="item">
+                <h4 class="ui header inverted">Execute a notebook:</h4>
+            </div>
+            <!-- Recursively create the menu items for each level of notebook !-->
+            {% for report, subreports in all_reports|dictsort() recursive %}
+                {% if subreports is none %}
+                    <!-- At each leaf, create a link to run the report !-->
+                    <a class="item" href="/run_report/{{report}}">{{ report }}</a>
+                {% else %}
+                    <!-- Create a new dropdown list for this level !-->
+                    <div class="ui inverted dropdown item">
+                        <i class="dropdown icon"></i>
+                        {{ report }}
+                        <div class="menu">
+                            {{ loop(subreports|dictsort()) }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <a class="item bottom" href="http://ahlgit.maninvestments.com/projects/DATA/repos/notebooker/browse/notebook_templates/README.md">
+                <i class="plus icon"></i>
+                <i>Add a new notebook</i>
+            </a>
+        </div>
+        </body>
+    </html>
+{% endmacro %}

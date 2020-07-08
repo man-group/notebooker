@@ -1,0 +1,68 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html>
+<body>
+    {{ header.sidebar(all_reports) }}
+    <div class="ui container">
+        <h1>Notebook Results</h1>
+        <h2>{{ result.report_title }}</h2>
+        <div class="ui grid">
+            <div class="thirteen wide column">
+                <div class="ui active inverted dimmer iframeLoadingDimmer">
+                    <div class="ui text loader">Loading</div>
+                </div>
+                <iframe
+                        id="resultsIframe"
+                        src="{{ html_render }}"
+                        style="width:100%; border:none;"
+                        onload="iframeLoaded(this)"
+                        class="iframeToLoad"
+                        scrolling="no">
+                </iframe>
+            </div>
+            <div class="three wide column">
+                {% if result.status == donevalue %}
+                    <button onclick="location.href='{{ ipynb_url }}'"
+                                type="button" class="ui green button"><i class="download icon"></i>as .ipynb</button>
+                    <br/>
+                    <br/>
+                    {% if result.pdf %}
+                        <button onclick="location.href='{{ pdf_url }}'"
+                                    type="button" class="ui green button"><i class="download icon"></i>as .pdf</button>
+                    {% endif %}
+                {% endif %}
+                <h4>Report was submitted at:</h4> {{result.job_start_time}}
+                {% if result.job_finish_time %}
+                        <h4>It finished at:</h4>  {{result.job_finish_time}}
+                {% endif %}
+                <h4>Job ID:</h4> {{ job_id }}
+                <h4>Report Template Name:</h4> {{ report_name }}
+                {% if result.mailto %}
+                    <h4>Mailing results to:</h4> {{ result.mailto }}
+                {% endif %}
+                {% if result.overrides %}
+                    <h4>Parameters:</h4>
+                    <div class="ui list">
+                        {% for k, v in result.overrides|dictsort() %}
+                            <li class="item">{{ k }} = {{ v }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <br/>
+                <br/>
+                <button onclick="rerunReport('{{ result.job_id }}', '{{ rerun_url }}')"
+                            type="button" class="ui blue button rerunButton"><i class="redo alternate icon"></i>Rerun</button>
+                <br/>
+                <br/>
+                <button onclick="cloneReport('{{ clone_url }}')"
+                            type="button" class="ui blue button cloneButton"><i class="copy outline icon"></i>Clone Parameters</button>
+
+            </div>
+        <br/>
+        <br/>
+        <br/>
+    </div>
+</body>
+</html>
