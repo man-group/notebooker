@@ -57,7 +57,7 @@ setup(
         "nbconvert<6.0.0",  # Pin this because new template locations do not seem to work on OSX
         "nbformat",
         "jupytext>=1.2.0",
-        "ipykernel<=5.3.1",
+        "ipykernel",
         "typing",
         "stashy",
         "click",
