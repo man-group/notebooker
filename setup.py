@@ -58,7 +58,6 @@ setup(
         "nbformat",
         "jupytext>=1.2.0",
         "ipykernel",
-        "typing",
         "stashy",
         "click",
         "six",
