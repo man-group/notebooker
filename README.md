@@ -4,7 +4,7 @@ Productionise your Jupyter Notebooks, just as interactively as you wrote them. N
 
 [![CircleCI](https://circleci.com/gh/man-group/notebooker.svg?style=shield&circle-token=54008697f29eb7713d5f18d73ef785cb5ba858c9)](https://app.circleci.com/pipelines/github/man-group/notebooker)
 
-## Run a jupyter notebook as a report with parameters
+## Run a Jupyter notebook as a report with parameters
 ![Screenshot of "Run A Report" dialog](docs/images/nbkr_run_report.png)
 
 ## Execute Jupyter notebooks either on the webservice or command line
@@ -13,7 +13,7 @@ Productionise your Jupyter Notebooks, just as interactively as you wrote them. N
 ## View the output of notebooks as static HTML
 ![Screenshot of some notebook results](docs/images/nbkr_results.png)
 
-## All reports accessible on the home screen, regardless of how they were executed
+## All results are accessible from the home page
 ![Screenshot of Executing a notebook](docs/images/nbkr_homepage.png)
 
 
