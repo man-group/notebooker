@@ -84,7 +84,9 @@ def setup_env_vars():
 
 
 def create_app():
-    flask_app = Flask(__name__)
+    import pkg_resources
+
+    flask_app = Flask(__name__, template_folder=f"{pkg_resources.resource_filename(__name__, 'templates')}")
 
     flask_app.url_map.converters["date"] = DateConverter
     flask_app.register_blueprint(index_bp)
@@ -112,7 +114,9 @@ def setup_app(flask_app):
     setup_env_vars()
     initialise_base_dirs()
     logging.basicConfig(level=logging.getLevelName(os.getenv("LOGGING_LEVEL", "INFO")))
-    flask_app.config.update(TEMPLATES_AUTO_RELOAD=bool(os.environ["DEBUG"]))
+    flask_app.config.update(
+        TEMPLATES_AUTO_RELOAD=bool(os.environ["DEBUG"]), EXPLAIN_TEMPLATE_LOADING=True, DEBUG=bool(os.environ["DEBUG"])
+    )
     start_app(os.environ["NOTEBOOK_SERIALIZER"])
     return flask_app
 
@@ -121,7 +125,7 @@ def main():
     flask_app = create_app()
     flask_app = setup_app(flask_app)
     port = int(os.environ["PORT"])
-    logger.info("Notebooker is now running at http://localhost:%d", port)
+    logger.info("Notebooker is now running at http://0.0.0.0:%d", port)
     http_server = WSGIServer(("0.0.0.0", port), flask_app)
     http_server.serve_forever()
 

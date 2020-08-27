@@ -47,6 +47,8 @@ setup(
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
     setup_requires=["six", "numpy"],
     python_requires=">=3.5",
+    zip_safe=False,
+    include_package_data=True,
     install_requires=[
         "gevent",
         "ipython",

@@ -8,6 +8,7 @@ class BaseConfig:
     DATABASE_NAME: str = "notebooker"  # The mongo database which we are saving to
     RESULT_COLLECTION_NAME: str = "notebook_results"  # The mongo collection which we are saving to
     LOGGING_LEVEL: str = "INFO"  # The logging level of the application
+    DEBUG: str = ""  # Whether to auto-reload files. Useful for development.
 
     # The temporary directory which will contain the .ipynb templates which have been converted from the .py templates.
     # Defaults to a random directory in ~/.notebooker/templates.

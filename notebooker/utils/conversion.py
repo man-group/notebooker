@@ -74,7 +74,7 @@ def _get_python_template_path(report_path: str, warn_on_local: bool) -> str:
             logger.warning(
                 "Loading from notebooker default templates. This is only expected if you are running locally."
             )
-        return pkg_resources.resource_filename(__name__, "../../notebook_templates/{}.py".format(report_path))
+        return pkg_resources.resource_filename(__name__, "../notebook_templates_example/{}.py".format(report_path))
 
 
 def _get_output_path_hex() -> str:

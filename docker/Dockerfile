@@ -22,7 +22,7 @@ WORKDIR /workspace
 RUN set -eux \
   ; pip install -e ".[prometheus]" ".[test]" \
   ; python -m ipykernel install --user --name=notebooker_kernel \
-  ; pip install -r ./notebook_templates/notebook_requirements.txt \
+  ; pip install -r ./notebooker/notebook_templates_example/notebook_requirements.txt \
   ; python setup.py develop \
   ; python setup.py build_sphinx \
   ; py.test tests \
