@@ -59,7 +59,7 @@ defaults: &defaults
        command: |
          virtualenv ci
          . ci/bin/activate
-         pip install six lxml flake8 tox pytest black
+         pip install six lxml flake8 tox pytest black .[test]
          python setup.py develop
     # Save dependency cache
     - save_cache:
@@ -87,7 +87,7 @@ defaults: &defaults
        name: Run all tests
        command: |
          . ci/bin/activate
-         pip install -e ".[prometheus]" ".[test]"
+         pip install -e .[prometheus,test]
          python -m ipykernel install --user --name=notebooker_kernel
          pip install -r ./notebooker/notebook_templates_example/notebook_requirements.txt
          mkdir test-results
