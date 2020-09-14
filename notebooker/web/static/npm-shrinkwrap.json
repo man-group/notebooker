@@ -5720,9 +5720,9 @@
       "integrity": "sha1-ozeKdpbOfSI+iPybdkvX7xCJ42Y="
     },
     "node-fetch": {
-      "version": "2.6.0",
-      "resolved": "http://artifactory.svc.prod.ahl:80/artifactory/api/npm/npm-proxy/node-fetch/-/node-fetch-2.6.0.tgz",
-      "integrity": "sha1-5jNFY4bUqlWGP2dqerDaqP3ssP0="
+      "version": "2.6.1",
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.1.tgz",
+      "integrity": "sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw=="
     },
     "node-notifier": {
       "version": "5.4.3",
