@@ -410,17 +410,17 @@ def docker_compose_entrypoint():
     Examples
     --------
     notebooker_execute --report-name watchdog_checks --mongo-host mktdatad
-Recieved a request to run a report with the following parameters:
+Received a request to run a report with the following parameters:
 ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook', '--report-name', 'watchdog_checks', '--mongo-host', 'mktdatad']
 ...
 
     notebooker_execute
-Recieved a request to run a report with the following parameters:
+Received a request to run a report with the following parameters:
 ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook']
 ValueError: Error! Please provide a --report-name.
     """
     args_to_execute = [sys.executable, "-m", __name__] + sys.argv[1:]
-    logger.info("Recieved a request to run a report with the following parameters:")
+    logger.info("Received a request to run a report with the following parameters:")
     logger.info(args_to_execute)
     try:
         subprocess.Popen(args_to_execute).wait()
