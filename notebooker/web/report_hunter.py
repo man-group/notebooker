@@ -4,7 +4,7 @@ import time
 from logging import getLogger
 
 from notebooker.constants import RUNNING_TIMEOUT, SUBMISSION_TIMEOUT, JobStatus
-from notebooker.serialization.serialization import Serializer, get_serializer_from_cls
+from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.caching import get_report_cache, set_report_cache
 
 logger = getLogger(__name__)

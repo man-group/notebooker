@@ -15,7 +15,7 @@ import papermill as pm
 from notebooker.constants import CANCEL_MESSAGE, JobStatus, NotebookResultComplete, NotebookResultError
 from notebooker.serialization.serialization import Serializer, get_serializer_from_cls
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
-from notebooker.utils.filesystem import _cleanup_dirs, get_output_dir, get_template_dir, initialise_base_dirs, mkdir_p
+from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
 
 logging.basicConfig(level=logging.INFO)
