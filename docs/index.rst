@@ -8,12 +8,12 @@ Jupyter Notebooks are a great way to sketch out research ideas in an interactive
 environment. With cached computations and out-of-order execution allowing for instant feedback,
 they are a powerful tool for researchers and technologists alike. However, when it comes to taking these
 ideas and insights from Jupyter, there can be a lot of headache
-to quickly transform the code from Jupyter into something which gives you a reproducable and parametrisable
+to quickly transform the code from Jupyter into something which gives you a reproducible and parametrisable
 report.
 
 For example, if you wanted to execute a Notebook for $MSFT, $AAPL, and $FB which analyses price movement
 over the last N days, normally you would have to either produce multiple Notebooks and export them through
-awesome services like Voilá or nbviewer. But what if we can get away with only writing one notebook once?
+awesome services like Voilà or nbviewer. But what if we can get away with only writing one notebook once?
 
 With Notebooker, you can add parameters to a Jupyter Notebook: in this case we would
 add a "stock" parameter and an "N" parameter.
@@ -24,7 +24,7 @@ Converting this into a Notebook Template and executing this through Notebooker m
 * **stored as code** - is stored in a git repository in a simple, readable format
 * **testable** - can be regression tested out-of-the-box
 * **executable** - is executable from command line or the Notebooker webapp
-* **browseable** - has results viewable from webapp or emailed to you
+* **browsable** - has results viewable from webapp or emailed to you
 * **historical** - all previous results for a template are easily accessible through the webapp
 * **secured** - optional support for OAuth-provided endpoints to prevent unauthorised webapp access
 
