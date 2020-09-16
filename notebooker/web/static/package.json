@@ -5,9 +5,11 @@
   "dependencies": {
     "bootstrap-table": "1.15.3",
     "datatables": "1.10.18",
+    "diff": "^3.5.0",
     "eslint": "^6.8.0",
     "fomantic-ui": "2.8.4",
-    "jquery": "3.3.1"
+    "jquery": "3.3.1",
+    "yargs-parser": "^13.1.2"
   },
   "main": "notebooker/index.js",
   "scripts": {
@@ -17,5 +19,5 @@
     "lint-js": "eslint notebooker *.js --ext .js --fix"
   },
   "author": "jbannister",
-  "license": "AGPLv3"
+  "license": "AGPL-3.0-only"
 }
