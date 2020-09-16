@@ -973,7 +973,7 @@ detect-indent@^6.0.0:
 
 diff@^3.5.0:
   version "3.5.0"
-  resolved "https://registry.npmjs.org/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
+  resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
 
 diff@~1.0.8:
   version "1.0.8"
