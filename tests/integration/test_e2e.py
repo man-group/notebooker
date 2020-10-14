@@ -7,7 +7,7 @@ import git
 import mock
 import pytest
 
-from notebooker.constants import JobStatus
+from notebooker.constants import JobStatus, DEFAULT_SERIALIZER
 from notebooker.web.app import create_app
 from notebooker.web.routes.run_report import _rerun_report, run_report
 from notebooker.web.utils import get_serializer
@@ -102,17 +102,48 @@ def test_run_report(bson_library, environ):
         mailto = "jon@fakeemail.com"
         job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
         _check_report_output(
-            job_id,
-            serialiser,
-            overrides=overrides,
-            report_name=report_name,
-            report_title=report_title,
-            mailto=mailto,
+            job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto,
         )
         assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
         assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, None)
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, None)
+
+
+@setup_and_cleanup_notebooker_filesystem
+@freezegun.freeze_time(datetime.datetime(2018, 1, 12))
+def test_run_report_old(bson_library, mongo_host, workspace, test_db_name, test_lib_name):
+    _setup_workspace(workspace)
+    for k, v in _environ(mongo_host, workspace, test_db_name, test_lib_name).items():
+        os.environ[k] = v
+    try:
+        flask_app = create_app()
+        flask_app.config["SERIALIZER_CLS"] = DEFAULT_SERIALIZER
+        flask_app.config["SERIALIZER_CONFIG"] = {"mongo_host": mongo_host, "mongo_db_name": test_db_name}
+        with flask_app.app_context() as c:
+            serialiser = get_serializer()
+            overrides = {"n_points": 5}
+            report_name = "fake/report"
+            report_title = "my report title"
+            mailto = "jon@fakeemail.com"
+            job_id = run_report(
+                report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True
+            )
+            _check_report_output(
+                job_id,
+                serialiser,
+                overrides=overrides,
+                report_name=report_name,
+                report_title=report_title,
+                mailto=mailto,
+            )
+            assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
+            assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, None)
+            assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
+            assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, None)
+    finally:
+        for k, __ in _environ(mongo_host, workspace, test_db_name, test_lib_name).items():
+            del os.environ[k]
 
 
 @setup_and_cleanup_notebooker_filesystem

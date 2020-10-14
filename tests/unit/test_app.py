@@ -1,8 +1,6 @@
 import os
-
 import pytest
 
-from notebooker.web.app import setup_env_vars
 from notebooker.web.config import settings
 
 
@@ -27,6 +25,7 @@ def safe_setup_env_vars():
         os.environ.clear()
         os.environ.update(original_env)
 
+
 def test_setup_env_vars(dev_config):
     env = safe_setup_env_vars()
     assert env["PORT"] == str(dev_config.PORT)
@@ -34,7 +33,7 @@ def test_setup_env_vars(dev_config):
 
 
 def test_setup_env_vars_override_default(monkeypatch, dev_config):
-    monkeypatch.setenv("MONGO_HOST","override")
+    monkeypatch.setenv("MONGO_HOST", "override")
     env = safe_setup_env_vars()
     assert env["PORT"] == str(dev_config.PORT)
     assert env["MONGO_HOST"] == "override"

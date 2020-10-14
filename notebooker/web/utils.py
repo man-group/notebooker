@@ -1,15 +1,16 @@
 from typing import Dict
 
-from flask import g
+from flask import g, current_app
 from werkzeug.datastructures import ImmutableMultiDict
 
-from notebooker.serialization.mongo import NotebookResultSerializer
-from notebooker.serialization.serialization import get_fresh_serializer
+from notebooker.serialization.mongo import MongoResultSerializer
+from notebooker.serialization.serialization import get_serializer_from_cls
 
 
-def get_serializer() -> NotebookResultSerializer:
+def get_serializer() -> MongoResultSerializer:
     if not hasattr(g, "notebook_serializer"):
-        g.notebook_serializer = get_fresh_serializer()
+        config = current_app.config
+        g.notebook_serializer = get_serializer_from_cls(config["SERIALIZER_CLS"], **config["SERIALIZER_CONFIG"])
     return g.notebook_serializer
 
 

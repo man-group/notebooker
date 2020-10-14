@@ -38,12 +38,14 @@ defaults: &defaults
     - run:
         name: Install MongoDB
         command: |
-          # run "cat /etc/os-release" to view information about the OS
-          # this article really helped with this madness: https://linuxize.com/post/how-to-install-mongodb-on-debian-9/
-          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
-          echo "deb http://repo.mongodb.org/apt/debian stretch/mongodb-org/4.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-org
+            # run "cat /etc/os-release" to view information about the OS
+            # good article on how to install mongo, https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/
+            wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+            sudo apt-get install gnupg
+            wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+            echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.2.list
+            sudo apt-get update
+            sudo apt-get install -y mongodb-org
     - run:
         name: Lint & Format JS Code
         command: |
@@ -138,13 +140,25 @@ defaults: &defaults
         path: test-results
 version: 2
 jobs:
-  build:
-    working_directory: ~/notebooker
+  build_3_6:
+    working_directory: ~/notebooker_3_6
     docker:
-    - image: circleci/python:3.6-stretch-node-browsers
+    - image: cimg/python:3.6-node
+    <<: *defaults
+  build_3_7:
+    working_directory: ~/notebooker_3_7
+    docker:
+    - image: cimg/python:3.7-node
+    <<: *defaults
+  build_3_8:
+    working_directory: ~/notebooker_3_8
+    docker:
+    - image: cimg/python:3.8-node
     <<: *defaults
 workflows:
   version: 2
   build_all:
     jobs:
-      - build
+      - build_3_6
+      - build_3_7
+      - build_3_8

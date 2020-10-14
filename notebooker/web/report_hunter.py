@@ -4,13 +4,14 @@ import time
 from logging import getLogger
 
 from notebooker.constants import RUNNING_TIMEOUT, SUBMISSION_TIMEOUT, JobStatus
-from notebooker.serialization.serialization import get_serializer_from_cls
+from notebooker.serialization.serialization import initialize_serializer_from_config
 from notebooker.utils.caching import get_report_cache, set_report_cache
+from notebooker.settings import WebappConfig
 
 logger = getLogger(__name__)
 
 
-def _report_hunter(serializer_cls: str, run_once: bool = False, timeout: int = 5, **serializer_kwargs):
+def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout: int = 5):
     """
     This is a function designed to run in a thread alongside the webapp. It updates the cache which the
     web app reads from and performs some admin on pending/running jobs. The function terminates either when
@@ -24,7 +25,7 @@ def _report_hunter(serializer_cls: str, run_once: bool = False, timeout: int = 5
     :param serializer_kwargs:
         Any kwargs which are required for a Serializer to be initialised successfully.
     """
-    serializer = get_serializer_from_cls(serializer_cls, **serializer_kwargs)
+    serializer = initialize_serializer_from_config(webapp_config)
     last_query = None
     while not os.getenv("NOTEBOOKER_APP_STOPPING"):
         try:
@@ -54,9 +55,11 @@ def _report_hunter(serializer_cls: str, run_once: bool = False, timeout: int = 5
             query_results = serializer.get_all_results(since=last_query)
             for result in query_results:
                 ct += 1
-                existing = get_report_cache(result.report_name, result.job_id)
+                existing = get_report_cache(result.report_name, result.job_id, cache_dir=webapp_config.CACHE_DIR)
                 if not existing or result.status != existing.status:  # Only update the cache when the status changes
-                    set_report_cache(result.report_name, result.job_id, result, timeout=timeout)
+                    set_report_cache(
+                        result.report_name, result.job_id, result, timeout=timeout, cache_dir=webapp_config.CACHE_DIR
+                    )
                     logger.info(
                         "Report-hunter found a change for {} (status: {}->{})".format(
                             result.job_id, existing.status if existing else None, result.status

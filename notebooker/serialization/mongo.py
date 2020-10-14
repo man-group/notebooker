@@ -1,4 +1,6 @@
 import datetime
+
+import click
 from builtins import object
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
@@ -18,16 +20,32 @@ from notebooker.constants import (
 logger = getLogger(__name__)
 
 
-class NotebookResultSerializer(object):
+class MongoResultSerializer:
     # This class is the interface between Mongo and the rest of the application
 
-    def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
-        self.database_name = database_name
+    def __init__(self, mongo_db_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
+        self.mongo_db_name = mongo_db_name
         self.mongo_host = mongo_host
         self.result_collection_name = result_collection_name
         mongo_connection = self.get_mongo_database()
         self.library = mongo_connection[result_collection_name]
         self.result_data_store = gridfs.GridFS(mongo_connection, "notebook_data")
+
+    def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
+        if cli_options is None:
+            raise ValueError(
+                "A MongoResultSerializer has been declared without cli_options. "
+                "Please add them like so: `class MySerializer(cli_options=cli_opts)`."
+            )
+        cls.cli_options = cli_options
+        super().__init_subclass__(**kwargs)
+
+    def serializer_args_to_cmdline_args(self) -> List[str]:
+        return [x for p in self.cli_options.params for x in [p.opts[0], getattr(self, p.name)]]
+
+    @classmethod
+    def get_name(cls):
+        return cls.__name__
 
     def get_mongo_database(self):
         raise NotImplementedError()

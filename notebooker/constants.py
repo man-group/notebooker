@@ -12,6 +12,7 @@ NOTEBOOKER_TEMPLATE_GIT_URL = os.getenv("NOTEBOOKER_TEMPLATE_GIT_URL")
 NOTEBOOKER_DISABLE_GIT = os.getenv("NOTEBOOKER_DISABLE_GIT")
 CANCEL_MESSAGE = "The webapp shut down while this job was running. Please resubmit with the same parameters."
 TEMPLATE_DIR_SEPARATOR = "^"
+DEFAULT_SERIALIZER = "PyMongoResultSerializer"
 logger = logging.getLogger(__name__)
 
 

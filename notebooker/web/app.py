@@ -1,17 +1,17 @@
 import atexit
 import logging
 import os
+import threading
 from typing import Optional
 
 import sys
-import threading
 import time
-
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 
 from notebooker.constants import CANCEL_MESSAGE, JobStatus
-from notebooker.serialization.serialization import get_fresh_serializer, serializer_kwargs_from_os_envs
+from notebooker.serialization.serialization import initialize_serializer_from_config
+from notebooker.settings import WebappConfig
 from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
 from notebooker.web.converters import DateConverter
 from notebooker.web.report_hunter import _report_hunter
@@ -23,10 +23,11 @@ from notebooker.web.routes.serve_results import serve_results_bp
 
 logger = logging.getLogger(__name__)
 all_report_refresher: Optional[threading.Thread] = None
+GLOBAL_CONFIG: Optional[WebappConfig] = None
 
 
 def _cancel_all_jobs():
-    serializer = get_fresh_serializer()
+    serializer = initialize_serializer_from_config(GLOBAL_CONFIG)
     all_pending = serializer.get_all_results(
         mongo_filter={"status": {"$in": [JobStatus.SUBMITTED.value, JobStatus.PENDING.value]}}
     )
@@ -41,7 +42,7 @@ def _cleanup_on_exit():
         return
     os.environ["NOTEBOOKER_APP_STOPPING"] = "1"
     _cancel_all_jobs()
-    _cleanup_dirs()
+    _cleanup_dirs(GLOBAL_CONFIG)
     if all_report_refresher:
         # Wait until it terminates.
         logger.info('Stopping "report hunter" thread.')
@@ -50,43 +51,13 @@ def _cleanup_on_exit():
     time.sleep(2)
 
 
-def start_app(serializer):
+def start_app(webapp_config: WebappConfig):
     global all_report_refresher
     if os.getenv("NOTEBOOKER_APP_STOPPING"):
         del os.environ["NOTEBOOKER_APP_STOPPING"]
-    all_report_refresher = threading.Thread(
-        target=_report_hunter, args=(serializer,), kwargs=serializer_kwargs_from_os_envs()
-    )
+    all_report_refresher = threading.Thread(target=_report_hunter, args=(webapp_config,))
     all_report_refresher.daemon = True
     all_report_refresher.start()
-
-
-def setup_env_vars():
-    """
-    Set up environment variables based on the NOTEBOOKER_ENVIRONMENT env var.
-    These can be overridden by simply setting each env var in the first place.
-    Returns a list of the environment variables which were changed.
-    """
-    notebooker_environment = os.getenv("NOTEBOOKER_ENVIRONMENT", "Dev")
-    from .config import settings
-
-    config = getattr(settings, f"{notebooker_environment}Config")()
-    set_vars = []
-    logger.info("Running Notebooker with the following params:")
-    for attribute in dir(config):
-        if attribute.startswith("_"):
-            continue
-        existing = os.environ.get(attribute)
-        if existing is None:
-            os.environ[attribute] = str(getattr(config, attribute))
-            set_vars.append(attribute)
-
-        if "PASSWORD" not in attribute:
-            logger.info(f"{attribute} = {os.environ[attribute]}")
-        else:
-            logger.info(f"{attribute} = *******")
-
-    return set_vars
 
 
 def create_app():
@@ -115,26 +86,24 @@ def create_app():
     return flask_app
 
 
-def setup_app(flask_app):
+def setup_app(flask_app: Flask, web_config: WebappConfig):
     # Setup environment
-    setup_env_vars()
-    initialise_base_dirs()
-    logging.basicConfig(level=logging.getLevelName(os.getenv("LOGGING_LEVEL", "INFO")))
+    initialise_base_dirs(web_config)
+    logging.basicConfig(level=logging.getLevelName(web_config.LOGGING_LEVEL))
+    flask_app.config.from_object(web_config)
     flask_app.config.update(
-        TEMPLATES_AUTO_RELOAD=bool(os.environ["DEBUG"]), EXPLAIN_TEMPLATE_LOADING=True, DEBUG=bool(os.environ["DEBUG"])
+        TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
     )
-    start_app(os.environ["NOTEBOOK_SERIALIZER"])
+    logger.info(f"HELLO WORLD {flask_app.config}")
+    start_app(web_config)
     return flask_app
 
 
-def main():
+def main(web_config: WebappConfig):
+    global GLOBAL_CONFIG
+    GLOBAL_CONFIG = web_config
     flask_app = create_app()
-    flask_app = setup_app(flask_app)
-    port = int(os.environ["PORT"])
-    logger.info("Notebooker is now running at http://0.0.0.0:%d", port)
-    http_server = WSGIServer(("0.0.0.0", port), flask_app)
+    flask_app = setup_app(flask_app, web_config)
+    logger.info("Notebooker is now running at http://0.0.0.0:%d", web_config.PORT)
+    http_server = WSGIServer(("0.0.0.0", web_config.PORT), flask_app)
     http_server.serve_forever()
-
-
-if __name__ == "__main__":
-    main()

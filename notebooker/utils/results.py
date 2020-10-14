@@ -6,7 +6,7 @@ from flask import url_for
 
 from notebooker import constants
 from notebooker.exceptions import NotebookRunException
-from notebooker.serialization.mongo import NotebookResultSerializer
+from notebooker.serialization.mongo import MongoResultSerializer
 from notebooker.utils.caching import get_cache, get_report_cache, set_cache, set_report_cache
 from notebooker.utils.web import convert_report_name_url_to_path
 
@@ -16,7 +16,7 @@ logger = getLogger(__name__)
 def _get_job_results(
     job_id: str,
     report_name: str,
-    serializer: NotebookResultSerializer,
+    serializer: MongoResultSerializer,
     retrying: Optional[bool] = False,
     ignore_cache: Optional[bool] = False,
 ) -> constants.NotebookResultBase:
@@ -48,7 +48,7 @@ def _get_results_from_name_and_params(
     job_id_func: Callable[[str, Optional[Dict], Optional[dt]], str],
     report_name: str,
     params: Optional[Mapping],
-    serializer: NotebookResultSerializer,
+    serializer: MongoResultSerializer,
     retrying: bool,
     ignore_cache: bool,
     as_of: Optional[dt] = None,
@@ -66,7 +66,7 @@ def _get_results_from_name_and_params(
 def get_latest_job_results(
     report_name: str,
     params: Optional[Mapping],
-    serializer: NotebookResultSerializer,
+    serializer: MongoResultSerializer,
     retrying: bool = False,
     ignore_cache: bool = False,
     as_of: Optional[dt] = None,
@@ -80,7 +80,7 @@ def get_latest_job_results(
 def get_latest_successful_job_results(
     report_name: str,
     params: Optional[Mapping],
-    serializer: NotebookResultSerializer,
+    serializer: MongoResultSerializer,
     retrying: bool = False,
     ignore_cache: bool = False,
     as_of: Optional[dt] = None,
@@ -97,7 +97,7 @@ def get_latest_successful_job_results(
 
 
 def get_all_result_keys(
-    serializer: NotebookResultSerializer, limit: int = 0, force_reload: bool = False
+    serializer: MongoResultSerializer, limit: int = 0, force_reload: bool = False
 ) -> List[Tuple[str, str]]:
     all_keys = get_cache(("all_result_keys", limit))
     if not all_keys or force_reload:
@@ -106,9 +106,7 @@ def get_all_result_keys(
     return all_keys
 
 
-def get_all_available_results_json(
-    serializer: NotebookResultSerializer, limit: int
-) -> List[constants.NotebookResultBase]:
+def get_all_available_results_json(serializer: MongoResultSerializer, limit: int) -> List[constants.NotebookResultBase]:
     json_output = []
     for result in serializer.get_all_results(limit=limit, load_payload=False):
         output = result.saveable_output()
@@ -130,7 +128,7 @@ def get_all_available_results_json(
 
 def get_latest_successful_job_results_all_params(
     report_name: str,
-    serializer: NotebookResultSerializer,
+    serializer: MongoResultSerializer,
     retrying: Optional[bool] = False,
     ignore_cache: Optional[bool] = False,
 ) -> Iterator[constants.NotebookResultComplete]:

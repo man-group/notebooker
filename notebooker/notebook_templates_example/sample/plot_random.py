@@ -31,4 +31,4 @@ dts = np.array(start_date, dtype=np.datetime64) + np.arange(days)
 df = pd.DataFrame(arr, index=dts)
 
 # -
-df.cumsum().plot();
+df.cumsum().plot()

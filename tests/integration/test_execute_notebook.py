@@ -9,8 +9,7 @@ from nbformat import __version__ as nbv
 
 from notebooker import execute_notebook
 from notebooker.constants import NotebookResultComplete
-from notebooker.serialization.serializers import PyMongoNotebookResultSerializer
-from notebooker.web.app import setup_env_vars
+from notebooker.serializers.pymongo import PyMongoResultSerializer
 
 
 def mock_nb_execute(input_path, output_path, **kw):
@@ -36,13 +35,20 @@ def test_main(mongo_host):
         # values on the CLI
         setup_env_vars()
         cli_result = runner.invoke(
-            execute_notebook.main, ["--report-name", "test_report", "--mongo-host", mongo_host, "--job-id", job_id]
+            [
+                "notebooker_cli",
+                "--mongo-host",
+                mongo_host,
+                "execute_report",
+                "--report-name",
+                "test_report",
+                "--job-id",
+                job_id,
+            ]
         )
         assert cli_result.exit_code == 0
-        serializer = PyMongoNotebookResultSerializer(
-            mongo_host=mongo_host,
-            database_name=os.environ["DATABASE_NAME"],
-            result_collection_name=os.environ["RESULT_COLLECTION_NAME"],
+        serializer = PyMongoResultSerializer(
+            mongo_host=mongo_host, database_name="notebooker", result_collection_name="NOTEBOOK_OUTPUT"
         )
         result = serializer.get_check_result(job_id)
         assert isinstance(result, NotebookResultComplete), "Result is not instance of {}, it is {}".format(
