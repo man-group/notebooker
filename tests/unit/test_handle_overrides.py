@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import datetime
 import re
+import sys
 from typing import Any
 
 import freezegun
@@ -93,10 +94,12 @@ def test_handle_overrides_handles_imports_with_issues(input_txt):
         issues = []
         overrides = handle_overrides(input_txt, issues)
     assert overrides == {}
-    if PY3:
+    if PY2:
+        error_string = "datetime.datetime(10, 1, 1, 0, 0) is not JSON serializable, Value: 0010-01-01 00:00:00"
+    elif sys.version_info < (3, 7):
         error_string = "Object of type 'datetime' is not JSON serializable, Value: 0010-01-01 00:00:00"
     else:
-        error_string = "datetime.datetime(10, 1, 1, 0, 0) is not JSON serializable, Value: 0010-01-01 00:00:00"
+        error_string = "Object of type datetime is not JSON serializable, Value: 0010-01-01 00:00:00"
     assert issues == [
         'Could not JSON serialise a parameter ("d") - '
         "this must be serialisable so that we can execute "
