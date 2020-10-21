@@ -59,13 +59,13 @@ Install Notebooker
 
 .. code:: bash
 
-    $ pip install -r notebook_templates/notebook_requirements.txt
+    $ pip install -r notebooker/notebook_templates_example/notebook_requirements.txt
 
 5. Run the webapp!
 
 .. code:: bash
 
-    $ MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
+    $ MONGO_HOST=localhost:27017 MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
 
 6. Open the link that is printed in your web browser.
 
