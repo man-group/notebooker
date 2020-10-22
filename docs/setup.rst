@@ -1,11 +1,18 @@
 .. _Initial Setup:
 
-Getting Started
-===============
+Docker
+======
+
+The docker-compose setup in the docker directory will bring up a demo instance which is exposed
+on your port 8080 of your local machine. It can be used as a reference for your own setups.
+
+
+Manual Installation
+===================
 
 Prerequisites
 -------------
-* python 3.6+ (2.7 may work, but is not actively supported)
+* python 3.6+
 * `mongodb <https://www.mongodb.com/download-center/community?jmp=docs>`_ >= 2.4.x
 * npm
 
