@@ -1,37 +1,47 @@
 import os
 
+import pytest
+
 from notebooker.web.app import setup_env_vars
+from notebooker.web.config import settings
 
 
-def test_setup_env_vars():
-    set_vars = setup_env_vars()
+@pytest.fixture
+def dev_config():
+    return settings.DevConfig
+
+
+@pytest.fixture
+def prod_config():
+    return settings.ProdConfig
+
+
+def safe_setup_env_vars():
+    """Return a copy of the environment after running setup_env_vars."""
+    original_env = os.environ.copy()
+
     try:
-        assert os.getenv("PORT") == "11828"
-        assert os.getenv("MONGO_HOST") == "localhost"
+        setup_env_vars()
+        return os.environ.copy()
     finally:
-        for var in set_vars:
-            del os.environ[var]
+        os.environ.clear()
+        os.environ.update(original_env)
+
+def test_setup_env_vars(dev_config):
+    env = safe_setup_env_vars()
+    assert env["PORT"] == str(dev_config.PORT)
+    assert env["MONGO_HOST"] == str(dev_config.MONGO_HOST)
 
 
-def test_setup_env_vars_override_default():
-    os.environ["MONGO_HOST"] = "override"
-    set_vars = setup_env_vars()
-    try:
-        assert os.getenv("PORT") == "11828"
-        assert os.getenv("MONGO_HOST") == "override"
-    finally:
-        for var in set_vars:
-            del os.environ[var]
-        del os.environ["MONGO_HOST"]
+def test_setup_env_vars_override_default(monkeypatch, dev_config):
+    monkeypatch.setenv("MONGO_HOST","override")
+    env = safe_setup_env_vars()
+    assert env["PORT"] == str(dev_config.PORT)
+    assert env["MONGO_HOST"] == "override"
 
 
-def test_setup_env_vars_prod():
-    os.environ["NOTEBOOKER_ENVIRONMENT"] = "Prod"
-    set_vars = setup_env_vars()
-    try:
-        assert os.getenv("PORT") == "11828"
-        assert os.getenv("MONGO_HOST") == "a-production-mongo-cluster"
-    finally:
-        for var in set_vars:
-            del os.environ[var]
-        del os.environ["NOTEBOOKER_ENVIRONMENT"]
+def test_setup_env_vars_prod(monkeypatch, prod_config):
+    monkeypatch.setenv("NOTEBOOKER_ENVIRONMENT", "Prod")
+    env = safe_setup_env_vars()
+    assert env["PORT"] == str(prod_config.PORT)
+    assert env["MONGO_HOST"] == str(prod_config.MONGO_HOST)
