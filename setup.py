@@ -45,6 +45,7 @@ setup(
     license="AGPLv3",
     url="https://github.com/man-group/notebooker",
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
+    package_data={'': ["CHANGELOG.md", "**/*.tpl"]},
     setup_requires=["six", "numpy"],
     python_requires=">=3.5",
     zip_safe=False,
