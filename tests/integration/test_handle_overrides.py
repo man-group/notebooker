@@ -1,5 +1,6 @@
 import datetime
 import re
+import sys
 
 import pytest
 from six import PY2
@@ -34,7 +35,10 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile("^(?P<variable_name>[a-zA-Z_]+) *= *(?P<v
                 "execute the notebook with it! (Error: {})".format(
                     "datetime.datetime(2018, 1, 1, 0, 0) is not JSON serializable, Value: 2018-01-01 00:00:00"
                     if PY2
-                    else "Object of type 'datetime' is not JSON serializable, Value: 2018-01-01 00:00:00"
+                    else
+                    "Object of type 'datetime' is not JSON serializable, Value: 2018-01-01 00:00:00"
+                    if sys.version_info < (3, 7)
+                    else "Object of type datetime is not JSON serializable, Value: 2018-01-01 00:00:00"
                 )
             ],
         ),
@@ -67,9 +71,5 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile("^(?P<variable_name>[a-zA-Z_]+) *= *(?P<v
 def test_handle_overrides_normal(test_name, input_str, expected_output_values, expected_issues):
     issues = []
     override_dict = handle_overrides(input_str, issues)
-    if sorted(issues) != sorted(expected_issues) and expected_issues:
-        for expected_issue in expected_issues:
-            fail_msg = "Issue {} was not found in the list of issues: {}".format(expected_issue, issues)
-            assert any(expected_issue in issue for issue in issues), fail_msg
     assert sorted(issues) == sorted(expected_issues)
     assert sorted(override_dict.items()) == sorted(expected_output_values.items())

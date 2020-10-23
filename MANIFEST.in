@@ -1,2 +1,4 @@
+include CHANGELOG.md
 recursive-include notebooker/web/templates *
 recursive-include notebooker/web/static *
+recursive-include notebooker *.tpl

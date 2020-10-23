@@ -338,10 +338,19 @@ def main(
         raise ValueError("Error! Please provide a --report-name.")
     mongo_db_name = mongo_db_name or os.environ.get("DATABASE_NAME", "notebooker")
     mongo_host = mongo_host or os.environ.get("MONGO_HOST", "research")
-    mongo_user = mongo_user or os.environ.get("MONGO_USER", "research")
-    os.environ["MONGO_USER"] = mongo_user
-    mongo_password = mongo_password or os.environ.get("MONGO_PASSWORD", "research")
-    os.environ["MONGO_PASSWORD"] = mongo_password  # FIXME: rather insecure..
+
+    mongo_user = mongo_user if mongo_user is not None else os.environ.get("MONGO_USER")
+    if mongo_user is None:
+        os.environ.pop("MONGO_USER", None)
+    else:
+        os.environ["MONGO_USER"] = mongo_user
+
+    mongo_password = mongo_password if mongo_password is not None else os.environ.get("MONGO_PASSWORD")
+    if mongo_password is None:
+        os.environ.pop("MONGO_PASSWORD", None)
+    else:
+        os.environ["MONGO_PASSWORD"] = mongo_password  # FIXME: rather insecure..
+
     result_collection_name = result_collection_name or os.environ.get("RESULT_COLLECTION_NAME", "NOTEBOOK_OUTPUT")
     if notebook_kernel_name:
         os.environ["NOTEBOOK_KERNEL_NAME"] = notebook_kernel_name
@@ -374,6 +383,8 @@ def main(
         database_name=mongo_db_name,
         mongo_host=mongo_host,
         result_collection_name=result_collection_name,
+        user=mongo_user,
+        password=mongo_password,
     )
     results = []
     for overrides in all_overrides:

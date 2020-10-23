@@ -111,7 +111,6 @@ defaults: &defaults
           pip install Pygments
           grep -q $VERSION notebooker/_version.py || (echo "ERROR: Version number not found in notebooker/_version.py: $VERSION"; exit 1)
           grep -q $VERSION CHANGELOG.md || (echo "ERROR: Version number not found in CHANGES.md: $VERSION"; exit 1)
-          grep -q $VERSION docker/Dockerfile || (echo "ERROR: Version number not found in docker/Dockerfile: $VERSION"; exit 1)
           grep -q $VERSION docs/conf.py || (echo "ERROR: Version number not found in docs/source/conf.py: $VERSION"; exit 1)
           grep -q $VERSION notebooker/web/static/package.json || (echo "ERROR: Version number not found in package.json: $VERSION"; exit 1)
           python setup.py --long-description > ../README.rst

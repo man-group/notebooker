@@ -22,6 +22,13 @@ See the documentation at [https://notebooker.readthedocs.io/](https://notebooker
 
 Notebooker has been tested on Linux, Windows 10, and OSX; the webapp has been tested on Google Chrome.
 
+If you want to explore an example right away, you can use docker-compose:
+```sh
+cd docker
+docker-compose up
+```
+That will expose Notebooker at http://localhost:8080/ with the example templates.
+
 # Contributors
 Notebooker has been actively maintained at Man Group since late 2018, with the original concept built by 
 [Jon Bannister](https://github.com/jonbannister). 
