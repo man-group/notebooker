@@ -19,29 +19,37 @@ _SMTP_SERVER_ENV_KEY = "SMTP_SERVER"
 
 def mail(from_address, to_address, subject, msg, attachments=None, server=""):
     """
-        Sends a mail both with and without attachments.
+    Sends a mail both with and without attachments.
 
-        Arguments:
+    Arguments
+    =========
 
-        from_address: string holding sender's address
-        to_address: string holding comma separated list of recipients
-        subject: string containing subject
-        msg: string containing email body message in plain text or a list
-             with first entry the body message string as plain text and the
-             second entry the body message string as html
-        attachments (optional): list or a string holding comma separated list of (absolute
-             or/and relative) paths to attachments
-        server (optional): string holding SMTP server e.g. 'mailhost.domain.com'. Value will be
-            picked from environment variable (SMTP_SERVER) or default to None (localhost) if no value is provided
+    from_address:
+        string holding sender's address
+    to_address:
+        string holding comma separated list of recipients
+    subject:
+        string containing subject
+    msg:
+        string containing email body message in plain text or a list
+        with first entry the body message string as plain text and the
+        second entry the body message string as html
+    attachments (optional):
+        list or a string holding comma separated list of (absolute
+        or/and relative) paths to attachments
+    server (optional):
+        string holding SMTP server e.g. 'mailhost.domain.com'. Value will be
+        picked from environment variable (SMTP_SERVER) or default to None (localhost) if no value is provided
 
-        Examples:
+    Examples
+    ========
 
-        # basic email to two recipients
-        >> mail("sender_name@domain.com", "x@domain.com,y@domain.com", "TestSubject", "This is a test message")
+    # basic email to two recipients
+    >> mail("sender_name@domain.com", "x@domain.com,y@domain.com", "TestSubject", "This is a test message")
 
-        # email with attachments
-        mail("sender_name@domain.com", "x@domain.com", "TestSubject", "This is a test message",
-             "test1.pdf,test2.pdf,test.doc,/users/is/generic/myreport.csv"))
+    # email with attachments
+    mail("sender_name@domain.com", "x@domain.com", "TestSubject", "This is a test message",
+         "test1.pdf,test2.pdf,test.doc,/users/is/generic/myreport.csv"))
     """
     if isinstance(to_address, list):
         recipients = to_address

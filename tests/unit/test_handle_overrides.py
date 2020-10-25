@@ -10,7 +10,6 @@ import hypothesis
 import hypothesis.strategies as st
 import mock
 import pytest
-from six import PY2, PY3
 
 from notebooker.web.handle_overrides import _handle_overrides_safe, handle_overrides
 
@@ -94,9 +93,7 @@ def test_handle_overrides_handles_imports_with_issues(input_txt):
         issues = []
         overrides = handle_overrides(input_txt, issues)
     assert overrides == {}
-    if PY2:
-        error_string = "datetime.datetime(10, 1, 1, 0, 0) is not JSON serializable, Value: 0010-01-01 00:00:00"
-    elif sys.version_info < (3, 7):
+    if sys.version_info < (3, 7):
         error_string = "Object of type 'datetime' is not JSON serializable, Value: 0010-01-01 00:00:00"
     else:
         error_string = "Object of type datetime is not JSON serializable, Value: 0010-01-01 00:00:00"

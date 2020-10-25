@@ -154,17 +154,8 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
             result_serializer.database_name,
             "--mongo-host",
             result_serializer.mongo_host,
-
-            *(
-                ("--mongo-user", result_serializer.user)
-                if result_serializer.user is not None else
-                ()
-            ),
-            *(
-                ("--mongo-password", result_serializer.password)
-                if result_serializer.password is not None else
-                ()
-            ),
+            *(("--mongo-user", result_serializer.user) if result_serializer.user is not None else ()),
+            *(("--mongo-password", result_serializer.password) if result_serializer.password is not None else ()),
             "--result-collection-name",
             result_serializer.result_collection_name,
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
