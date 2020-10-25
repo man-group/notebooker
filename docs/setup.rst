@@ -38,47 +38,95 @@ interesting queries
   > db.createUser({user: 'jon', pwd: 'hello', roles: ['readWrite']})
 
 
-Install Notebooker
+First Run of Notebooker
 ------------------
+NB: mongo should be running as above for these steps to work!
 
 1. Install notebooker
 
 .. code:: bash
 
-    $ pip install git+https://github.com/man-group/notebooker.git
+    $ pip install notebooker
 
 
-2. npm build
-
-.. code:: bash
-
-    pushd ./notebooker/web/static/
-    npm install
-    popd
-
-3. Set up the ipykernel which runs Notebooks
+2. Set up the ipykernel which runs Notebooks
 
 .. code:: bash
 
     $ python -m ipykernel install --user --name=notebooker_kernel
 
-4. Install notebook requirements
 
-.. code:: bash
-
-    $ pip install -r notebooker/notebook_templates_example/notebook_requirements.txt
-
-5. Run the webapp!
+3. Run the webapp!
 
 .. code:: bash
 
     $ MONGO_HOST=localhost:27017 MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
 
-6. Open the link that is printed in your web browser.
+4. Open the link that is printed in your web browser.
 
 .. code::
 
     INFO:notebooker.web.main:Notebooker is now running at http://localhost:11828`
+
+
+Installing and Running Notebooker locally
+-----------------------------------------
+
+Sometimes it is a bit simpler to get things up and running by running locally. It is also useful if you wish to
+play around with the notebook_examples.
+NB: mongo should be running as above for these steps to work!
+
+1. Clone notebooker
+
+.. code:: bash
+
+    git clone https://github.com/man-group/notebooker.git
+
+2. Python setup
+
+.. code:: bash
+
+    cd notebooker
+    python setup.py develop
+
+
+3. npm install
+
+.. code:: bash
+
+    cd ./notebooker/web/static/
+    npm install
+    cd ../../../
+
+
+4. Set up the ipykernel which runs Notebooks
+
+.. code:: bash
+
+    $ python -m ipykernel install --user --name=notebooker_kernel
+
+
+5. Install notebook requirements
+
+.. code:: bash
+
+    $ pip install -r notebooker/notebook_templates_example/notebook_requirements.txt
+
+
+6. Run the webapp!
+
+.. code:: bash
+
+    $ MONGO_HOST=localhost:27017 MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
+
+
+7. Open the link that is printed in your web browser.
+
+.. code::
+
+    INFO:notebooker.web.main:Notebooker is now running at http://localhost:11828`
+
+
 
 
 .. _export to pdf:
