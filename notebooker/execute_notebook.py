@@ -420,15 +420,14 @@ def docker_compose_entrypoint():
 
     Examples
     --------
-    notebooker_execute --report-name watchdog_checks --mongo-host mktdatad
-Received a request to run a report with the following parameters:
-['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook', '--report-name', 'watchdog_checks', '--mongo-host', 'mktdatad']
-...
+    $ notebooker_execute --report-name watchdog_checks --mongo-host mktdatad
+    Received a request to run a report with the following parameters:
+    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook', '--report-name', 'watchdog_checks', '--mongo-host', 'mktdatad']
 
-    notebooker_execute
-Received a request to run a report with the following parameters:
-['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook']
-ValueError: Error! Please provide a --report-name.
+    $ notebooker_execute
+    Received a request to run a report with the following parameters:
+    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook']
+    ValueError: Error! Please provide a --report-name.
     """
     args_to_execute = [sys.executable, "-m", __name__] + sys.argv[1:]
     logger.info("Received a request to run a report with the following parameters:")

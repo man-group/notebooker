@@ -62,7 +62,6 @@ setup(
         "ipykernel",
         "stashy",
         "click",
-        "six",
         "python-dateutil",
         "flask",
         "requests",

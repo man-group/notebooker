@@ -1,7 +1,6 @@
 import re
 
 import pytest
-from six import PY3
 
 from notebooker.utils.mail import (
     _SMTP_SERVER_ENV_KEY,
@@ -139,7 +138,7 @@ def test_separate_plain_and_html_parts_bad_cases(bad_input):
     ],
 )
 def test_read_attachment(ctype, ctor, arg):
-    compat_builtin = "builtins.open" if PY3 else "__builtin__.open"
+    compat_builtin = "builtins.open"
     with patch(_MAIL_MODULE + ctor) as mock_ctor:
         with patch(compat_builtin) as mo, patch(_MAIL_MODULE + "encoders"):
             _read_attachment(ctype, sentinel.path)

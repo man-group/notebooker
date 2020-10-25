@@ -2,13 +2,12 @@ from __future__ import unicode_literals
 
 import mock
 from click.testing import CliRunner
-from six import PY3
 
 from notebooker import constants, snapshot
 
 
 def test_snapshot_latest_successful_notebooks():
-    compat_builtin = "builtins.open" if PY3 else "__builtin__.open"
+    compat_builtin = "builtins.open"
     with mock.patch(compat_builtin) as fopen:
         with mock.patch("notebooker.snapshot.get_latest_successful_job_results_all_params") as get_results:
             with mock.patch("notebooker.snapshot.get_serializer_from_cls") as nbs:
@@ -53,7 +52,7 @@ def test_write_results(_write_notebook_outputs, _write_notebook_html):
 
 
 def test_write_notebook_html():
-    compat_builtin = "builtins.open" if PY3 else "__builtin__.open"
+    compat_builtin = "builtins.open"
     output_dir = "output_dir"
     result = mock.Mock(spec=constants.NotebookResultComplete)
     result.overrides = {"over": "ride"}
@@ -65,7 +64,7 @@ def test_write_notebook_html():
 
 
 def test_write_notebook_outputs():
-    compat_builtin = "builtins.open" if PY3 else "__builtin__.open"
+    compat_builtin = "builtins.open"
     output_dir = "output_dir"
     result = mock.Mock(spec=constants.NotebookResultComplete)
     result.raw_html_resources = {"outputs": {"out/put/img.png": "blah"}}

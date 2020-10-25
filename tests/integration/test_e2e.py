@@ -62,6 +62,7 @@ def _environ(mongo_host, workspace, db_name, lib_name):
         "RESULT_COLLECTION_NAME": lib_name,
     }
 
+
 @pytest.fixture
 def environ(monkeypatch, mongo_host, workspace, test_db_name, test_lib_name):
     """Setup workspace and environment variables for tests in this file."""
@@ -96,9 +97,7 @@ def test_run_report(bson_library, environ):
         report_name = "fake/report"
         report_title = "my report title"
         mailto = "jon@fakeemail.com"
-        job_id = run_report(
-            report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True
-        )
+        job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
         _check_report_output(
             job_id,
             serialiser,
@@ -123,9 +122,7 @@ def test_run_report_and_rerun(bson_library, environ):
         report_name = "fake/report"
         report_title = "my report title"
         mailto = "jon@fakeemail.com"
-        job_id = run_report(
-            report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True
-        )
+        job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
         _check_report_output(
             job_id,
             serialiser,
@@ -147,8 +144,6 @@ def test_run_report_and_rerun(bson_library, environ):
             generate_pdf_output=False,
         )
         assert new_job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
-        assert not {job_id, new_job_id} - set(
-            serialiser.get_all_job_ids_for_name_and_params(report_name, overrides)
-        )
+        assert not {job_id, new_job_id} - set(serialiser.get_all_job_ids_for_name_and_params(report_name, overrides))
         assert new_job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
         assert job_id != serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
