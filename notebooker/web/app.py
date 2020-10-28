@@ -73,13 +73,19 @@ def setup_env_vars():
     config = getattr(settings, f"{notebooker_environment}Config")()
     set_vars = []
     logger.info("Running Notebooker with the following params:")
-    for attribute in (c for c in dir(config) if "__" not in c):
-        existing = os.getenv(attribute)
+    for attribute in dir(config):
+        if attribute.startswith("_"):
+            continue
+        existing = os.environ.get(attribute)
         if existing is None:
             os.environ[attribute] = str(getattr(config, attribute))
             set_vars.append(attribute)
+
         if "PASSWORD" not in attribute:
             logger.info(f"{attribute} = {os.environ[attribute]}")
+        else:
+            logger.info(f"{attribute} = *******")
+
     return set_vars
 
 

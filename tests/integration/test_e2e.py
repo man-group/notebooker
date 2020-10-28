@@ -69,7 +69,10 @@ def environ(monkeypatch, mongo_host, workspace, test_db_name, test_lib_name):
     _setup_workspace(workspace)
     update = _environ(mongo_host, workspace, test_db_name, test_lib_name)
     for k, v in update.items():
-        monkeypatch.setenv(k, v)
+        if v is None:
+            monkeypatch.delenv(k, raising=False)
+        else:
+            monkeypatch.setenv(k, v)
 
 
 def _check_report_output(job_id, serialiser, **kwargs):

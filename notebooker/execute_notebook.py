@@ -263,6 +263,14 @@ def _get_overrides(overrides_as_json: AnyStr, iterate_override_values_of: Option
     return all_overrides
 
 
+def env_coupled_var(var_value: Optional[str], env_name: str) -> Optional[str]:
+    """Coalesce a value from the given one and environment, then update the environment."""
+    if var_value is not None:
+        os.environ[env_name] = var_value
+        return var_value
+    return os.environ.get(env_name)
+
+
 @click.command()
 @click.option("--report-name", help="The name of the template to execute, relative to the template directory.")
 @click.option(
@@ -336,24 +344,14 @@ def main(
 ):
     if report_name is None:
         raise ValueError("Error! Please provide a --report-name.")
-    mongo_db_name = mongo_db_name or os.environ.get("DATABASE_NAME", "notebooker")
-    mongo_host = mongo_host or os.environ.get("MONGO_HOST", "research")
 
-    mongo_user = mongo_user if mongo_user is not None else os.environ.get("MONGO_USER")
-    if mongo_user is None:
-        os.environ.pop("MONGO_USER", None)
-    else:
-        os.environ["MONGO_USER"] = mongo_user
+    mongo_db_name = env_coupled_var(mongo_db_name, "DATABASE_NAME")
+    mongo_host = env_coupled_var(mongo_host, "MONGO_HOST")
+    mongo_user = env_coupled_var(mongo_user, "MONGO_USER")
+    mongo_password = env_coupled_var(mongo_password, "MONGO_PASSWORD")
+    result_collection_name = env_coupled_var(result_collection_name, "RESULT_COLLECTION_NAME")
+    notebook_kernel_name = env_coupled_var(notebook_kernel_name, "NOTEBOOK_KERNEL_NAME")
 
-    mongo_password = mongo_password if mongo_password is not None else os.environ.get("MONGO_PASSWORD")
-    if mongo_password is None:
-        os.environ.pop("MONGO_PASSWORD", None)
-    else:
-        os.environ["MONGO_PASSWORD"] = mongo_password  # FIXME: rather insecure..
-
-    result_collection_name = result_collection_name or os.environ.get("RESULT_COLLECTION_NAME", "NOTEBOOK_OUTPUT")
-    if notebook_kernel_name:
-        os.environ["NOTEBOOK_KERNEL_NAME"] = notebook_kernel_name
     report_title = report_title or report_name
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=output_base_dir, template_dir=template_base_dir)
     all_overrides = _get_overrides(overrides_as_json, iterate_override_values_of)
