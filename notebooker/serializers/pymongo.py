@@ -1,21 +1,24 @@
 import click
 from pymongo import MongoClient
 
+from notebooker.constants import DEFAULT_MONGO_DB_NAME, DEFAULT_MONGO_HOST, DEFAULT_RESULT_COLLECTION_NAME
 from notebooker.serialization.mongo import MongoResultSerializer
 
 
 @click.command()
 @click.option(
-    "--mongo-db-name", default="notebooker", help="The mongo database name to which we will save the notebook result."
+    "--mongo-db-name",
+    default=DEFAULT_MONGO_DB_NAME,
+    help="The mongo database name to which we will save the notebook result.",
 )
 @click.option(
-    "--mongo-host", default="localhost", help="The mongo host/cluster to which we are saving notebook results."
+    "--mongo-host", default=DEFAULT_MONGO_HOST, help="The mongo host/cluster to which we are saving notebook results."
 )
 @click.option("--mongo-user", default=None, help="The mongo username.")
 @click.option("--mongo-password", default=None, help="The mongo password.")
 @click.option(
     "--result-collection-name",
-    default="notebook_results",
+    default=DEFAULT_RESULT_COLLECTION_NAME,
     help="The name of the collection to which we are saving notebook results.",
 )
 def cli_options():

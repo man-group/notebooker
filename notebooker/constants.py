@@ -16,6 +16,11 @@ DEFAULT_SERIALIZER = "PyMongoResultSerializer"
 logger = logging.getLogger(__name__)
 
 
+DEFAULT_MONGO_DB_NAME = "notebooker"
+DEFAULT_MONGO_HOST = "localhost"
+DEFAULT_RESULT_COLLECTION_NAME = "notebook_results"
+
+
 def kernel_spec():
     return {
         "display_name": os.getenv("NOTEBOOK_KERNEL_NAME", "notebooker_kernel"),

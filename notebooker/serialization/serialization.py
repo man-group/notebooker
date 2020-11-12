@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def get_serializer_from_cls(serializer_cls: str, **kwargs: dict) -> MongoResultSerializer:
     serializer = ALL_SERIALIZERS.get(serializer_cls)
     if serializer is None:
-        raise ValueError("Unsupported serializer {}".format(serializer_cls))
+        raise ValueError(f"Unsupported serializer {serializer_cls}. Supported: {list(ALL_SERIALIZERS)}")
     logger.info(f"Initialising {serializer_cls} with args: {kwargs}")
     return serializer(**kwargs)
 

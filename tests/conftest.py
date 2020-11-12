@@ -1,9 +1,7 @@
-import os
-
 import pytest
 
+from notebooker.constants import DEFAULT_MONGO_DB_NAME, DEFAULT_RESULT_COLLECTION_NAME
 from notebooker.utils import caching
-from notebooker.web.config import settings
 
 
 @pytest.fixture
@@ -17,27 +15,31 @@ def mongo_host(mongo_server):
 
 
 @pytest.fixture
-def test_db_name(config):
-    return config.DATABASE_NAME
+def test_db_name():
+    return DEFAULT_MONGO_DB_NAME
 
 
 @pytest.fixture
-def test_lib_name(config):
-    return config.RESULT_COLLECTION_NAME
+def test_lib_name():
+    return DEFAULT_RESULT_COLLECTION_NAME
+
 
 @pytest.fixture
 def template_dir(workspace, monkeypatch):
     monkeypatch.setenv("TEMPLATE_DIR", workspace.workspace)
     return workspace.workspace
 
+
 @pytest.fixture
 def output_dir(workspace, monkeypatch):
     monkeypatch.setenv("OUTPUT_DIR", workspace.workspace)
     return workspace.workspace
 
+
 @pytest.fixture
-def config():
-    return settings.DevConfig
+def cache_dir(workspace, monkeypatch):
+    monkeypatch.setenv("CACHE_DIR", workspace.workspace)
+    return workspace.workspace
 
 
 @pytest.fixture
@@ -50,11 +52,12 @@ def clean_file_cache(monkeypatch, workspace):
     caching.cache = None
 
 
-@pytest.fixture(autouse=True)
-def _unset_notebooker_environ(config):
-    """Remove Notebooker values from os.environ after each test."""
-    yield
-    for attribute in dir(config):
-        if attribute.startswith("_"):
-            continue
-        os.environ.pop(attribute, None)
+#
+# @pytest.fixture(autouse=True)
+# def _unset_notebooker_environ(config):
+#     """Remove Notebooker values from os.environ after each test."""
+#     yield
+#     for attribute in dir(config):
+#         if attribute.startswith("_"):
+#             continue
+#         os.environ.pop(attribute, None)
