@@ -88,7 +88,6 @@ setup(
             "notebooker_template_sanity_check = notebooker.utils.template_testing:sanity_check",
             "notebooker_template_regression_test = notebooker.utils.template_testing:regression_test",
             "convert_ipynb_to_py = notebooker.convert_to_py:main",
-            "snapshot_latest_successful_notebooks = notebooker.snapshot:snapshot_latest_successful_notebooks",
         ]
     },
     classifiers=[

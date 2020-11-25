@@ -2,8 +2,6 @@ import errno
 import os
 from logging import getLogger
 
-import click
-
 from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.results import get_latest_successful_job_results_all_params
 

@@ -1,14 +1,14 @@
 import click
 from pymongo import MongoClient
 
-from notebooker.constants import DEFAULT_MONGO_DB_NAME, DEFAULT_MONGO_HOST, DEFAULT_RESULT_COLLECTION_NAME
+from notebooker.constants import DEFAULT_DATABASE_NAME, DEFAULT_MONGO_HOST, DEFAULT_RESULT_COLLECTION_NAME
 from notebooker.serialization.mongo import MongoResultSerializer
 
 
 @click.command()
 @click.option(
-    "--mongo-db-name",
-    default=DEFAULT_MONGO_DB_NAME,
+    "--database-name",
+    default=DEFAULT_DATABASE_NAME,
     help="The mongo database name to which we will save the notebook result.",
 )
 @click.option(
@@ -28,19 +28,21 @@ def cli_options():
 class PyMongoResultSerializer(MongoResultSerializer, cli_options=cli_options):
     def __init__(
         self,
-        user=None,
-        password=None,
+        mongo_user=None,
+        mongo_password=None,
         database_name="notebooker",
         mongo_host="localhost",
         result_collection_name="NOTEBOOK_OUTPUT",
         **kwargs,
     ):
-        self.user = user or None
-        self.password = password or None
+        self.mongo_user = mongo_user or None
+        self.mongo_password = mongo_password or None
         super(PyMongoResultSerializer, self).__init__(database_name, mongo_host, result_collection_name)
 
     def get_mongo_database(self):
-        return MongoClient(self.mongo_host, username=self.user, password=self.password).get_database(self.mongo_db_name)
+        return MongoClient(self.mongo_host, username=self.mongo_user, password=self.mongo_password).get_database(
+            self.database_name
+        )
 
 
 name = PyMongoResultSerializer.get_name()

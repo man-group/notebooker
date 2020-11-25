@@ -43,8 +43,23 @@ def filesystem_default_value(dirname):
     help="The base directory to which we will save our notebook templates which have been converted "
     "from .py to .ipynb.",
 )
-@click.option("--py-template-dir", default=None)
-@click.option("--git-repo-template-subdir", default="")
+@click.option(
+    "--py-template-base-dir",
+    default=None,
+    help="The base directory of the git repository which holds the notebook templates as .py files. "
+    "If not specified, this will default to the sample directory within notebooker.",
+)
+@click.option(
+    "--py-template-subdir",
+    default=None,
+    help="The subdirectory of the git repository which contains only notebook templates.",
+)
+@click.option(
+    "--notebooker-disable-git",
+    default=False,
+    is_flag=True,
+    help="If selected, notebooker will not try to pull the latest version of python templates from git.",
+)
 @click.option(
     "--serializer-cls",
     default=DEFAULT_SERIALIZER,
@@ -56,8 +71,9 @@ def base_notebooker(
     notebook_kernel_name,
     output_base_dir,
     template_base_dir,
-    py_template_dir,
-    git_repo_template_subdir,
+    py_template_base_dir,
+    py_template_subdir,
+    notebooker_disable_git,
     serializer_cls,
     **serializer_args,
 ):
@@ -67,8 +83,9 @@ def base_notebooker(
         NOTEBOOK_KERNEL_NAME=notebook_kernel_name,
         OUTPUT_DIR=output_base_dir,
         TEMPLATE_DIR=template_base_dir,
-        PY_TEMPLATE_DIR=py_template_dir,
-        GIT_REPO_TEMPLATE_DIR=git_repo_template_subdir,
+        PY_TEMPLATE_BASE_DIR=py_template_base_dir,
+        PY_TEMPLATE_SUBDIR=py_template_subdir,
+        NOTEBOOKER_DISABLE_GIT=notebooker_disable_git,
     )
     ctx.obj = config
 
@@ -78,15 +95,13 @@ def base_notebooker(
 @click.option("--logging-level", default="INFO")
 @click.option("--debug", default=False)
 @click.option("--base-cache-dir", default=filesystem_default_value("webcache"))
-@click.option("--notebooker-disable-git", default=False, is_flag=True)
 @pass_config
-def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir, notebooker_disable_git):
+def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
     web_config.LOGGING_LEVEL = logging_level
     web_config.DEBUG = debug
     web_config.CACHE_DIR = base_cache_dir
-    web_config.NOTEBOOKER_DISABLE_GIT = notebooker_disable_git
     return main(web_config)
 
 

@@ -25,8 +25,8 @@ installed, should be added to that folder.
 
 For Notebooker to use a your checked-out repository, set two environment variables:
 
-* Set :code:`PY_TEMPLATE_DIR` to the checked-out repository
-* Set :code:`GIT_REPO_TEMPLATE_DIR` to the subdirectory within your git repo which contains the templates
+* Set :code:`PY_TEMPLATE_BASE_DIR` to the checked-out repository
+* Set :code:`PY_TEMPLATE_SUBDIR` to the subdirectory within your git repo which contains the templates
 
 Adding parameters
 -----------------

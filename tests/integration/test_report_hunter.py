@@ -4,16 +4,8 @@ import uuid
 import freezegun
 import pytest
 
-from notebooker.constants import (
-    JobStatus,
-    NotebookResultComplete,
-    NotebookResultError,
-    NotebookResultPending,
-    DEFAULT_SERIALIZER,
-)
+from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
 from notebooker.serialization.serialization import initialize_serializer_from_config
-from notebooker.serializers.pymongo import PyMongoResultSerializer
-from notebooker.settings import WebappConfig
 from notebooker.utils.caching import get_report_cache
 from notebooker.utils.filesystem import initialise_base_dirs
 from notebooker.web.report_hunter import _report_hunter
@@ -24,25 +16,8 @@ def clean_file_cache(clean_file_cache):
     """Set up cache encironment."""
 
 
-@pytest.fixture()
-def webapp_config(mongo_host, test_db_name, test_lib_name, template_dir, cache_dir, output_dir):
-    return WebappConfig(
-        CACHE_DIR=cache_dir,
-        OUTPUT_DIR=output_dir,
-        TEMPLATE_DIR=template_dir,
-        SERIALIZER_CLS=DEFAULT_SERIALIZER,
-        SERIALIZER_CONFIG={
-            "mongo_host": mongo_host,
-            "database_name": test_db_name,
-            "result_collection_name": test_lib_name,
-        },
-    )
-
-
 def test_report_hunter_with_nothing(bson_library, webapp_config):
-    _report_hunter(
-        webapp_config=webapp_config, run_once=True,
-    )
+    _report_hunter(webapp_config=webapp_config, run_once=True)
 
 
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
@@ -52,9 +27,7 @@ def test_report_hunter_with_one(bson_library, webapp_config):
     job_id = str(uuid.uuid4())
     report_name = str(uuid.uuid4())
     serializer.save_check_stub(job_id, report_name)
-    _report_hunter(
-        webapp_config=webapp_config, run_once=True,
-    )
+    _report_hunter(webapp_config=webapp_config, run_once=True)
     expected = NotebookResultPending(
         job_id=job_id,
         report_name=report_name,
@@ -73,9 +46,7 @@ def test_report_hunter_with_status_change(bson_library, webapp_config):
     report_name = str(uuid.uuid4())
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 30)):
         serializer.save_check_stub(job_id, report_name)
-        _report_hunter(
-            webapp_config=webapp_config, run_once=True,
-        )
+        _report_hunter(webapp_config=webapp_config, run_once=True)
         expected = NotebookResultPending(
             job_id=job_id,
             report_name=report_name,
@@ -131,9 +102,7 @@ def test_report_hunter_timeout(bson_library, status, time_later, should_timeout,
 
     time_now += time_later
     with freezegun.freeze_time(time_now):
-        _report_hunter(
-            webapp_config=webapp_config, run_once=True,
-        )
+        _report_hunter(webapp_config=webapp_config, run_once=True)
 
         if should_timeout:
             mins = (time_later.total_seconds() / 60) - 1
@@ -161,9 +130,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
 
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 30)):
         serializer.save_check_stub(job_id, report_name, status=JobStatus.SUBMITTED)
-        _report_hunter(
-            webapp_config=webapp_config, run_once=True,
-        )
+        _report_hunter(webapp_config=webapp_config, run_once=True)
         expected = NotebookResultPending(
             job_id=job_id,
             report_name=report_name,
@@ -176,9 +143,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
 
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 32)):
         serializer.update_check_status(job_id, JobStatus.PENDING)
-        _report_hunter(
-            webapp_config=webapp_config, run_once=True,
-        )
+        _report_hunter(webapp_config=webapp_config, run_once=True)
 
         expected = NotebookResultPending(
             job_id=job_id,
@@ -200,9 +165,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
             raw_ipynb_json="[]",
             raw_html="",
         )
-        _report_hunter(
-            webapp_config=webapp_config, run_once=True,
-        )
+        _report_hunter(webapp_config=webapp_config, run_once=True)
 
         expected = NotebookResultComplete(
             job_id=job_id,

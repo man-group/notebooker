@@ -3,6 +3,7 @@ import sys
 
 import mock
 
+from notebooker.constants import DEFAULT_SERIALIZER
 from notebooker.web.routes.run_report import _monitor_stderr
 
 
@@ -20,8 +21,8 @@ This is going to stderr a bit later
 """
     p = subprocess.Popen([sys.executable, "-c", dummy_process], stderr=subprocess.PIPE)
 
-    with mock.patch("notebooker.web.routes.run_report.get_fresh_serializer") as serializer:
-        stderr_output = _monitor_stderr(p, "abc123")
+    with mock.patch("notebooker.web.routes.run_report.get_serializer_from_cls") as serializer:
+        stderr_output = _monitor_stderr(p, "abc123", DEFAULT_SERIALIZER, {})
     assert stderr_output == expected_output
 
     serializer().update_stdout.assert_has_calls(

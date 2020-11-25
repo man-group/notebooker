@@ -1,21 +1,13 @@
 import datetime
-
-import click
-from builtins import object
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 
+import click
 import gridfs
 import pymongo
 from gridfs import NoFile
 
-from notebooker.constants import (
-    JobStatus,
-    NotebookResultBase,
-    NotebookResultComplete,
-    NotebookResultError,
-    NotebookResultPending,
-)
+from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
 
 logger = getLogger(__name__)
 
@@ -23,8 +15,8 @@ logger = getLogger(__name__)
 class MongoResultSerializer:
     # This class is the interface between Mongo and the rest of the application
 
-    def __init__(self, mongo_db_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
-        self.mongo_db_name = mongo_db_name
+    def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
+        self.database_name = database_name
         self.mongo_host = mongo_host
         self.result_collection_name = result_collection_name
         mongo_connection = self.get_mongo_database()
@@ -41,7 +33,17 @@ class MongoResultSerializer:
         super().__init_subclass__(**kwargs)
 
     def serializer_args_to_cmdline_args(self) -> List[str]:
-        return [x for p in self.cli_options.params for x in [p.opts[0], getattr(self, p.name)]]
+        args = []
+        for cli_arg in self.cli_options.params:
+            if not hasattr(self, cli_arg.name):
+                raise ValueError(
+                    "The Serializer class must have attributes which are named the same as the click "
+                    "options, e.g. --mongo-database should have a 'mongo_database' attribute"
+                )
+            opt, value = cli_arg.opts[0], getattr(self, cli_arg.name)
+            if value is not None:
+                args.extend([opt, value])
+        return args
 
     @classmethod
     def get_name(cls):

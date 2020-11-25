@@ -18,9 +18,12 @@ class BaseConfig:
     OUTPUT_DIR: str = ""
 
     # The directory of the Notebook Templates checked-out git repository.
-    PY_TEMPLATE_DIR: str = ""
+    PY_TEMPLATE_BASE_DIR: str = ""
     # The subdirectory within the Notebook Templates git repo which holds notebook templates.
-    GIT_REPO_TEMPLATE_DIR: str = ""
+    PY_TEMPLATE_SUBDIR: str = ""
+    # A boolean flag to dictate whether we should pull from git master every time we try to run a report
+    # or list the available templates.
+    NOTEBOOKER_DISABLE_GIT: bool = False
 
     # The serializer class we are using for storage, e.g. PyMongoResultSerializer
     SERIALIZER_CLS: DEFAULT_SERIALIZER = None
@@ -41,7 +44,3 @@ class WebappConfig(BaseConfig):
     # The temporary directory which will contain the .ipynb templates which have been converted from the .py templates.
     # Defaults to a random directory in ~/.notebooker/webcache.
     CACHE_DIR: str = ""
-
-    # A boolean flag to dictate whether we should pull from git master every time we try to run a report
-    # or list the available templates.
-    NOTEBOOKER_DISABLE_GIT: bool = False

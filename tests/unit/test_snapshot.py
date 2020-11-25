@@ -4,13 +4,14 @@ import mock
 from click.testing import CliRunner
 
 from notebooker import constants, snapshot
+from notebooker._entrypoints import base_notebooker
 
 
 def test_snapshot_latest_successful_notebooks():
     compat_builtin = "builtins.open"
     with mock.patch(compat_builtin) as fopen:
         with mock.patch("notebooker.snapshot.get_latest_successful_job_results_all_params") as get_results:
-            with mock.patch("notebooker.snapshot.get_serializer_from_cls") as nbs:
+            with mock.patch("notebooker.snapshot.get_serializer_from_cls"):
                 result = mock.Mock(spec=constants.NotebookResultComplete)
                 result.overrides = {"over": "ride"}
                 result.raw_html = "some html"
@@ -21,11 +22,17 @@ def test_snapshot_latest_successful_notebooks():
                 runner = CliRunner()
 
                 cli_result = runner.invoke(
-                    snapshot.snapshot_latest_successful_notebooks,
-                    ["--report-name", report_name, "--output-directory", output_dir],
+                    base_notebooker,
+                    [
+                        "--output-base-dir",
+                        output_dir,
+                        "snapshot_latest_successful_notebooks",
+                        "--report-name",
+                        report_name,
+                    ],
                 )
 
-                assert cli_result.exit_code == 0
+                assert not cli_result.exception
                 fopen.assert_any_call("html_output_dir/test_report/over_ride.html", "w")
                 fopen().__enter__().write.assert_any_call("some html")
                 fopen.assert_any_call("html_output_dir/test_report/out/put/img.png", "wb")

@@ -1,14 +1,12 @@
 from __future__ import unicode_literals
 
 import mock
-import os
-
 from click.testing import CliRunner
 from nbformat import NotebookNode
 from nbformat import __version__ as nbv
 
-from notebooker import execute_notebook
-from notebooker.constants import NotebookResultComplete
+from notebooker._entrypoints import base_notebooker
+from notebooker.constants import NotebookResultComplete, DEFAULT_SERIALIZER
 from notebooker.serializers.pymongo import PyMongoResultSerializer
 
 
@@ -31,21 +29,21 @@ def test_main(mongo_host):
         exec_nb.side_effect = mock_nb_execute
         job_id = "ttttteeeesssstttt"
         runner = CliRunner()
-        # usually the parent process calls this and sets up the environment, then also explicitly passes
-        # values on the CLI
-        setup_env_vars()
         cli_result = runner.invoke(
+            base_notebooker,
             [
-                "notebooker_cli",
+                "--serializer-cls",
+                DEFAULT_SERIALIZER,
                 "--mongo-host",
                 mongo_host,
-                "execute_report",
+                "execute_notebook",
                 "--report-name",
                 "test_report",
                 "--job-id",
                 job_id,
-            ]
+            ],
         )
+        assert not cli_result.exception, cli_result.output
         assert cli_result.exit_code == 0
         serializer = PyMongoResultSerializer(
             mongo_host=mongo_host, database_name="notebooker", result_collection_name="NOTEBOOK_OUTPUT"

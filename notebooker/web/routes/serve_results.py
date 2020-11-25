@@ -14,10 +14,9 @@ from notebooker.constants import (
 )
 from notebooker.serialization.mongo import _pdf_filename
 from notebooker.web.routes.pending_results import task_loading
-from notebooker.web.utils import get_serializer, _params_from_request_args
+from notebooker.web.utils import get_serializer, _params_from_request_args, get_all_possible_templates
 from notebooker.utils.conversion import get_resources_dir
 from notebooker.utils.results import _get_job_results, get_latest_job_results, get_latest_successful_job_results
-from notebooker.utils.templates import get_all_possible_templates
 from notebooker.utils.web import convert_report_name_path_to_url, convert_report_name_url_to_path
 
 serve_results_bp = Blueprint("serve_results_bp", __name__)

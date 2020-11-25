@@ -3,8 +3,7 @@ import traceback
 from flask import Blueprint, current_app, request, render_template, url_for, jsonify
 from notebooker.constants import JobStatus
 from notebooker.utils.results import get_all_result_keys
-from notebooker.utils.templates import get_all_possible_templates
-from notebooker.web.utils import get_serializer
+from notebooker.web.utils import get_serializer, get_all_possible_templates
 
 index_bp = Blueprint("index_bp", __name__)
 

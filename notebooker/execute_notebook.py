@@ -4,18 +4,24 @@ import json
 import logging
 import os
 import subprocess
-import sys
 import traceback
 import uuid
 from typing import Any, AnyStr, Dict, List, Optional, Union
 
 import papermill as pm
+import sys
 
-from notebooker.constants import CANCEL_MESSAGE, JobStatus, NotebookResultComplete, NotebookResultError
+from notebooker.constants import (
+    CANCEL_MESSAGE,
+    JobStatus,
+    NotebookResultComplete,
+    NotebookResultError,
+    python_template_dir,
+)
 from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.settings import BaseConfig
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
-from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
+from notebooker.utils.filesystem import initialise_base_dirs
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
 
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +39,9 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     mailto: Optional[str] = "",
     prepare_only: Optional[bool] = False,
+    notebooker_disable_git: bool = False,
+    py_template_base_dir: str = "",
+    py_template_subdir: str = "",
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -79,7 +88,8 @@ def _run_checks(
         logger.info("Making dir @ {}".format(output_dir))
         os.makedirs(output_dir)
 
-    ipynb_raw_path = generate_ipynb_from_py(template_base_dir, template_name)
+    py_template_dir = python_template_dir(py_template_base_dir, py_template_subdir)
+    ipynb_raw_path = generate_ipynb_from_py(template_base_dir, template_name, notebooker_disable_git, py_template_dir)
     ipynb_executed_path = os.path.join(output_dir, output_ipynb)
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
@@ -123,6 +133,9 @@ def run_report(
     mailto="",
     generate_pdf_output=True,
     prepare_only=False,
+    notebooker_disable_git=False,
+    py_template_base_dir="",
+    py_template_subdir="",
 ):
 
     job_id = job_id or str(uuid.uuid4())
@@ -152,6 +165,9 @@ def run_report(
             mailto=mailto,
             generate_pdf_output=generate_pdf_output,
             prepare_only=prepare_only,
+            notebooker_disable_git=notebooker_disable_git,
+            py_template_base_dir=py_template_base_dir,
+            py_template_subdir=py_template_subdir,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -171,7 +187,7 @@ def run_report(
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
-            result_serializer.mongo_db_name,
+            result_serializer.database_name,
             result_serializer.mongo_host,
         )
         result_serializer.save_check_result(result)
@@ -191,6 +207,9 @@ def run_report(
                 mailto=mailto,
                 generate_pdf_output=generate_pdf_output,
                 prepare_only=prepare_only,
+                notebooker_disable_git=notebooker_disable_git,
+                py_template_base_dir=py_template_base_dir,
+                py_template_subdir=py_template_subdir,
             )
         else:
             logger.info("Abandoning attempt to run report. It failed too many times.")
@@ -278,6 +297,9 @@ def execute_notebook_entrypoint(
     report_title = report_title or report_name
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
     all_overrides = _get_overrides(overrides_as_json, iterate_override_values_of)
+    notebooker_disable_git = config.NOTEBOOKER_DISABLE_GIT
+    py_template_base_dir = config.PY_TEMPLATE_BASE_DIR
+    py_template_subdir = config.PY_TEMPLATE_SUBDIR
 
     start_time = datetime.datetime.now()
     logger.info("Running a report with these parameters:")
@@ -292,6 +314,11 @@ def execute_notebook_entrypoint(
     logger.info("mailto = %s", mailto)
     logger.info("pdf_output = %s", pdf_output)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
+    logger.info("notebooker_disable_git = %s", notebooker_disable_git)
+    logger.info("py_template_base_dir = %s", py_template_base_dir)
+    logger.info("py_template_subdir = %s", py_template_subdir)
+    logger.info("serializer_cls = %s", config.SERIALIZER_CLS)
+    logger.info("serializer_config = %s", config.SERIALIZER_CONFIG)
 
     logger.info("Calculated overrides are: %s", str(all_overrides))
     result_serializer = get_serializer_from_cls(config.SERIALIZER_CLS, **config.SERIALIZER_CONFIG)
@@ -310,6 +337,9 @@ def execute_notebook_entrypoint(
             mailto=mailto,
             generate_pdf_output=pdf_output,
             prepare_only=prepare_notebook_only,
+            notebooker_disable_git=notebooker_disable_git,
+            py_template_base_dir=py_template_base_dir,
+            py_template_subdir=py_template_subdir,
         )
         if mailto:
             send_result_email(result, mailto)
@@ -341,7 +371,4 @@ def docker_compose_entrypoint():
     args_to_execute = [sys.executable, "-m", __name__] + sys.argv[1:]
     logger.info("Received a request to run a report with the following parameters:")
     logger.info(args_to_execute)
-    try:
-        subprocess.Popen(args_to_execute).wait()
-    finally:
-        _cleanup_dirs()
+    subprocess.Popen(args_to_execute).wait()

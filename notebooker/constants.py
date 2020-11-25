@@ -8,17 +8,15 @@ import attr
 
 SUBMISSION_TIMEOUT = 3
 RUNNING_TIMEOUT = 60
-NOTEBOOKER_TEMPLATE_GIT_URL = os.getenv("NOTEBOOKER_TEMPLATE_GIT_URL")
-NOTEBOOKER_DISABLE_GIT = os.getenv("NOTEBOOKER_DISABLE_GIT")
 CANCEL_MESSAGE = "The webapp shut down while this job was running. Please resubmit with the same parameters."
 TEMPLATE_DIR_SEPARATOR = "^"
 DEFAULT_SERIALIZER = "PyMongoResultSerializer"
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_MONGO_DB_NAME = "notebooker"
+DEFAULT_DATABASE_NAME = "notebooker"
 DEFAULT_MONGO_HOST = "localhost"
-DEFAULT_RESULT_COLLECTION_NAME = "notebook_results"
+DEFAULT_RESULT_COLLECTION_NAME = "NOTEBOOK_OUTPUT"
 
 
 def kernel_spec():
@@ -29,9 +27,9 @@ def kernel_spec():
     }
 
 
-def python_template_dir() -> Optional[str]:
-    if os.getenv("PY_TEMPLATE_DIR"):
-        return os.path.join(os.environ["PY_TEMPLATE_DIR"], os.environ.get("GIT_REPO_TEMPLATE_DIR", ""))
+def python_template_dir(py_template_base_dir, py_template_subdir) -> Optional[str]:
+    if py_template_base_dir:
+        return os.path.join(py_template_base_dir, py_template_subdir or "")
     return None
 
 

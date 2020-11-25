@@ -12,8 +12,9 @@ def get_serializer_from_cls(serializer_cls: str, **kwargs: dict) -> MongoResultS
     serializer = ALL_SERIALIZERS.get(serializer_cls)
     if serializer is None:
         raise ValueError(f"Unsupported serializer {serializer_cls}. Supported: {list(ALL_SERIALIZERS)}")
-    logger.info(f"Initialising {serializer_cls} with args: {kwargs}")
-    return serializer(**kwargs)
+    kw = {k.lower(): v for (k, v) in kwargs.items()}
+    logger.info(f"Initialising {serializer_cls} with args: {kw}")
+    return serializer(**kw)
 
 
 def get_serializer_from_flask_session() -> MongoResultSerializer:

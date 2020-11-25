@@ -8,32 +8,26 @@ from click.testing import CliRunner
 
 from notebooker import convert_to_py
 from notebooker.utils import conversion
-from notebooker.utils.caching import get_cache, set_cache
-from notebooker.utils.conversion import convert_report_path_into_name, _output_ipynb_name
-from notebooker.utils.filesystem import _cleanup_dirs
-
-from tests.utils import setup_and_cleanup_notebooker_filesystem
+from notebooker.utils.caching import set_cache
+from notebooker.utils.conversion import _output_ipynb_name
 
 
-@setup_and_cleanup_notebooker_filesystem
-def test_generate_ipynb_from_py():
-    python_dir = tempfile.mkdtemp()
-    try:
+def test_generate_ipynb_from_py(setup_and_cleanup_notebooker_filesystem, webapp_config, flask_app):
+    python_dir = webapp_config.PY_TEMPLATE_BASE_DIR
+    with flask_app.app_context():
         set_cache("latest_sha", "fake_sha_early")
 
         os.mkdir(python_dir + "/extra_path")
         with open(os.path.join(python_dir, "extra_path", "test_report.py"), "w") as f:
             f.write("#hello world\n")
         report_path = os.sep.join(["extra_path", "test_report"])
-        with mock.patch("notebooker.utils.conversion._git_pull_templates") as pull:
-            conversion.python_template_dir = lambda *a, **kw: python_dir
-            pull.return_value = "fake_sha_early"
-            conversion.generate_ipynb_from_py(python_dir, report_path)
-            pull.return_value = "fake_sha_later"
-            conversion.generate_ipynb_from_py(python_dir, report_path)
-            conversion.generate_ipynb_from_py(python_dir, report_path)
+        with mock.patch("notebooker.utils.conversion.git.repo.Repo") as repo:
+            repo().commit().hexsha = "fake_sha_early"
+            conversion.generate_ipynb_from_py(python_dir, report_path, False, python_dir)
+            repo().commit().hexsha = "fake_sha_later"
+            conversion.generate_ipynb_from_py(python_dir, report_path, False, python_dir)
+            conversion.generate_ipynb_from_py(python_dir, report_path, False, python_dir)
 
-        assert get_cache("latest_sha") == "fake_sha_later"
         expected_filename = _output_ipynb_name(report_path)
         expected_ipynb_path = os.path.join(python_dir, "fake_sha_early", expected_filename)
         assert os.path.exists(expected_ipynb_path), f".ipynb at {expected_ipynb_path} was not generated as expected!"
@@ -45,7 +39,7 @@ def test_generate_ipynb_from_py():
                 conversion.python_template_dir = lambda *a, **kw: None
                 uuid4.return_value = "uuid"
                 resource_filename.return_value = python_dir + "/extra_path/test_report.py"
-                conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report")
+                conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report", False, py_template_dir="")
 
         expected_ipynb_path = os.path.join(python_dir, "uuid", expected_filename)
         assert os.path.exists(expected_ipynb_path), f".ipynb at {expected_ipynb_path} was not generated as expected!"
@@ -54,14 +48,10 @@ def test_generate_ipynb_from_py():
             conversion.python_template_dir = lambda *a, **kw: python_dir
             conversion.NOTEBOOKER_DISABLE_GIT = True
             uuid4.return_value = "uuid_nogit"
-            conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report")
+            conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report", True, py_template_dir=python_dir)
 
         expected_ipynb_path = os.path.join(python_dir, "uuid_nogit", expected_filename)
         assert os.path.exists(expected_ipynb_path), ".ipynb was not generated as expected!"
-
-    finally:
-        _cleanup_dirs()
-        shutil.rmtree(python_dir)
 
 
 def test_generate_py_from_ipynb():
@@ -113,36 +103,3 @@ def test_generate_py_from_ipynb():
     finally:
         shutil.rmtree(ipynb_dir)
         shutil.rmtree(py_dir)
-
-
-@mock.patch("notebooker.utils.conversion.set_cache")
-@mock.patch("notebooker.utils.conversion.get_cache")
-@mock.patch("notebooker.utils.conversion._git_pull_templates")
-@mock.patch("notebooker.utils.conversion.uuid.uuid4")
-def test__get_output_path_hex(uuid4, pull, get_cache, set_cache):
-    # No-git path
-    conversion.python_template_dir = lambda *a, **kw: None
-    uuid4.return_value = mock.sentinel.uuid4
-    actual = conversion._get_output_path_hex()
-    assert actual == str(mock.sentinel.uuid4)
-
-    # Git path set new SHA
-    conversion.python_template_dir = lambda *a, **kw: mock.sentinel.pydir
-    conversion.NOTEBOOKER_DISABLE_GIT = False
-    pull.return_value = mock.sentinel.newsha
-    get_cache.return_value = mock.sentinel.newsha2
-    actual = conversion._get_output_path_hex()
-    assert actual == mock.sentinel.newsha2
-    set_cache.assert_called_once_with("latest_sha", mock.sentinel.newsha)
-
-    # Git path old SHA
-    get_cache.return_value = None
-    actual = conversion._get_output_path_hex()
-    assert actual == "OLD"
-
-    # Git path same SHA
-    get_cache.return_value = pull.return_value = mock.sentinel.samesha
-    set_cache.reset_mock()
-    actual = conversion._get_output_path_hex()
-    assert actual == mock.sentinel.samesha
-    assert not set_cache.called

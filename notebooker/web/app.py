@@ -94,8 +94,6 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
     flask_app.config.update(
         TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
     )
-    logger.info(f"HELLO WORLD {flask_app.config}")
-    start_app(web_config)
     return flask_app
 
 
@@ -104,6 +102,7 @@ def main(web_config: WebappConfig):
     GLOBAL_CONFIG = web_config
     flask_app = create_app()
     flask_app = setup_app(flask_app, web_config)
+    start_app(web_config)
     logger.info("Notebooker is now running at http://0.0.0.0:%d", web_config.PORT)
     http_server = WSGIServer(("0.0.0.0", web_config.PORT), flask_app)
     http_server.serve_forever()
