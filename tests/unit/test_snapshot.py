@@ -26,13 +26,13 @@ def test_snapshot_latest_successful_notebooks():
                     [
                         "--output-base-dir",
                         output_dir,
-                        "snapshot_latest_successful_notebooks",
+                        "snapshot-latest-successful-notebooks",
                         "--report-name",
                         report_name,
                     ],
                 )
 
-                assert not cli_result.exception
+                assert not cli_result.exception, cli_result.output
                 fopen.assert_any_call("html_output_dir/test_report/over_ride.html", "w")
                 fopen().__enter__().write.assert_any_call("some html")
                 fopen.assert_any_call("html_output_dir/test_report/out/put/img.png", "wb")

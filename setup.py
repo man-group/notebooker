@@ -63,7 +63,7 @@ setup(
         "jupytext>=1.2.0",
         "ipykernel",
         "stashy",
-        "click",
+        "click>7.1.0",
         "python-dateutil",
         "flask",
         "requests",

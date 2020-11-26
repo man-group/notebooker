@@ -158,7 +158,7 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
         + ["--serializer-cls", result_serializer.__class__.__name__]
         + result_serializer.serializer_args_to_cmdline_args()
         + [
-            "execute_notebook",
+            "execute-notebook",
             "--job-id",
             job_id,
             "--report-name",

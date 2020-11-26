@@ -36,7 +36,7 @@ def test_main(mongo_host):
                 DEFAULT_SERIALIZER,
                 "--mongo-host",
                 mongo_host,
-                "execute_notebook",
+                "execute-notebook",
                 "--report-name",
                 "test_report",
                 "--job-id",
