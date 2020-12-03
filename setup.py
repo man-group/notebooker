@@ -83,7 +83,7 @@ setup(
     tests_require=test_requirements,
     entry_points={
         "console_scripts": [
-            "notebooker_cli = notebooker._entrypoints:base_notebooker",
+            "notebooker-cli = notebooker._entrypoints:base_notebooker",
             "notebooker_execute = notebooker.execute_notebook:docker_compose_entrypoint",
             "notebooker_template_sanity_check = notebooker.utils.template_testing:sanity_check",
             "notebooker_template_regression_test = notebooker.utils.template_testing:regression_test",

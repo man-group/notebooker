@@ -144,7 +144,7 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
     app_config = current_app.config
     p = subprocess.Popen(
         [
-            "notebooker_cli",
+            "notebooker-cli",
             "--output-base-dir",
             get_output_dir(),
             "--template-base-dir",

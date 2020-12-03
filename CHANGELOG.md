@@ -3,7 +3,7 @@
 Support for database plugins and tidying up configuration to be consistent across the board.
 
 **Breaking changes**
-* 3 primary entrypoints have been consolidated under one - notebooker_cli, e.g. `notebooker_cli start-webapp` and `notebooker_cli execute-notebook`. Run notebooker_cli --help for more info. 
+* 3 primary entrypoints have been consolidated under one - notebooker-cli, e.g. `notebooker-cli start-webapp` and `notebooker-cli execute-notebook`. Run notebooker-cli --help for more info. 
 * In config, PY_TEMPLATE_DIR has been renamed to PY_TEMPLATE_BASE_DIR
 * In config, GIT_REPO_TEMPLATE_DIR has been renamed to PY_TEMPLATE_SUBDIR
 
