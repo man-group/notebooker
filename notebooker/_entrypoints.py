@@ -17,7 +17,7 @@ class NotebookerEntrypoint(click.Group):
             serializer_arg = args.index("--serializer-cls")
             serializer = args[serializer_arg + 1]
         except ValueError:
-            serializer = "PyMongoResultSerializer"
+            serializer = DEFAULT_SERIALIZER
         self.params += SERIALIZER_TO_CLI_OPTIONS[serializer].params
 
         return super().parse_args(ctx, args)
