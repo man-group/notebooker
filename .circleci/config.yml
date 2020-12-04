@@ -129,6 +129,17 @@ defaults: &defaults
     #     name: Build Docker image
     #     command: docker build -t $IMAGE_NAME:latest .
     # Save test results
+    - run:
+        name: Upload to PyPI
+        command: |
+          set -e
+          if [ "$CIRCLE_BRANCH" = "master" ]; then
+            . ci/bin/activate
+            pip install twine
+            export TWINE_USERNAME='__token__'
+            export TWINE_PASSWORD=$PYPI_TOKEN
+            twine upload --skip-existing dist/*
+          fi
     - store_test_results:
         path: test-results
     # Save artifacts
