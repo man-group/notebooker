@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from notebooker.utils.results import get_all_available_results_json
-from notebooker.utils.templates import get_all_possible_templates
-from notebooker.web.utils import get_serializer
+from notebooker.web.utils import get_serializer, get_all_possible_templates
 
 core_bp = Blueprint("core_bp", __name__)
 

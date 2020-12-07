@@ -1,52 +1,33 @@
+# FIXME move to notebooker/web
 import errno
 import logging
 import os
 import shutil
 import uuid
 
+from flask import current_app
+
+from notebooker.settings import WebappConfig
+
 logger = logging.getLogger(__name__)
 
 
-def initialise_base_dirs(output_dir=None, template_dir=None, cache_dir=None):
-    output_dir = (
-        output_dir
-        or os.getenv("OUTPUT_DIR")
-        or os.path.join(os.path.expanduser("~"), ".notebooker", "output", str(uuid.uuid4()))
-    )
-    logger.info("Creating output base dir: %s", output_dir)
-    mkdir_p(output_dir)
-    os.environ["OUTPUT_DIR"] = output_dir
+def initialise_base_dirs(webapp_config: WebappConfig = None, output_dir=None, template_dir=None, cache_dir=None):
+    output_dir = output_dir or (webapp_config.OUTPUT_DIR if webapp_config else None)
+    if output_dir:
+        logger.info("Creating output base dir: %s", output_dir)
+        mkdir_p(output_dir)
 
-    template_dir = (
-        template_dir
-        or os.getenv("TEMPLATE_DIR")
-        or os.path.join(os.path.expanduser("~"), ".notebooker", "templates", str(uuid.uuid4()))
-    )
-    logger.info("Creating templates base dir: %s", template_dir)
-    mkdir_p(template_dir)
-    os.environ["TEMPLATE_DIR"] = template_dir
+    template_dir = template_dir or (webapp_config.TEMPLATE_DIR if webapp_config else None)
+    if template_dir:
+        logger.info("Creating templates base dir: %s", template_dir)
+        mkdir_p(template_dir)
 
-    cache_dir = (
-        cache_dir
-        or os.getenv("CACHE_DIR")
-        or os.path.join(os.path.expanduser("~"), ".notebooker", "webcache", str(uuid.uuid4()))
-    )
-    logger.info("Creating webcache dir: %s", cache_dir)
-    mkdir_p(cache_dir)
-    os.environ["CACHE_DIR"] = cache_dir
+    cache_dir = cache_dir or (webapp_config.CACHE_DIR if webapp_config else None)
+    if cache_dir:
+        logger.info("Creating webcache dir: %s", cache_dir)
+        mkdir_p(cache_dir)
     return output_dir, template_dir, cache_dir
-
-
-def get_output_dir():
-    return os.getenv("OUTPUT_DIR")
-
-
-def get_template_dir():
-    return os.getenv("TEMPLATE_DIR")
-
-
-def get_cache_dir():
-    return os.getenv("CACHE_DIR")
 
 
 def mkdir_p(path):
@@ -59,8 +40,20 @@ def mkdir_p(path):
             raise
 
 
-def _cleanup_dirs():
-    for d in (get_output_dir(), get_template_dir(), get_cache_dir()):
+def get_cache_dir():
+    return current_app.config["CACHE_DIR"]
+
+
+def get_output_dir():
+    return current_app.config["OUTPUT_DIR"]
+
+
+def get_template_dir():
+    return current_app.config["TEMPLATE_DIR"]
+
+
+def _cleanup_dirs(webapp_config):
+    for d in (webapp_config.OUTPUT_DIR, webapp_config.TEMPLATE_DIR, webapp_config.CACHE_DIR):
         if d and os.path.exists(d):
             logger.info("Cleaning up %s", d)
             shutil.rmtree(d)

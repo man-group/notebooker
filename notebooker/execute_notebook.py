@@ -4,18 +4,24 @@ import json
 import logging
 import os
 import subprocess
-import sys
 import traceback
 import uuid
-from typing import Any, AnyStr, Dict, List, Optional
+from typing import Any, AnyStr, Dict, List, Optional, Union
 
-import click
 import papermill as pm
+import sys
 
-from notebooker.constants import CANCEL_MESSAGE, JobStatus, NotebookResultComplete, NotebookResultError
-from notebooker.serialization.serialization import Serializer, get_serializer_from_cls
+from notebooker.constants import (
+    CANCEL_MESSAGE,
+    JobStatus,
+    NotebookResultComplete,
+    NotebookResultError,
+    python_template_dir,
+)
+from notebooker.serialization.serialization import get_serializer_from_cls
+from notebooker.settings import BaseConfig
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
-from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
+from notebooker.utils.filesystem import initialise_base_dirs
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
 
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +39,9 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     mailto: Optional[str] = "",
     prepare_only: Optional[bool] = False,
+    notebooker_disable_git: bool = False,
+    py_template_base_dir: str = "",
+    py_template_subdir: str = "",
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -79,7 +88,8 @@ def _run_checks(
         logger.info("Making dir @ {}".format(output_dir))
         os.makedirs(output_dir)
 
-    ipynb_raw_path = generate_ipynb_from_py(template_base_dir, template_name)
+    py_template_dir = python_template_dir(py_template_base_dir, py_template_subdir)
+    ipynb_raw_path = generate_ipynb_from_py(template_base_dir, template_name, notebooker_disable_git, py_template_dir)
     ipynb_executed_path = os.path.join(output_dir, output_ipynb)
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
@@ -123,6 +133,9 @@ def run_report(
     mailto="",
     generate_pdf_output=True,
     prepare_only=False,
+    notebooker_disable_git=False,
+    py_template_base_dir="",
+    py_template_subdir="",
 ):
 
     job_id = job_id or str(uuid.uuid4())
@@ -152,6 +165,9 @@ def run_report(
             mailto=mailto,
             generate_pdf_output=generate_pdf_output,
             prepare_only=prepare_only,
+            notebooker_disable_git=notebooker_disable_git,
+            py_template_base_dir=py_template_base_dir,
+            py_template_subdir=py_template_subdir,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -191,6 +207,9 @@ def run_report(
                 mailto=mailto,
                 generate_pdf_output=generate_pdf_output,
                 prepare_only=prepare_only,
+                notebooker_disable_git=notebooker_disable_git,
+                py_template_base_dir=py_template_base_dir,
+                py_template_subdir=py_template_subdir,
             )
         else:
             logger.info("Abandoning attempt to run report. It failed too many times.")
@@ -263,98 +282,24 @@ def _get_overrides(overrides_as_json: AnyStr, iterate_override_values_of: Option
     return all_overrides
 
 
-def env_coupled_var(var_value: Optional[str], env_name: str) -> Optional[str]:
-    """Coalesce a value from the given one and environment, then update the environment."""
-    if var_value is not None:
-        os.environ[env_name] = var_value
-        return var_value
-    return os.environ.get(env_name)
-
-
-@click.command()
-@click.option("--report-name", help="The name of the template to execute, relative to the template directory.")
-@click.option(
-    "--overrides-as-json", default="{}", help="The parameters to inject into the notebook template, in JSON format."
-)
-@click.option(
-    "--iterate-override-values-of",
-    default="",
-    help="For the key/values in the overrides, set this to the value of one of the keys to run reports for "
-    "each of its values.",
-)
-@click.option("--report-title", default="", help="A custom title for this notebook. The default is the report_name.")
-@click.option("--n-retries", default=3, help="The number of times to retry when executing this notebook.")
-@click.option(
-    "--mongo-db-name", default=None, help="The mongo database name to which we will save the notebook result."
-)
-@click.option("--mongo-host", default=None, help="The mongo host/cluster to which we are saving notebook results.")
-@click.option("--mongo-user", default=None, help="The mongo username.")
-@click.option("--mongo-password", default=None, help="The mongo password.")
-@click.option(
-    "--result-collection-name", default=None, help="The name of the collection to which we are saving notebook results."
-)
-@click.option("--notebook-kernel-name", default=None, help="The name of the kernel which is running our notebook code.")
-@click.option(
-    "--job-id",
-    default=str(uuid.uuid4()),
-    help="The unique job ID for this notebook. Can be non-unique, but note that you will overwrite history.",
-)
-@click.option(
-    "--output-base-dir",
-    default=None,
-    help="The base directory to which we will save our notebook output temporarily. Required by Papermill.",
-)
-@click.option(
-    "--template-base-dir",
-    default=None,
-    help="The base directory to which we will save our notebook templates which have been converted "
-    "from .py to .ipynb.",
-)
-@click.option("--mailto", default="", help="A comma-separated list of email addresses which will receive results.")
-@click.option("--pdf-output/--no-pdf-output", default=True, help="Whether we generate PDF output or not.")
-@click.option(
-    "--serializer-cls",
-    default=Serializer.PYMONGO.value,
-    help="The serializer class through which we will save the notebook result.",
-)
-@click.option(
-    "--prepare-notebook-only",
-    is_flag=True,
-    help='Used for debugging and testing. Whether to actually execute the notebook or just "prepare" it.',
-)
-def main(
-    report_name,
-    overrides_as_json,
-    iterate_override_values_of,
-    report_title,
-    n_retries,
-    mongo_db_name,
-    mongo_host,
-    mongo_user,
-    mongo_password,
-    result_collection_name,
-    notebook_kernel_name,
-    job_id,
-    output_base_dir,
-    template_base_dir,
-    mailto,
-    pdf_output,
-    serializer_cls,
-    prepare_notebook_only,
+def execute_notebook_entrypoint(
+    config: BaseConfig,
+    report_name: str,
+    overrides_as_json: str,
+    iterate_override_values_of: Union[List[str], str],
+    report_title: str,
+    n_retries: int,
+    job_id: str,
+    mailto: str,
+    pdf_output: bool,
+    prepare_notebook_only: bool,
 ):
-    if report_name is None:
-        raise ValueError("Error! Please provide a --report-name.")
-
-    mongo_db_name = env_coupled_var(mongo_db_name, "DATABASE_NAME")
-    mongo_host = env_coupled_var(mongo_host, "MONGO_HOST")
-    mongo_user = env_coupled_var(mongo_user, "MONGO_USER")
-    mongo_password = env_coupled_var(mongo_password, "MONGO_PASSWORD")
-    result_collection_name = env_coupled_var(result_collection_name, "RESULT_COLLECTION_NAME")
-    notebook_kernel_name = env_coupled_var(notebook_kernel_name, "NOTEBOOK_KERNEL_NAME")
-
     report_title = report_title or report_name
-    output_dir, template_dir, _ = initialise_base_dirs(output_dir=output_base_dir, template_dir=template_base_dir)
+    output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
     all_overrides = _get_overrides(overrides_as_json, iterate_override_values_of)
+    notebooker_disable_git = config.NOTEBOOKER_DISABLE_GIT
+    py_template_base_dir = config.PY_TEMPLATE_BASE_DIR
+    py_template_subdir = config.PY_TEMPLATE_SUBDIR
 
     start_time = datetime.datetime.now()
     logger.info("Running a report with these parameters:")
@@ -363,27 +308,20 @@ def main(
     logger.info("iterate_override_values_of = %s", iterate_override_values_of)
     logger.info("report_title = %s", report_title)
     logger.info("n_retries = %s", n_retries)
-    logger.info("mongo_db_name = %s", mongo_db_name)
-    logger.info("mongo_host = %s", mongo_host)
-    logger.info("mongo_user = %s", mongo_user)
-    logger.info("mongo_password = %s", "*******")
-    logger.info("result_collection_name = %s", result_collection_name)
     logger.info("job_id = %s", job_id)
     logger.info("output_dir = %s", output_dir)
     logger.info("template_dir = %s", template_dir)
     logger.info("mailto = %s", mailto)
     logger.info("pdf_output = %s", pdf_output)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
+    logger.info("notebooker_disable_git = %s", notebooker_disable_git)
+    logger.info("py_template_base_dir = %s", py_template_base_dir)
+    logger.info("py_template_subdir = %s", py_template_subdir)
+    logger.info("serializer_cls = %s", config.SERIALIZER_CLS)
+    logger.info("serializer_config = %s", config.SERIALIZER_CONFIG)
 
     logger.info("Calculated overrides are: %s", str(all_overrides))
-    result_serializer = get_serializer_from_cls(
-        serializer_cls,
-        database_name=mongo_db_name,
-        mongo_host=mongo_host,
-        result_collection_name=result_collection_name,
-        user=mongo_user,
-        password=mongo_password,
-    )
+    result_serializer = get_serializer_from_cls(config.SERIALIZER_CLS, **config.SERIALIZER_CONFIG)
     results = []
     for overrides in all_overrides:
         result = run_report(
@@ -399,6 +337,9 @@ def main(
             mailto=mailto,
             generate_pdf_output=pdf_output,
             prepare_only=prepare_notebook_only,
+            notebooker_disable_git=notebooker_disable_git,
+            py_template_base_dir=py_template_base_dir,
+            py_template_subdir=py_template_subdir,
         )
         if mailto:
             send_result_email(result, mailto)
@@ -430,11 +371,4 @@ def docker_compose_entrypoint():
     args_to_execute = [sys.executable, "-m", __name__] + sys.argv[1:]
     logger.info("Received a request to run a report with the following parameters:")
     logger.info(args_to_execute)
-    try:
-        subprocess.Popen(args_to_execute).wait()
-    finally:
-        _cleanup_dirs()
-
-
-if __name__ == "__main__":
-    main()
+    subprocess.Popen(args_to_execute).wait()

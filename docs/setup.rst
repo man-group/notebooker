@@ -60,7 +60,7 @@ NB: mongo should be running as above for these steps to work!
 
 .. code:: bash
 
-    $ MONGO_HOST=localhost:27017 MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
+    $ notebooker-cli --mongo-host localhost:27017 --mongo-user jon --mongo-password hello start-webapp --port 11828
 
 4. Open the link that is printed in your web browser.
 
@@ -117,7 +117,7 @@ NB: mongo should be running as above for these steps to work!
 
 .. code:: bash
 
-    $ MONGO_HOST=localhost:27017 MONGO_USER=jon MONGO_PASSWORD=hello PORT=11828 notebooker_webapp
+    $ notebooker-cli --mongo-host localhost:27017 --mongo-user jon --mongo-password hello start-webapp --port 11828
 
 
 7. Open the link that is printed in your web browser.

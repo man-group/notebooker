@@ -1,24 +1,18 @@
 import datetime
-from builtins import object
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 
+import click
 import gridfs
 import pymongo
 from gridfs import NoFile
 
-from notebooker.constants import (
-    JobStatus,
-    NotebookResultBase,
-    NotebookResultComplete,
-    NotebookResultError,
-    NotebookResultPending,
-)
+from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
 
 logger = getLogger(__name__)
 
 
-class NotebookResultSerializer(object):
+class MongoResultSerializer:
     # This class is the interface between Mongo and the rest of the application
 
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
@@ -28,6 +22,32 @@ class NotebookResultSerializer(object):
         mongo_connection = self.get_mongo_database()
         self.library = mongo_connection[result_collection_name]
         self.result_data_store = gridfs.GridFS(mongo_connection, "notebook_data")
+
+    def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
+        if cli_options is None:
+            raise ValueError(
+                "A MongoResultSerializer has been declared without cli_options. "
+                "Please add them like so: `class MySerializer(cli_options=cli_opts)`."
+            )
+        cls.cli_options = cli_options
+        super().__init_subclass__(**kwargs)
+
+    def serializer_args_to_cmdline_args(self) -> List[str]:
+        args = []
+        for cli_arg in self.cli_options.params:
+            if not hasattr(self, cli_arg.name):
+                raise ValueError(
+                    "The Serializer class must have attributes which are named the same as the click "
+                    "options, e.g. --mongo-database should have a 'mongo_database' attribute"
+                )
+            opt, value = cli_arg.opts[0], getattr(self, cli_arg.name)
+            if value is not None:
+                args.extend([opt, value])
+        return args
+
+    @classmethod
+    def get_name(cls):
+        return cls.__name__
 
     def get_mongo_database(self):
         raise NotImplementedError()

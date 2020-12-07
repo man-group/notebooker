@@ -19,6 +19,8 @@ Executing a Notebook
 There are two primary ways to do this: either through the webapp or through the entrypoint. Both
 of these methods will rely on a `notebooker_kernel` being available in the current ipykernel environment.
 
+For more information on the entrypoint, please run: `notebooker-cli execute-notebook --help`
+
 Technologies
 ------------
 Notebooker leverages multiple open-source technologies but in particular, it heavily makes use of some

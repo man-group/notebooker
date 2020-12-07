@@ -10,14 +10,15 @@ from logging import getLogger
 from typing import Any, Dict, List, Tuple
 
 import nbformat
-from flask import Blueprint, abort, jsonify, render_template, request, url_for
+from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
 
 from notebooker import execute_notebook
-from notebooker.constants import JobStatus
-from notebooker.serialization.serialization import get_fresh_serializer
+from notebooker.constants import JobStatus, python_template_dir
+from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.conversion import generate_ipynb_from_py
-from notebooker.utils.filesystem import get_output_dir, get_template_dir
-from notebooker.utils.templates import _get_parameters_cell_idx, _get_preview, get_all_possible_templates
+
+from notebooker.utils.filesystem import get_template_dir, get_output_dir
+from notebooker.utils.templates import _get_parameters_cell_idx, _get_preview
 from notebooker.utils.web import (
     convert_report_name_url_to_path,
     json_to_python,
@@ -26,7 +27,7 @@ from notebooker.utils.web import (
     validate_title,
 )
 from notebooker.web.handle_overrides import handle_overrides
-from notebooker.web.utils import get_serializer
+from notebooker.web.utils import get_serializer, _get_python_template_dir, get_all_possible_templates
 
 try:
     FileNotFoundError
@@ -51,7 +52,11 @@ def run_report_get_preview(report_name):
     # Handle the case where a rendered ipynb asks for "custom.css"
     if ".css" in report_name:
         return ""
-    return _get_preview(report_name)
+    return _get_preview(
+        report_name,
+        notebooker_disable_git=current_app.config["NOTEBOOKER_DISABLE_GIT"],
+        py_template_dir=_get_python_template_dir(),
+    )
 
 
 @run_report_bp.route("/run_report/<path:report_name>", methods=["GET"])
@@ -68,7 +73,12 @@ def run_report_http(report_name):
     json_params = request.args.get("json_params")
     initial_python_parameters = json_to_python(json_params) or ""
     try:
-        path = generate_ipynb_from_py(get_template_dir(), report_name)
+        path = generate_ipynb_from_py(
+            current_app.config["TEMPLATE_DIR"],
+            report_name,
+            current_app.config["NOTEBOOKER_DISABLE_GIT"],
+            _get_python_template_dir(),
+        )
     except FileNotFoundError as e:
         logger.exception(e)
         return "", 404
@@ -92,10 +102,10 @@ def run_report_http(report_name):
     )
 
 
-def _monitor_stderr(process, job_id):
+def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
     stderr = []
     # Unsure whether flask app contexts are thread-safe; just reinitialise the serializer here.
-    result_serializer = get_fresh_serializer()
+    result_serializer = get_serializer_from_cls(serializer_cls, **serializer_args)
     while True:
         line = process.stderr.readline().decode("utf-8")
         if line == "" and process.poll() is not None:
@@ -131,17 +141,26 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
         mailto=mailto,
         generate_pdf_output=generate_pdf_output,
     )
+    app_config = current_app.config
     p = subprocess.Popen(
         [
-            sys.executable,
-            "-m",
-            execute_notebook.__name__,
-            "--job-id",
-            job_id,
+            "notebooker-cli",
             "--output-base-dir",
             get_output_dir(),
             "--template-base-dir",
             get_template_dir(),
+            "--py-template-base-dir",
+            app_config["PY_TEMPLATE_BASE_DIR"],
+            "--py-template-subdir",
+            app_config["PY_TEMPLATE_SUBDIR"],
+        ]
+        + (["--notebooker-disable-git"] if app_config["NOTEBOOKER_DISABLE_GIT"] else [])
+        + ["--serializer-cls", result_serializer.__class__.__name__]
+        + result_serializer.serializer_args_to_cmdline_args()
+        + [
+            "execute-notebook",
+            "--job-id",
+            job_id,
             "--report-name",
             report_name,
             "--report-title",
@@ -150,22 +169,15 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
             mailto,
             "--overrides-as-json",
             json.dumps(overrides),
-            "--mongo-db-name",
-            result_serializer.database_name,
-            "--mongo-host",
-            result_serializer.mongo_host,
-            *(("--mongo-user", result_serializer.user) if result_serializer.user is not None else ()),
-            *(("--mongo-password", result_serializer.password) if result_serializer.password is not None else ()),
-            "--result-collection-name",
-            result_serializer.result_collection_name,
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
-            "--serializer-cls",
-            result_serializer.__class__.__name__,
         ]
         + (["--prepare-notebook-only"] if prepare_only else []),
         stderr=subprocess.PIPE,
     )
-    stderr_thread = threading.Thread(target=_monitor_stderr, args=(p, job_id))
+    stderr_thread = threading.Thread(
+        target=_monitor_stderr,
+        args=(p, job_id, current_app.config["SERIALIZER_CLS"], current_app.config["SERIALIZER_CONFIG"]),
+    )
     stderr_thread.daemon = True
     stderr_thread.start()
     return job_id

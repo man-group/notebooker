@@ -10,8 +10,7 @@ from nbconvert import HTMLExporter, PDFExporter
 from nbconvert.exporters.exporter import ResourcesDict
 from traitlets.config import Config
 
-from notebooker.constants import NOTEBOOKER_DISABLE_GIT, TEMPLATE_DIR_SEPARATOR, kernel_spec, python_template_dir
-from notebooker.utils.caching import get_cache, set_cache
+from notebooker.constants import TEMPLATE_DIR_SEPARATOR, kernel_spec
 from notebooker.utils.filesystem import mkdir_p
 from notebooker.utils.notebook_execution import logger
 
@@ -50,15 +49,18 @@ def _output_ipynb_name(report_name: str) -> str:
     return "{}.ipynb".format(convert_report_path_into_name(report_name))
 
 
-def _git_pull_templates():
-    repo = git.repo.Repo(os.environ["PY_TEMPLATE_DIR"])
+def _git_has_changes(repo: git.repo.Repo):
+    repo.git.fetch()
+    return repo.commit("origin/master").hexsha != repo.commit("HEAD").hexsha
+
+
+def _git_pull_latest(repo: git.repo.Repo):
     repo.git.pull("origin", "master")
-    return repo.commit("HEAD").hexsha
 
 
-def _python_template(report_path: AnyStr) -> AnyStr:
+def _python_template(report_path: AnyStr, py_template_dir: AnyStr) -> AnyStr:
     file_name = "{}.py".format(report_path)
-    return os.path.join(python_template_dir(), file_name)
+    return os.path.join(py_template_dir, file_name)
 
 
 def _ipynb_output_path(template_base_dir: AnyStr, report_path: AnyStr, git_hex: AnyStr) -> AnyStr:
@@ -66,9 +68,9 @@ def _ipynb_output_path(template_base_dir: AnyStr, report_path: AnyStr, git_hex: 
     return os.path.join(template_base_dir, git_hex, file_name)
 
 
-def _get_python_template_path(report_path: str, warn_on_local: bool) -> str:
-    if python_template_dir():
-        return _python_template(report_path)
+def _get_python_template_path(report_path: str, warn_on_local: bool, py_template_dir) -> str:
+    if py_template_dir:
+        return _python_template(report_path, py_template_dir)
     else:
         if warn_on_local:
             logger.warning(
@@ -77,18 +79,19 @@ def _get_python_template_path(report_path: str, warn_on_local: bool) -> str:
         return pkg_resources.resource_filename(__name__, "../notebook_templates_example/{}.py".format(report_path))
 
 
-def _get_output_path_hex() -> str:
-    if python_template_dir() and not NOTEBOOKER_DISABLE_GIT:
-        logger.info("Pulling latest notebook templates from git.")
+def _get_output_path_hex(notebooker_disable_git, py_template_dir) -> str:
+    if py_template_dir and not notebooker_disable_git:
+        latest_sha = None
         try:
-            latest_sha = _git_pull_templates()
-            if get_cache("latest_sha") != latest_sha:
-                logger.info("Change detected in notebook template master!")
-                set_cache("latest_sha", latest_sha)
-            logger.info("Git pull done.")
+            git_repo = git.repo.Repo(py_template_dir)
+            if _git_has_changes(git_repo):
+                logger.info("Pulling latest notebook templates from git.")
+                _git_pull_latest(git_repo)
+                logger.info("Git pull done.")
+            latest_sha = git_repo.commit("HEAD").hexsha
         except Exception as e:
             logger.exception(e)
-        return get_cache("latest_sha") or "OLD"
+        return latest_sha or "OLD"
     else:
         return str(uuid.uuid4())
 
@@ -103,7 +106,13 @@ def convert_report_path_into_name(report_path: str) -> str:
     return report_path.replace(os.path.sep, TEMPLATE_DIR_SEPARATOR)
 
 
-def generate_ipynb_from_py(template_base_dir: str, report_name: str, warn_on_local: Optional[bool] = True) -> str:
+def generate_ipynb_from_py(
+    template_base_dir: str,
+    report_name: str,
+    notebooker_disable_git: bool,
+    py_template_dir: str,
+    warn_on_local: Optional[bool] = True,
+) -> str:
     """
     This method EITHER:
     Pulls the latest version of the notebook templates from git, and regenerates templates if there is a new HEAD
@@ -111,15 +120,19 @@ def generate_ipynb_from_py(template_base_dir: str, report_name: str, warn_on_loc
 
     In both cases, this method converts the .py file into an .ipynb file which can be executed by papermill.
 
-    :param template_base_dir: The directory in which notebook templates reside.
+    :param template_base_dir: The directory in which converted notebook templates reside.
     :param report_name: The name of the report which we are running.
+    :param notebooker_disable_git: Whether or not to pull the latest version from git, if a change is available.
+    :param py_template_dir: The directory which contains raw python templates. This should be a subdir in a git repo.
     :param warn_on_local: Whether to warn when we are searching for notebooks in the notebooker repo itself.
 
     :return: The filepath of the .ipynb which we have just converted.
     """
     report_path = convert_report_name_into_path(report_name)
-    python_template_path = _get_python_template_path(report_path, warn_on_local)
-    output_template_path = _ipynb_output_path(template_base_dir, report_path, _get_output_path_hex())
+    python_template_path = _get_python_template_path(report_path, warn_on_local, py_template_dir)
+    output_template_path = _ipynb_output_path(
+        template_base_dir, report_path, _get_output_path_hex(notebooker_disable_git, py_template_dir)
+    )
 
     try:
         with open(output_template_path, "r") as f:

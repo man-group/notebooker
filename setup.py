@@ -45,6 +45,7 @@ setup(
     license="AGPLv3",
     url="https://github.com/man-group/notebooker",
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
+    namespace_packages=["notebooker"],
     setup_requires=["six", "numpy"],
     python_requires=">=3.5",
     zip_safe=False,
@@ -56,12 +57,13 @@ setup(
         "matplotlib",
         "pymongo",
         "papermill",
+        "dataclasses",
         "nbconvert<6.0.0",  # Pin this because new template locations do not seem to work on OSX
         "nbformat",
         "jupytext>=1.2.0",
         "ipykernel",
         "stashy",
-        "click",
+        "click>7.1.0",
         "python-dateutil",
         "flask",
         "requests",
@@ -81,12 +83,11 @@ setup(
     tests_require=test_requirements,
     entry_points={
         "console_scripts": [
-            "notebooker_webapp = notebooker.web.app:main",
+            "notebooker-cli = notebooker._entrypoints:base_notebooker",
             "notebooker_execute = notebooker.execute_notebook:docker_compose_entrypoint",
             "notebooker_template_sanity_check = notebooker.utils.template_testing:sanity_check",
             "notebooker_template_regression_test = notebooker.utils.template_testing:regression_test",
             "convert_ipynb_to_py = notebooker.convert_to_py:main",
-            "snapshot_latest_successful_notebooks = notebooker.snapshot:snapshot_latest_successful_notebooks",
         ]
     },
     classifiers=[

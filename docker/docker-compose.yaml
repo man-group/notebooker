@@ -17,9 +17,9 @@ services:
       MONGO_HOST: mongodb:27017
       # this should be something like "notebooker" but this simplifies the compose file
       DATABASE_NAME: admin
-      RESULT_COLLECTION_NAME: notebook_results
+      RESULT_COLLECTION_NAME: NOTEBOOK_OUTPUT
 
-      PY_TEMPLATE_DIR: /var/run/template_repo
+      PY_TEMPLATE_BASE_DIR: /var/run/template_repo
     volumes:
       - git-repo:/var/run/template_repo
     command: ["notebooker_webapp"]

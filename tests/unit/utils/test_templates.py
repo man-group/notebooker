@@ -3,7 +3,7 @@ import shutil
 import tempfile
 
 from notebooker.utils.filesystem import mkdir_p
-from notebooker.utils.templates import get_directory_structure
+from notebooker.web.utils import get_directory_structure
 
 
 def test_get_directory_structure():
