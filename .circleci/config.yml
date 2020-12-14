@@ -4,7 +4,6 @@ defaults: &defaults
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
-      # CODECOV_TOKEN: b0d35139-0a75-427a-907b-2c78a762f8f0
       VERSION: 0.1.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
@@ -171,9 +170,28 @@ jobs:
     docker:
     - image: cimg/python:3.7-node
     <<: *defaults
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: /tmp/circleci-artifacts
+      - run:
+          name: "Publish release on GitHub"
+          command: |
+            . ci/bin/activate
+            VERSION=$(notebooker-cli --version | cut -d ' ' -f 3)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts
 workflows:
   version: 2
   build_all:
     jobs:
       - build_3_6
       - build_3_7
+      - publish-github-release:
+          requires:
+            - build_3_6
+            - build_3_7
+#          filters:
+#            branches:
+#              - master
