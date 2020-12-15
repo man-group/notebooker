@@ -136,6 +136,10 @@ defaults: &defaults
           python setup.py bdist_egg
           python setup.py sdist
           cp -r ./dist /tmp/circleci-artifacts
+    - run:
+        name: Upload to PyPI
+        command: |
+          echo $VERSION > /tmp/circleci-artifacts/version.txt
     # - run:
     #     name: Build Docker image
     #     command: docker build -t $IMAGE_NAME:latest .
@@ -179,8 +183,7 @@ jobs:
       - run:
           name: "Publish release on GitHub"
           command: |
-            . ci/bin/activate
-            VERSION=$(notebooker-cli --version | cut -d ' ' -f 3)
+            VERSION=$(cat /tmp/circleci-artifacts/version.txt)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts
 workflows:
   version: 2
