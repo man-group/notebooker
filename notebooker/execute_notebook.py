@@ -39,6 +39,8 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     hide_code: Optional[bool] = False,
     mailto: Optional[str] = "",
+    error_mailto: Optional[str] = "",
+    email_subject: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,
     py_template_base_dir: str = "",
@@ -114,6 +116,7 @@ def _run_checks(
         raw_html=html,
         email_html=email_html,
         mailto=mailto,
+        email_subject=email_subject,
         pdf=pdf,
         generate_pdf_output=generate_pdf_output,
         report_name=template_name,
@@ -134,6 +137,8 @@ def run_report(
     template_base_dir=None,
     attempts_remaining=2,
     mailto="",
+    error_mailto="",
+    email_subject="",
     generate_pdf_output=True,
     hide_code=False,
     prepare_only=False,
@@ -167,6 +172,7 @@ def run_report(
             template_base_dir,
             overrides,
             mailto=mailto,
+            email_subject=email_subject,
             generate_pdf_output=generate_pdf_output,
             hide_code=hide_code,
             prepare_only=prepare_only,
@@ -187,7 +193,7 @@ def run_report(
             report_title=report_title,
             error_info=error_info,
             overrides=overrides,
-            mailto=mailto,
+            mailto=error_mailto or mailto,
             generate_pdf_output=generate_pdf_output,
         )
         logger.error(
@@ -210,6 +216,8 @@ def run_report(
                 template_base_dir=template_base_dir,
                 attempts_remaining=attempts_remaining - 1,
                 mailto=mailto,
+                error_mailto=error_mailto,
+                email_subject=email_subject,
                 generate_pdf_output=generate_pdf_output,
                 hide_code=hide_code,
                 prepare_only=prepare_only,
@@ -297,6 +305,8 @@ def execute_notebook_entrypoint(
     n_retries: int,
     job_id: str,
     mailto: str,
+    error_mailto: str,
+    email_subject: str,
     pdf_output: bool,
     hide_code: bool,
     prepare_notebook_only: bool,
@@ -319,6 +329,8 @@ def execute_notebook_entrypoint(
     logger.info("output_dir = %s", output_dir)
     logger.info("template_dir = %s", template_dir)
     logger.info("mailto = %s", mailto)
+    logger.info("error_mailto = %s", error_mailto)
+    logger.info("email_subject = %s", email_subject)
     logger.info("pdf_output = %s", pdf_output)
     logger.info("hide_code = %s", hide_code)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
@@ -343,6 +355,8 @@ def execute_notebook_entrypoint(
             template_base_dir=template_dir,
             attempts_remaining=n_retries - 1,
             mailto=mailto,
+            error_mailto=error_mailto,
+            email_subject=email_subject,
             generate_pdf_output=pdf_output,
             hide_code=hide_code,
             prepare_only=prepare_notebook_only,
@@ -350,7 +364,7 @@ def execute_notebook_entrypoint(
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
         )
-        if mailto:
+        if result.mailto:
             send_result_email(result, mailto)
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
