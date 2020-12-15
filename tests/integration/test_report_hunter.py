@@ -164,6 +164,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
             pdf="",
             raw_ipynb_json="[]",
             raw_html="",
+            email_html="",
         )
         _report_hunter(webapp_config=webapp_config, run_once=True)
 
@@ -176,6 +177,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
             job_start_time=datetime.datetime(2018, 1, 12, 2, 30),
             job_finish_time=datetime.datetime(2018, 1, 12, 2, 37),
             raw_html="",
+            email_html="",
             raw_html_resources={"outputs": {}},
             raw_ipynb_json="[]",
         )

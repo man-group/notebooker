@@ -125,6 +125,7 @@ def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir)
 )
 @click.option("--mailto", default="", help="A comma-separated list of email addresses which will receive results.")
 @click.option("--pdf-output/--no-pdf-output", default=True, help="Whether we generate PDF output or not.")
+@click.option("--hide-code/--show-code", default=False, help="Hide code from email and PDF output.")
 @click.option(
     "--prepare-notebook-only",
     is_flag=True,
@@ -141,6 +142,7 @@ def execute_notebook(
     job_id,
     mailto,
     pdf_output,
+    hide_code,
     prepare_notebook_only,
 ):
     if report_name is None:
@@ -155,6 +157,7 @@ def execute_notebook(
         job_id,
         mailto,
         pdf_output,
+        hide_code,
         prepare_notebook_only,
     )
 

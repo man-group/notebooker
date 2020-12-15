@@ -37,6 +37,7 @@ def _run_checks(
     template_base_dir: str,
     overrides: Dict[AnyStr, Any],
     generate_pdf_output: Optional[bool] = True,
+    hide_code: Optional[bool] = False,
     mailto: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,
@@ -101,7 +102,8 @@ def _run_checks(
 
     logger.info("Saving output notebook as HTML from {}".format(ipynb_executed_path))
     html, resources = ipython_to_html(ipynb_executed_path, job_id)
-    pdf = ipython_to_pdf(raw_executed_ipynb, report_title) if generate_pdf_output else ""
+    email_html, resources = ipython_to_html(ipynb_executed_path, job_id, hide_code=hide_code)
+    pdf = ipython_to_pdf(raw_executed_ipynb, report_title, hide_code=hide_code) if generate_pdf_output else ""
 
     notebook_result = NotebookResultComplete(
         job_id=job_id,
@@ -110,6 +112,7 @@ def _run_checks(
         raw_html_resources=resources,
         raw_ipynb_json=raw_executed_ipynb,
         raw_html=html,
+        email_html=email_html,
         mailto=mailto,
         pdf=pdf,
         generate_pdf_output=generate_pdf_output,
@@ -132,6 +135,7 @@ def run_report(
     attempts_remaining=2,
     mailto="",
     generate_pdf_output=True,
+    hide_code=False,
     prepare_only=False,
     notebooker_disable_git=False,
     py_template_base_dir="",
@@ -164,6 +168,7 @@ def run_report(
             overrides,
             mailto=mailto,
             generate_pdf_output=generate_pdf_output,
+            hide_code=hide_code,
             prepare_only=prepare_only,
             notebooker_disable_git=notebooker_disable_git,
             py_template_base_dir=py_template_base_dir,
@@ -206,6 +211,7 @@ def run_report(
                 attempts_remaining=attempts_remaining - 1,
                 mailto=mailto,
                 generate_pdf_output=generate_pdf_output,
+                hide_code=hide_code,
                 prepare_only=prepare_only,
                 notebooker_disable_git=notebooker_disable_git,
                 py_template_base_dir=py_template_base_dir,
@@ -292,6 +298,7 @@ def execute_notebook_entrypoint(
     job_id: str,
     mailto: str,
     pdf_output: bool,
+    hide_code: bool,
     prepare_notebook_only: bool,
 ):
     report_title = report_title or report_name
@@ -313,6 +320,7 @@ def execute_notebook_entrypoint(
     logger.info("template_dir = %s", template_dir)
     logger.info("mailto = %s", mailto)
     logger.info("pdf_output = %s", pdf_output)
+    logger.info("hide_code = %s", hide_code)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
     logger.info("notebooker_disable_git = %s", notebooker_disable_git)
     logger.info("py_template_base_dir = %s", py_template_base_dir)
@@ -336,6 +344,7 @@ def execute_notebook_entrypoint(
             attempts_remaining=n_retries - 1,
             mailto=mailto,
             generate_pdf_output=pdf_output,
+            hide_code=hide_code,
             prepare_only=prepare_notebook_only,
             notebooker_disable_git=notebooker_disable_git,
             py_template_base_dir=py_template_base_dir,

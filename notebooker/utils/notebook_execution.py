@@ -22,7 +22,7 @@ def send_result_email(result: Union[NotebookResultComplete, NotebookResultError]
         result.report_title.decode("utf-8") if isinstance(result.report_title, bytes) else result.report_title
     )
     subject = "Notebooker: {} report completed with status: {}".format(report_title, result.status.value)
-    body = result.raw_html
+    body = result.email_html or result.raw_html
     attachments = []
     tmp_dir = None
     try:

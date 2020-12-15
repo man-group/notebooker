@@ -19,12 +19,14 @@ def get_resources_dir(job_id):
     return "{}/resources".format(job_id)
 
 
-def ipython_to_html(ipynb_path: str, job_id: str) -> (nbformat.NotebookNode, Dict[str, Any]):
+def ipython_to_html(ipynb_path: str, job_id: str, hide_code: bool = False) -> (nbformat.NotebookNode, Dict[str, Any]):
     c = Config()
     c.HTMLExporter.preprocessors = ["nbconvert.preprocessors.ExtractOutputPreprocessor"]
     c.HTMLExporter.template_file = pkg_resources.resource_filename(
         __name__, "../nbtemplates/notebooker_html_output.tpl"
     )
+    c.HTMLExporter.exclude_input = hide_code
+    c.HTMLExporter.exclude_output_prompt = hide_code
     html_exporter_with_figs = HTMLExporter(config=c)
 
     with open(ipynb_path, "r") as nb_file:
@@ -34,8 +36,14 @@ def ipython_to_html(ipynb_path: str, job_id: str) -> (nbformat.NotebookNode, Dic
     return html, resources
 
 
-def ipython_to_pdf(raw_executed_ipynb: str, report_title: str) -> AnyStr:
-    pdf_exporter = PDFExporter(Config())
+def ipython_to_pdf(raw_executed_ipynb: str, report_title: str, hide_code: bool = False) -> AnyStr:
+    c = Config()
+    c.PDFExporter.exclude_input = hide_code
+    c.PDFExporter.exclude_output_prompt = hide_code
+    c.HTMLExporter.template_file = pkg_resources.resource_filename(
+        __name__, "../nbtemplates/notebooker_pdf_output.tplx"
+    )
+    pdf_exporter = PDFExporter(c)
     resources = ResourcesDict()
     resources["metadata"] = ResourcesDict()
     resources["metadata"]["name"] = report_title
