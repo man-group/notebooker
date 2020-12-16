@@ -139,7 +139,7 @@ defaults: &defaults
     - run:
         name: Upload to PyPI
         command: |
-          echo $VERSION > /tmp/circleci-artifacts/version.txt
+          echo $VERSION > $CIRCLE_ARTIFACTS/version.txt
     # - run:
     #     name: Build Docker image
     #     command: docker build -t $IMAGE_NAME:latest .
@@ -183,6 +183,7 @@ jobs:
       - run:
           name: "Publish release on GitHub"
           command: |
+            ls -ltra /tmp/circleci-artifacts
             VERSION=$(cat /tmp/circleci-artifacts/version.txt)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts
 workflows:
