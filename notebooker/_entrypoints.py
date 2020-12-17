@@ -3,6 +3,7 @@ import uuid
 
 import click
 
+from notebooker._version import __version__
 from notebooker.constants import DEFAULT_SERIALIZER
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
@@ -31,6 +32,7 @@ def filesystem_default_value(dirname):
 
 
 @click.group(cls=NotebookerEntrypoint)
+@click.version_option(__version__, prog_name="Notebooker")
 @click.option("--notebook-kernel-name", default=None, help="The name of the kernel which is running our notebook code.")
 @click.option(
     "--output-base-dir",

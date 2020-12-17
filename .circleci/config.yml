@@ -1,14 +1,6 @@
 defaults: &defaults
     parallelism: 1
     shell: /bin/bash --login
-    environment:
-      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
-      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
-      # CODECOV_TOKEN: b0d35139-0a75-427a-907b-2c78a762f8f0
-      VERSION: 0.1.0
-      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
-      YARN_STATIC_DIR: notebooker/web/static/
-      IMAGE_NAME: mangroup/notebooker
     steps:
     - checkout
     - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
@@ -116,7 +108,7 @@ defaults: &defaults
           . ci/bin/activate
           pip install -e ".[docs]"
           python setup.py build_sphinx
-          cp -r ./build /tmp/circleci-artifacts
+          cp -r ./build "$CIRCLE_ARTIFACTS"
     # Build egg
     - run:
         name: Build egg
@@ -127,8 +119,8 @@ defaults: &defaults
           pip install Pygments
           python setup.py --long-description > ../README.rst
           cat ../README.rst | rst2html.py 1> ../README.html 2> ../log
-          cp ../README.rst /tmp/circleci-artifacts
-          cp ../log /tmp/circleci-artifacts
+          cp ../README.rst "$CIRCLE_ARTIFACTS"
+          cp ../log "$CIRCLE_ARTIFACTS"
           if [ -s ../log ] ; then
             cat ../log
             exit 1
@@ -136,11 +128,12 @@ defaults: &defaults
           python setup.py bdist_wheel --universal
           python setup.py bdist_egg
           python setup.py sdist
-          cp -r ./dist /tmp/circleci-artifacts
-    # - run:
-    #     name: Build Docker image
-    #     command: docker build -t $IMAGE_NAME:latest .
-    # Save test results
+          mkdir -p "$CIRCLE_ARTIFACTS/dist"
+          cp -r ./dist/* "$CIRCLE_ARTIFACTS/dist"
+    - run:
+        name: Upload to PyPI
+        command: |
+          echo $VERSION > "$CIRCLE_ARTIFACTS/version.txt"
     - run:
         name: Upload to PyPI
         command: |
@@ -159,21 +152,61 @@ defaults: &defaults
         path: /tmp/circleci-artifacts
     - store_artifacts:
         path: test-results
+    - persist_to_workspace:
+        root: /tmp/circleci-artifacts
+        paths:
+          - ./*/version.txt
+          - ./*/dist/*
 version: 2
 jobs:
   build_3_6:
+    environment:
+      PYTHON_VERSION: "3_6"
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_6
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_6
+      VERSION: 0.1.0
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
     working_directory: ~/notebooker_3_6
     docker:
     - image: cimg/python:3.6-node
     <<: *defaults
   build_3_7:
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_7
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_7
+      VERSION: 0.1.0
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
     working_directory: ~/notebooker_3_7
     docker:
     - image: cimg/python:3.7-node
     <<: *defaults
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: /tmp/circleci-artifacts
+      - run:
+          name: "Publish release on GitHub"
+          command: |
+            ls -la /tmp/circleci-artifacts/3_6
+            VERSION=$(cat /tmp/circleci-artifacts/3_6/version.txt)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/3_6/dist
 workflows:
   version: 2
   build_all:
     jobs:
       - build_3_6
       - build_3_7
+      - publish-github-release:
+          requires:
+            - build_3_6
+            - build_3_7
+          filters:
+            branches:
+              only:
+                - master
