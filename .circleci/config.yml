@@ -163,7 +163,7 @@ defaults: &defaults
     - store_artifacts:
         path: test-results
     - persist_to_workspace:
-        root: $CIRCLE_ARTIFACTS
+        root: "$CIRCLE_ARTIFACTS"
         paths:
           - version.txt
           - build/*
