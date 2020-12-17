@@ -154,8 +154,8 @@ defaults: &defaults
     - persist_to_workspace:
         root: /tmp/circleci-artifacts
         paths:
-          - version.txt
-          - build/*
+          - */version.txt
+          - */build/*
 version: 2
 jobs:
   build_3_6:
