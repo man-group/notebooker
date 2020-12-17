@@ -156,8 +156,8 @@ jobs:
   build_3_6:
     environment:
       PYTHON_VERSION: "3_6"
-      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
-      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_6
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_6
       VERSION: 0.1.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
@@ -168,9 +168,8 @@ jobs:
     <<: *defaults
   build_3_7:
     environment:
-      PYTHON_VERSION: "3_7"
-      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
-      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_7
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_7
       VERSION: 0.1.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
