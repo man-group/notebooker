@@ -1,13 +1,6 @@
 defaults: &defaults
     parallelism: 1
     shell: /bin/bash --login
-    environment:
-      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
-      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
-      VERSION: 0.1.0
-      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
-      YARN_STATIC_DIR: notebooker/web/static/
-      IMAGE_NAME: mangroup/notebooker
     steps:
     - checkout
     - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
@@ -163,6 +156,12 @@ jobs:
   build_3_6:
     environment:
       PYTHON_VERSION: 3_6
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      VERSION: 0.1.0
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
     working_directory: ~/notebooker_3_6
     docker:
     - image: cimg/python:3.6-node
@@ -170,6 +169,12 @@ jobs:
   build_3_7:
     environment:
       PYTHON_VERSION: 3_7
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      VERSION: 0.1.0
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
     working_directory: ~/notebooker_3_7
     docker:
     - image: cimg/python:3.7-node
