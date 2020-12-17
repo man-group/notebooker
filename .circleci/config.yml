@@ -155,7 +155,7 @@ version: 2
 jobs:
   build_3_6:
     environment:
-      PYTHON_VERSION: 3_6
+      PYTHON_VERSION: "3_6"
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
       VERSION: 0.1.0
@@ -168,7 +168,7 @@ jobs:
     <<: *defaults
   build_3_7:
     environment:
-      PYTHON_VERSION: 3_7
+      PYTHON_VERSION: "3_7"
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
       VERSION: 0.1.0
