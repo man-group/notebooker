@@ -32,7 +32,11 @@ def test_get_latest_job_id_for_name_and_params(_get_all_job_ids, conn, gridfs):
 def test__get_all_job_ids(conn, gridfs):
     serializer = MongoResultSerializer()
     serializer._get_all_job_ids("report_name", None, limit=1)
-    serializer.library.find.assert_called_once_with(
-        {"status": {"$ne": JobStatus.DELETED.value}, "report_name": "report_name"},
-        {"_id": 0, "job_id": 1, "report_name": 1},
+    serializer.library.aggregate.assert_called_once_with(
+        [
+            {"$match": {"status": {"$ne": JobStatus.DELETED.value}, "report_name": "report_name"}},
+            {"$sort": {"update_time": -1}},
+            {"$limit": 1},
+            {"$project": {"report_name": 1, "job_id": 1}},
+        ]
     )
