@@ -194,7 +194,7 @@ jobs:
           command: |
             ls -la /tmp/circleci-artifacts
             VERSION=$(cat /tmp/circleci-artifacts/3_6/version.txt)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/dist/3_6
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/3_6
 workflows:
   version: 2
   build_all:
