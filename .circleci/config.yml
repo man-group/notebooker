@@ -71,6 +71,7 @@ defaults: &defaults
        command: |
          virtualenv ci
          . ci/bin/activate
+         export PYTHON_VERSION=$(python -c "import platform; print(platform.python_version())")
          pip install six lxml flake8 tox pytest black .[test]
          python setup.py develop
     # Save dependency cache
@@ -115,7 +116,7 @@ defaults: &defaults
           . ci/bin/activate
           pip install -e ".[docs]"
           python setup.py build_sphinx
-          cp -r ./build /tmp/circleci-artifacts
+          cp -r ./build "/tmp/circleci-artifacts/$PYTHON_VERSION"
     # Build egg
     - run:
         name: Build egg
@@ -135,15 +136,11 @@ defaults: &defaults
           python setup.py bdist_wheel --universal
           python setup.py bdist_egg
           python setup.py sdist
-          cp -r ./dist /tmp/circleci-artifacts/build
+          cp -r ./dist/* "/tmp/circleci-artifacts/dist/$PYTHON_VERSION/"
     - run:
         name: Upload to PyPI
         command: |
-          echo $VERSION > $CIRCLE_ARTIFACTS/version.txt
-    # - run:
-    #     name: Build Docker image
-    #     command: docker build -t $IMAGE_NAME:latest .
-    # Save test results
+          echo $VERSION > "/tmp/circleci-artifacts/$PYTHON_VERSION/version.txt"
     - run:
         name: Upload to PyPI
         command: |
@@ -162,11 +159,6 @@ defaults: &defaults
         path: /tmp/circleci-artifacts
     - store_artifacts:
         path: test-results
-    - persist_to_workspace:
-        root: /tmp/circleci-artifacts
-        paths:
-          - version.txt
-          - build/*
 version: 2
 jobs:
   build_3_6:
@@ -188,9 +180,9 @@ jobs:
       - run:
           name: "Publish release on GitHub"
           command: |
-            ls -ltra /tmp/circleci-artifacts
-            VERSION=$(cat /tmp/circleci-artifacts/version.txt)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts
+            ls -la /tmp/circleci-artifacts
+            VERSION=$(cat /tmp/circleci-artifacts/3.6*/version.txt)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/dist/3.6*
 workflows:
   version: 2
   build_all:
@@ -200,6 +192,7 @@ workflows:
       - publish-github-release:
           requires:
             - build_3_6
+            - build_3_7
 #          filters:
 #            branches:
 #              - master
