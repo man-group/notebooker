@@ -126,7 +126,14 @@ def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir)
     help="The unique job ID for this notebook. Can be non-unique, but note that you will overwrite history.",
 )
 @click.option("--mailto", default="", help="A comma-separated list of email addresses which will receive results.")
+@click.option(
+    "--error-mailto",
+    default="",
+    help="A comma-separated list of email addresses which will receive errors. Deafults to --mailto argument."
+)
+@click.option("--email-subject", default="", help="The subject of the email sent on a successful result.")
 @click.option("--pdf-output/--no-pdf-output", default=True, help="Whether we generate PDF output or not.")
+@click.option("--hide-code/--show-code", default=False, help="Hide code from email and PDF output.")
 @click.option(
     "--prepare-notebook-only",
     is_flag=True,
@@ -142,7 +149,10 @@ def execute_notebook(
     n_retries,
     job_id,
     mailto,
+    error_mailto,
+    email_subject,
     pdf_output,
+    hide_code,
     prepare_notebook_only,
 ):
     if report_name is None:
@@ -156,7 +166,10 @@ def execute_notebook(
         n_retries,
         job_id,
         mailto,
+        error_mailto,
+        email_subject,
         pdf_output,
+        hide_code,
         prepare_notebook_only,
     )
 

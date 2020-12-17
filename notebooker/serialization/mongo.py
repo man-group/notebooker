@@ -97,6 +97,7 @@ class MongoResultSerializer:
         overrides: Optional[Dict] = None,
         mailto: str = "",
         generate_pdf_output: bool = True,
+        hide_code: bool = False,
     ) -> None:
         """ Call this when we are just starting a check. Saves a "pending" job into storage. """
         job_start_time = job_start_time or datetime.datetime.now()
@@ -110,6 +111,7 @@ class MongoResultSerializer:
             mailto=mailto,
             generate_pdf_output=generate_pdf_output,
             overrides=overrides or {},
+            hide_code=hide_code,
         )
         self._save_to_db(pending_result)
 
@@ -176,11 +178,13 @@ class MongoResultSerializer:
                 raw_html_resources=result.get("raw_html_resources", {}),
                 raw_ipynb_json=result.get("raw_ipynb_json"),
                 raw_html=result.get("raw_html"),
+                email_html=result.get("email_html"),
                 pdf=result.get("pdf", ""),
                 overrides=result.get("overrides", {}),
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
             )
         elif cls == NotebookResultPending:
@@ -194,6 +198,7 @@ class MongoResultSerializer:
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
             )
 
@@ -209,6 +214,7 @@ class MongoResultSerializer:
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
             )
         else:

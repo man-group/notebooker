@@ -16,6 +16,16 @@
 }
 
 </style>
+
+<!--[if mso]>
+<style type="text/css">
+div div.cell {
+  border-style: none;
+  margin-top: 4;
+}
+</style>
+<![endif]-->
+
 <script>
 (function() {
   function addToggleCodeButton() {
@@ -64,3 +74,9 @@
 }());
 </script>
 {%- endblock html_head -%}
+
+{% block stream %}
+  {%- if resources.global_content_filter.include_output_prompt -%}
+    {{ super() }}
+  {%- endif -%}
+{%- endblock stream %}

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import mock
+import pytest
 from click.testing import CliRunner
 from nbformat import NotebookNode
 from nbformat import __version__ as nbv
@@ -54,3 +55,46 @@ def test_main(mongo_host):
         )
         assert result.raw_ipynb_json
         assert result.pdf == pdf_contents
+
+@pytest.mark.parametrize(
+    ('cli_args', 'expected_mailto'),
+    [
+        (
+            ['--report-name', 'crashyreport', '--mailto', 'happy@email'],
+            'happy@email',
+        ), (
+            ['--report-name', 'crashyreport', '--mailto', 'happy@email', '--error-mailto', 'sad@email'],
+            'sad@email',
+        ), (
+            ['--report-name', 'crashyreport', '--error-mailto', 'sad@email'],
+            'sad@email',
+        )
+    ]
+)
+def test_main(mongo_host, cli_args, expected_mailto):
+    with mock.patch("notebooker.execute_notebook.pm.execute_notebook") as exec_nb, mock.patch(
+        "notebooker.utils.conversion.jupytext.read"
+    ) as read_nb, mock.patch("notebooker.execute_notebook.send_result_email") as send_email:
+        exec_nb.side_effect = Exception()
+        versions = nbv.split(".")
+        major, minor = int(versions[0]), int(versions[1])
+        if major >= 5:
+            major, minor = 4, 4
+        read_nb.return_value = NotebookNode({"cells": [], "metadata": {}, "nbformat": major, "nbformat_minor": minor})
+        job_id = "ttttteeeesssstttt"
+        runner = CliRunner()
+        cli_result = runner.invoke(
+            base_notebooker,
+            [
+                "--serializer-cls",
+                DEFAULT_SERIALIZER,
+                "--mongo-host",
+                mongo_host,
+                "execute-notebook",
+                "--job-id",
+                job_id,
+            ] + cli_args,
+        )
+
+        mailto = send_email.call_args_list[0][0][0].mailto
+        assert mailto == expected_mailto

@@ -1,0 +1,7 @@
+((* extends 'article.tplx' *))
+
+((*- block stream -*))
+  ((*- if resources.global_content_filter.include_output_prompt -*))
+    ((( super() )))
+  ((*- endif -*))
+((*- endblock stream -*))

@@ -47,14 +47,20 @@ def setup_workspace(workspace):
     report_to_run.write_lines(DUMMY_REPORT.split("\n"))
 
 
-def _check_report_output(job_id, serialiser, **kwargs):
+def _get_report_output(job_id, serialiser):
     while True:
         result = serialiser.get_check_result(job_id)
         if result.status not in (JobStatus.PENDING, JobStatus.SUBMITTED):
             break
+    return result
+
+
+def _check_report_output(job_id, serialiser, **kwargs):
+    result = _get_report_output(job_id, serialiser)
     assert result.status == JobStatus.DONE, result.error_info
     assert result.stdout != ""
     assert result.raw_html
+    assert result.email_html
     assert result.raw_ipynb_json
     assert result.pdf == ""
     assert result.job_start_time < result.job_finish_time
@@ -74,6 +80,11 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
         _check_report_output(
             job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto
         )
+
+        result = _get_report_output(job_id, serialiser)
+        assert 'DataFrame' in result.email_html
+        assert 'DataFrame' in result.raw_html
+
         assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
         assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, None)
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
@@ -113,3 +124,28 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
         assert not {job_id, new_job_id} - set(serialiser.get_all_job_ids_for_name_and_params(report_name, overrides))
         assert new_job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
         assert job_id != serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
+
+
+@freezegun.freeze_time(datetime.datetime(2018, 1, 12))
+def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+    with flask_app.app_context():
+        serialiser = get_serializer()
+        overrides = {"n_points": 5}
+        report_name = "fake/report"
+        report_title = "my report title"
+        mailto = "jon@fakeemail.com"
+        job_id = run_report(
+            report_name, report_title, mailto, overrides, hide_code=True, generate_pdf_output=False, prepare_only=True
+        )
+        _check_report_output(
+            job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto
+        )
+
+        result = _get_report_output(job_id, serialiser)
+        assert 'DataFrame' not in result.email_html
+        assert 'DataFrame' in result.raw_html
+
+        assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
+        assert job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, None)
+        assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
+        assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, None)

@@ -116,7 +116,9 @@ def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
     return "".join(stderr)
 
 
-def run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=False):
+def run_report(
+    report_name, report_title, mailto, overrides, hide_code=False, generate_pdf_output=False, prepare_only=False
+):
     """
     Actually run the report in earnest.
     Uses a subprocess to execute the report asynchronously, which is identical to the non-webapp entrypoint.
@@ -140,6 +142,7 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
         overrides=overrides,
         mailto=mailto,
         generate_pdf_output=generate_pdf_output,
+        hide_code=hide_code,
     )
     app_config = current_app.config
     p = subprocess.Popen(
@@ -170,6 +173,7 @@ def run_report(report_name, report_title, mailto, overrides, generate_pdf_output
             "--overrides-as-json",
             json.dumps(overrides),
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
+            "--hide-code" if hide_code else "--show-code",
         ]
         + (["--prepare-notebook-only"] if prepare_only else []),
         stderr=subprocess.PIPE,
@@ -192,10 +196,13 @@ def _handle_run_report(
     mailto = validate_mailto(request.values.get("mailto"), issues)
     # Find whether to generate PDF output
     generate_pdf_output = validate_generate_pdf_output(request.values.get("generatepdf"), issues)
+    hide_code = request.values.get("hide_code") == "on"
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
-    job_id = run_report(report_name, report_title, mailto, overrides_dict, generate_pdf_output=generate_pdf_output)
+    job_id = run_report(
+        report_name, report_title, mailto, overrides_dict, generate_pdf_output=generate_pdf_output, hide_code=hide_code
+    )
     return (
         jsonify({"id": job_id}),
         202,  # HTTP Accepted code
