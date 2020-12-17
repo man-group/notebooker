@@ -108,7 +108,7 @@ defaults: &defaults
           . ci/bin/activate
           pip install -e ".[docs]"
           python setup.py build_sphinx
-          cp -r ./build "/tmp/circleci-artifacts/$PYTHON_VERSION"
+          cp -r ./build "$CIRCLE_ARTIFACTS"
     # Build egg
     - run:
         name: Build egg
@@ -119,8 +119,8 @@ defaults: &defaults
           pip install Pygments
           python setup.py --long-description > ../README.rst
           cat ../README.rst | rst2html.py 1> ../README.html 2> ../log
-          cp ../README.rst /tmp/circleci-artifacts
-          cp ../log /tmp/circleci-artifacts
+          cp ../README.rst "$CIRCLE_ARTIFACTS"
+          cp ../log "$CIRCLE_ARTIFACTS"
           if [ -s ../log ] ; then
             cat ../log
             exit 1
@@ -128,11 +128,11 @@ defaults: &defaults
           python setup.py bdist_wheel --universal
           python setup.py bdist_egg
           python setup.py sdist
-          cp -r ./dist/* "/tmp/circleci-artifacts/dist/$PYTHON_VERSION/"
+          cp -r ./dist/* "$CIRCLE_ARTIFACTS"
     - run:
         name: Upload to PyPI
         command: |
-          echo $VERSION > "/tmp/circleci-artifacts/$PYTHON_VERSION/version.txt"
+          echo $VERSION > "$CIRCLE_ARTIFACTS/version.txt"
     - run:
         name: Upload to PyPI
         command: |
