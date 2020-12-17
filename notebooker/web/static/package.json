@@ -1,6 +1,6 @@
 {
   "name": "notebooker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Notebooker - Turn notebooks into reports",
   "dependencies": {
     "bootstrap-table": "1.15.3",

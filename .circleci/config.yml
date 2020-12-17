@@ -164,7 +164,7 @@ jobs:
       PYTHON_VERSION: "3_6"
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_6
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_6
-      VERSION: 0.1.0
+      VERSION: 0.2.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker
@@ -176,7 +176,7 @@ jobs:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_7
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_7
-      VERSION: 0.1.0
+      VERSION: 0.2.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker
@@ -195,7 +195,7 @@ jobs:
           command: |
             ls -la /tmp/circleci-artifacts/3_6
             VERSION=$(cat /tmp/circleci-artifacts/3_6/version.txt)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/3_6/dist
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} ${VERSION} /tmp/circleci-artifacts/3_6/dist
 workflows:
   version: 2
   build_all:

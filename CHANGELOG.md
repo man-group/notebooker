@@ -1,3 +1,14 @@
+0.2.1 (????-??-??) 
+------------------
+No changes (yet!)
+
+
+0.2.0 (2020-12-17)
+------------------
+* Code output can now be hidden from PDF and email output! Either check the box in the "Run Report" dialog or, using the cli, use the new `--hide-code` option.
+* Performance improvement for queries
+
+
 0.1.0 (2020-11-30)
 ------------------
 Support for database plugins and tidying up configuration to be consistent across the board.
