@@ -200,7 +200,6 @@ workflows:
       - publish-github-release:
           requires:
             - build_3_6
-            - build_3_7
 #          filters:
 #            branches:
 #              - master
