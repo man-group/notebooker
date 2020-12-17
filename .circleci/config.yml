@@ -208,4 +208,5 @@ workflows:
             - build_3_7
           filters:
             branches:
-              - master
+              only:
+                - master
