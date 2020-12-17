@@ -128,6 +128,7 @@ defaults: &defaults
           python setup.py bdist_wheel --universal
           python setup.py bdist_egg
           python setup.py sdist
+          mkdir -p "$CIRCLE_ARTIFACTS/dist"
           cp -r ./dist/* "$CIRCLE_ARTIFACTS/dist"
     - run:
         name: Upload to PyPI
