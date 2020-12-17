@@ -71,7 +71,6 @@ defaults: &defaults
        command: |
          virtualenv ci
          . ci/bin/activate
-         export PYTHON_VERSION=$(python -c "import platform; print(platform.python_version())")
          pip install six lxml flake8 tox pytest black .[test]
          python setup.py develop
     # Save dependency cache
@@ -162,11 +161,15 @@ defaults: &defaults
 version: 2
 jobs:
   build_3_6:
+    environment:
+      PYTHON_VERSION: 3_6
     working_directory: ~/notebooker_3_6
     docker:
     - image: cimg/python:3.6-node
     <<: *defaults
   build_3_7:
+    environment:
+      PYTHON_VERSION: 3_7
     working_directory: ~/notebooker_3_7
     docker:
     - image: cimg/python:3.7-node
@@ -181,8 +184,8 @@ jobs:
           name: "Publish release on GitHub"
           command: |
             ls -la /tmp/circleci-artifacts
-            VERSION=$(cat /tmp/circleci-artifacts/3.6*/version.txt)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/dist/3.6*
+            VERSION=$(cat /tmp/circleci-artifacts/3_6/version.txt)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/circleci-artifacts/dist/3_6
 workflows:
   version: 2
   build_all:
