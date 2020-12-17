@@ -135,7 +135,7 @@ defaults: &defaults
           python setup.py bdist_wheel --universal
           python setup.py bdist_egg
           python setup.py sdist
-          cp -r ./dist /tmp/circleci-artifacts
+          cp -r ./dist /tmp/circleci-artifacts/build
     - run:
         name: Upload to PyPI
         command: |
@@ -162,6 +162,11 @@ defaults: &defaults
         path: /tmp/circleci-artifacts
     - store_artifacts:
         path: test-results
+    - persist_to_workspace:
+        root: $CIRCLE_ARTIFACTS
+        paths:
+          - version.txt
+          - build/*
 version: 2
 jobs:
   build_3_6:
