@@ -1,8 +1,10 @@
-![Notebooker](docs/images/notebooker_cropped.jpg)
+[![Notebooker](docs/images/notebooker_cropped.jpg)](https://notebooker.readthedocs.io/en/latest/)
 
 Productionise your Jupyter Notebooks, just as interactively as you wrote them. Notebooker is a webapp which can execute and parametrise Jupyter Notebooks as soon as they have been committed to git. The results are stored in MongoDB and searchable via the web interface, essentially turning your Jupyter Notebook into a production-style web-based report in a few clicks.
 
+
 [![CircleCI](https://circleci.com/gh/man-group/notebooker.svg?style=shield&circle-token=54008697f29eb7713d5f18d73ef785cb5ba858c9)](https://app.circleci.com/pipelines/github/man-group/notebooker)
+[![Documentation Status](https://readthedocs.org/projects/notebooker/badge/?version=latest)](https://notebooker.readthedocs.io/en/latest/?badge=latest)
 
 ## Run a Jupyter notebook as a report with parameters
 ![Screenshot of "Run A Report" dialog](docs/images/nbkr_run_report.png)
