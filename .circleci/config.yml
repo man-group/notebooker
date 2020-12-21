@@ -186,14 +186,13 @@ jobs:
     <<: *defaults
   publish-github-release:
     docker:
-      - image: cibuilds/github:0.10
+      - image: cibuilds/github:0.13
     steps:
       - attach_workspace:
           at: /tmp/circleci-artifacts
       - run:
           name: "Publish release on GitHub"
           command: |
-            ls -la /tmp/circleci-artifacts/3_6
             VERSION=$(cat /tmp/circleci-artifacts/3_6/version.txt)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -soft ${VERSION} /tmp/circleci-artifacts/3_6/dist
 workflows:
