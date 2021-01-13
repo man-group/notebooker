@@ -1,8 +1,9 @@
 from __future__ import unicode_literals
 
+from mock import patch
 import pytest
 
-from notebooker.execute_notebook import _get_overrides
+from notebooker.execute_notebook import _get_overrides, docker_compose_entrypoint
 
 
 @pytest.mark.parametrize(
@@ -47,3 +48,10 @@ def test_get_overrides(json_overrides, iterate_override_values_of, expected_outp
 def test_get_overrides_valueerror(input_json, iterate_override_values_of, error_message):
     with pytest.raises(ValueError, match=error_message):
         _get_overrides(input_json, iterate_override_values_of)
+
+
+def test_docker_compose_entrypoint_propagates_exit_code():
+    with patch("notebooker.execute_notebook.sys.argv", ["", "--help"]):
+        assert docker_compose_entrypoint() == 0
+    with patch("notebooker.execute_notebook.sys.argv", ["", "--invalid-arg"]):
+        assert docker_compose_entrypoint() != 0

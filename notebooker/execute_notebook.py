@@ -365,7 +365,7 @@ def execute_notebook_entrypoint(
             py_template_subdir=py_template_subdir,
         )
         if result.mailto:
-            send_result_email(result, mailto)
+            send_result_email(result)
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
             logger.warning(repr(result))
@@ -382,16 +382,17 @@ def docker_compose_entrypoint():
 
     Examples
     --------
-    $ notebooker_execute --report-name watchdog_checks --mongo-host mktdatad
+    $ notebooker_execute --mongo-host mongodb0.example.com execute-notebook --report-name watchdog_checks
     Received a request to run a report with the following parameters:
-    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook', '--report-name', 'watchdog_checks', '--mongo-host', 'mktdatad']
+    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker._entrypoints', '--mongo-host', 'mongodb0.example.com',
+        'execute-notebook', '--report-name', 'watchdog_checks']
 
-    $ notebooker_execute
+    $ notebooker_execute execute-notebook
     Received a request to run a report with the following parameters:
-    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker.execute_notebook']
+    ['/users/is/jbannister/pyenvs/notebooker/bin/python', '-m', 'notebooker._entrypoints', 'execute-notebook']
     ValueError: Error! Please provide a --report-name.
     """
-    args_to_execute = [sys.executable, "-m", __name__] + sys.argv[1:]
+    args_to_execute = [sys.executable, "-m", "notebooker._entrypoints"] + sys.argv[1:]
     logger.info("Received a request to run a report with the following parameters:")
     logger.info(args_to_execute)
-    subprocess.Popen(args_to_execute).wait()
+    return subprocess.Popen(args_to_execute).wait()
