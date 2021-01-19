@@ -91,7 +91,7 @@ def _get_output_path_hex(notebooker_disable_git, py_template_dir) -> str:
     if py_template_dir and not notebooker_disable_git:
         latest_sha = None
         try:
-            git_repo = git.repo.Repo(py_template_dir)
+            git_repo = git.repo.Repo(py_template_dir, search_parent_directories=True)
             if _git_has_changes(git_repo):
                 logger.info("Pulling latest notebook templates from git.")
                 _git_pull_latest(git_repo)
