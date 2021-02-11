@@ -1,6 +1,9 @@
-0.2.1 (????-??-??) 
+0.2.1 (2021-02-11) 
 ------------------
-No changes (yet!)
+
+* Bugfix: `notebooker_execute` entrypoint should now work as intended
+* Bugfix: Sanity and template regression tests should now work as intended
+* Improvement: Specifying a git repo should be a little simpler
 
 
 0.2.0 (2020-12-17)
