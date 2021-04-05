@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import tempfile
+import uuid
 
 import mock
 from click.testing import CliRunner
@@ -34,23 +35,25 @@ def test_generate_ipynb_from_py(setup_and_cleanup_notebooker_filesystem, webapp_
         expected_ipynb_path = os.path.join(python_dir, "fake_sha_later", expected_filename)
         assert os.path.exists(expected_ipynb_path), ".ipynb was not generated as expected!"
 
+        uuid_1 = uuid.UUID(int=12345)
+        uuid_2 = uuid.UUID(int=67890)
         with mock.patch("notebooker.utils.conversion.uuid.uuid4") as uuid4:
             with mock.patch("notebooker.utils.conversion.pkg_resources.resource_filename") as resource_filename:
                 conversion.python_template_dir = lambda *a, **kw: None
-                uuid4.return_value = "uuid"
+                uuid4.return_value = uuid_1
                 resource_filename.return_value = python_dir + "/extra_path/test_report.py"
                 conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report", False, py_template_dir="")
 
-        expected_ipynb_path = os.path.join(python_dir, "uuid", expected_filename)
+        expected_ipynb_path = os.path.join(python_dir, str(uuid_1), expected_filename)
         assert os.path.exists(expected_ipynb_path), f".ipynb at {expected_ipynb_path} was not generated as expected!"
 
         with mock.patch("notebooker.utils.conversion.uuid.uuid4") as uuid4:
             conversion.python_template_dir = lambda *a, **kw: python_dir
             conversion.NOTEBOOKER_DISABLE_GIT = True
-            uuid4.return_value = "uuid_nogit"
+            uuid4.return_value = uuid_2
             conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report", True, py_template_dir=python_dir)
 
-        expected_ipynb_path = os.path.join(python_dir, "uuid_nogit", expected_filename)
+        expected_ipynb_path = os.path.join(python_dir, str(uuid_2), expected_filename)
         assert os.path.exists(expected_ipynb_path), ".ipynb was not generated as expected!"
 
 
