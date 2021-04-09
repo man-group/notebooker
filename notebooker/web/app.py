@@ -19,6 +19,7 @@ from notebooker.web.routes.core import core_bp
 from notebooker.web.routes.index import index_bp
 from notebooker.web.routes.pending_results import pending_results_bp
 from notebooker.web.routes.run_report import run_report_bp
+from notebooker.web.routes.scheduling import scheduling_bp
 from notebooker.web.routes.serve_results import serve_results_bp
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ def create_app():
     flask_app.register_blueprint(core_bp)
     flask_app.register_blueprint(serve_results_bp)
     flask_app.register_blueprint(pending_results_bp)
+    flask_app.register_blueprint(scheduling_bp)
     try:
         import prometheus_client
     except ImportError:

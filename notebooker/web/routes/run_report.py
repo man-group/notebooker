@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Tuple
 
 import nbformat
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
+from nbformat import NotebookNode
 
 from notebooker import execute_notebook
 from notebooker.constants import JobStatus, python_template_dir
@@ -59,6 +60,42 @@ def run_report_get_preview(report_name):
     )
 
 
+def get_report_as_nb(relative_report_path: str) -> NotebookNode:
+    path = generate_ipynb_from_py(
+        current_app.config["TEMPLATE_DIR"],
+        relative_report_path,
+        current_app.config["NOTEBOOKER_DISABLE_GIT"],
+        _get_python_template_dir(),
+    )
+    nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
+    return nb
+
+
+def get_report_parameters_html(relative_report_path: str) -> str:
+    nb = get_report_as_nb(relative_report_path)
+    metadata_idx = _get_parameters_cell_idx(nb)
+    parameters_as_html = ""
+    if metadata_idx is not None:
+        metadata = nb["cells"][metadata_idx]
+        parameters_as_html = metadata["source"].strip()
+    return parameters_as_html
+
+
+@run_report_bp.route("/get_report_parameters/<path:report_name>", methods=["GET"])
+def run_report_get_parameters(report_name):
+    """
+    Get the parameters of the Notebook Template which is about to be executed in Python.
+
+    :param report_name: The parameter here should be a "/"-delimited string which mirrors the directory structure of \
+        the notebook templates.
+
+    :returns: Get the parameters of the Notebook Template which is about to be executed in Python syntax.
+    """
+    report_name = convert_report_name_url_to_path(report_name)
+    params_as_html = get_report_parameters_html(report_name)
+    return jsonify({"result": params_as_html}) if params_as_html else ("", 404)
+
+
 @run_report_bp.route("/run_report/<path:report_name>", methods=["GET"])
 def run_report_http(report_name):
     """
@@ -72,28 +109,14 @@ def run_report_http(report_name):
     report_name = convert_report_name_url_to_path(report_name)
     json_params = request.args.get("json_params")
     initial_python_parameters = json_to_python(json_params) or ""
-    try:
-        path = generate_ipynb_from_py(
-            current_app.config["TEMPLATE_DIR"],
-            report_name,
-            current_app.config["NOTEBOOKER_DISABLE_GIT"],
-            _get_python_template_dir(),
-        )
-    except FileNotFoundError as e:
-        logger.exception(e)
-        return "", 404
-    nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
+    nb = get_report_as_nb(report_name)
     metadata_idx = _get_parameters_cell_idx(nb)
-    parameters_as_html = ""
     has_prefix = has_suffix = False
     if metadata_idx is not None:
-        metadata = nb["cells"][metadata_idx]
-        parameters_as_html = metadata["source"].strip()
         has_prefix, has_suffix = (bool(nb["cells"][:metadata_idx]), bool(nb["cells"][metadata_idx + 1 :]))
-    logger.info("initial_python_parameters = {}".format(initial_python_parameters))
     return render_template(
         "run_report.html",
-        parameters_as_html=parameters_as_html,
+        parameters_as_html=get_report_parameters_html(report_name),
         has_prefix=has_prefix,
         has_suffix=has_suffix,
         report_name=report_name,

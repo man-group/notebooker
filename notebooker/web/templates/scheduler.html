@@ -1,0 +1,61 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html>
+<head>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/scheduler.js') }}"></script>
+</head>
+<body>
+
+    {{ header.sidebar(all_reports) }}
+    <div class="ui centered grid" style="display:none" id="schedulerTableContainer">
+        <div class="twelve wide column">
+            <table id="schedulerTable" class="ui sortable selectable padded table">
+            </table>
+        </div>
+    </div>
+    <div class="ui animated button" id="showScheduler">
+        <div class="visible content">Add a schedule</div>
+        <div class="hidden content"><i class="plus icon"></i></div>
+    </div>
+    <div class="ui modal" id="schedulerModal">
+        <div class="header"><span id="scheduleAction">Add</span> a schedule</div>
+        <div class="content">
+            <form class="ui form">
+                <div class="field" id="jobNameField">
+                    <label>
+                        Job Name
+                        <input type="text" name="jobName" placeholder="Job Name (mandatory)">
+                    </label>
+                </div>
+                <div class="field" id="nbTemplateNameField">
+                    <label>Notebook Template to execute</label>
+                    <div class="ui selection dropdown" id="templateChoices">
+                        <input type="hidden" name="templateToExecute">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Notebook template name</div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Parameter overrides</label>
+                        <textarea rows="3"></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Parameters</label>
+                        <code id="notebookParameters">Select a Notebook Template above</code>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>
+                        Cron Schedule
+                        <input type="text" name="cronSchedule" placeholder="* * * * *">
+                    </label>
+                </div>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
