@@ -65,6 +65,7 @@ setup(
         "stashy",
         "click>7.1.0",
         "python-dateutil",
+        "apscheduler",
         "flask",
         "requests",
         "retrying",

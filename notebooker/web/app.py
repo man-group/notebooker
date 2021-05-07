@@ -6,6 +6,8 @@ from typing import Optional
 
 import sys
 import time
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.mongodb import MongoDBJobStore
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 
@@ -96,6 +98,11 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
     flask_app.config.update(
         TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
     )
+    jobstores = {"mongo": MongoDBJobStore()}  # TODO: Use existing mongo connection
+    scheduler = BackgroundScheduler(jobstores=jobstores, job_defaults={"notebooker_port": web_config.PORT})
+    scheduler.start()
+    scheduler.print_jobs()
+    flask_app.apscheduler = scheduler
     return flask_app
 
 

@@ -3,6 +3,7 @@ import uuid
 
 import click
 
+from notebooker import notebook_templates_example
 from notebooker._version import __version__
 from notebooker.constants import DEFAULT_SERIALIZER
 from notebooker.execute_notebook import execute_notebook_entrypoint
@@ -47,13 +48,13 @@ def filesystem_default_value(dirname):
 )
 @click.option(
     "--py-template-base-dir",
-    default=None,
+    default=os.path.dirname(notebook_templates_example.__file__),
     help="The base directory of the git repository which holds the notebook templates as .py files. "
     "If not specified, this will default to the sample directory within notebooker.",
 )
 @click.option(
     "--py-template-subdir",
-    default=None,
+    default="",
     help="The subdirectory of the git repository which contains only notebook templates.",
 )
 @click.option(
@@ -129,7 +130,7 @@ def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir)
 @click.option(
     "--error-mailto",
     default="",
-    help="A comma-separated list of email addresses which will receive errors. Deafults to --mailto argument."
+    help="A comma-separated list of email addresses which will receive errors. Deafults to --mailto argument.",
 )
 @click.option("--email-subject", default="", help="The subject of the email sent on a successful result.")
 @click.option("--pdf-output/--no-pdf-output", default=True, help="Whether we generate PDF output or not.")

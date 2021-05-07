@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify, render_template, current_app
 
 from notebooker.web.utils import get_all_possible_templates
+from apscheduler.triggers import cron
 
 scheduling_bp = Blueprint("scheduling", __name__)
 
@@ -11,7 +12,7 @@ def scheduler_ui():
 
 
 @scheduling_bp.route("/scheduler/jobs")
-def all_schedules():
+def all_schedules():  # TODO: use real data
     return jsonify(
         [
             {
@@ -37,3 +38,28 @@ def all_schedules():
             },
         ]
     )
+
+
+@scheduling_bp.route("/scheduler/create_schedule", methods=["POST"])
+def create_schedule():
+    crontab = "* * * * *"
+    parts = crontab.split()
+    current_app.apscheduler.add_job(
+        "notebooker.web.scheduler:run_report",
+        jobstore="mongo",
+        trigger=cron.CronTrigger(minute=parts[0], hour=parts[1], day=parts[2], month=parts[3], day_of_week=parts[4]),
+        kwargs={
+            "report_name": "sample/plot_random",
+            "overrides": {},
+            "report_title": "schedule_test",
+            "mailto": "",
+            "generate_pdf": False,
+            "hide_code": True,
+        },
+    )
+    return 200
+
+
+@scheduling_bp.route("/scheduler/hello")
+def hello():
+    return jsonify(current_app.apscheduler.get_jobs())
