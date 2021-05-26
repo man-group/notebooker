@@ -51,11 +51,6 @@ defaults: &defaults
         paths:
             - ~/.cache/yarn
     - run:
-        name: Browserify
-        command: |
-             pushd $YARN_STATIC_DIR
-             yarn run bundle
-    - run:
         name: Lint & Format JS Code
         command: |
           pushd $YARN_STATIC_DIR
@@ -65,6 +60,11 @@ defaults: &defaults
         command: |
           git diff --name-status
           git diff-files --quiet || (echo 'The files above have not been formatted!' && (exit 1))
+    - run:
+        name: Browserify
+        command: |
+             pushd $YARN_STATIC_DIR
+             yarn run bundle
     - run:
        name: Create and activate virtualenv
        command: |
