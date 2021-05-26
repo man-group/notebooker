@@ -4,6 +4,9 @@
   "description": "Notebooker - Turn notebooks into reports",
   "dependencies": {
     "bootstrap-table": "1.15.3",
+    "browserify": "^17.0.0",
+    "cron-expression-validator": "^1.0.18",
+    "cron-parser": "^3.5.0",
     "datatables": "1.10.18",
     "diff": "^3.5.0",
     "eslint": "^6.8.0",
@@ -16,7 +19,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "npm run sort-imports && npm run format-prettier",
     "lint": "npm run lint-js",
-    "lint-js": "eslint notebooker *.js --ext .js --fix"
+    "lint-js": "eslint notebooker *.js --ext .js --fix",
+    "bundle": "browserify notebooker/scheduler.js -o notebooker/scheduler_bundle.js"
   },
   "author": "jbannister",
   "license": "AGPL-3.0-only"

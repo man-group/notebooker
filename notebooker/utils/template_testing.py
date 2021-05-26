@@ -39,9 +39,7 @@ def sanity_check(template_dir):
     logger.info("Starting sanity check")
     with setup_test(template_dir):
         for template_name in notebooker.web.utils._all_templates():
-            logger.info(
-                "========================[ Sanity checking {} ]========================".format(template_name)
-            )
+            logger.info("========================[ Sanity checking {} ]========================".format(template_name))
             # Test conversion to ipynb - this will throw if stuff goes wrong
             generate_ipynb_from_py(
                 filesystem.get_template_dir(),

@@ -51,6 +51,11 @@ defaults: &defaults
         paths:
             - ~/.cache/yarn
     - run:
+        name: Browserify
+        command: |
+             pushd $YARN_STATIC_DIR
+             yarn run bundle
+    - run:
         name: Lint & Format JS Code
         command: |
           pushd $YARN_STATIC_DIR

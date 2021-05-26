@@ -1,3 +1,5 @@
+var parser = require('cron-parser');
+
 load_data = () => {
     $.ajax({
         url: `/scheduler/jobs`,
@@ -64,6 +66,29 @@ $(document).ready(() => {
     $('#showScheduler').click(() => {
         setScheduleModalMode("adding");
         $('#schedulerModal').modal('show');
+    });
+    $('#cronScheduleText').on('propertychange input', function(event) {
+        var valueChanged = false;
+        // debugger;
+        if (event.type=='propertychange') {
+            valueChanged = event.originalEvent.propertyName=='value';
+        } else {
+            valueChanged = true;
+        }
+        if (valueChanged && event.target.value.length > 3) {
+            try {
+                var interval = parser.parseExpression(event.target.value);
+                let cpo = $('#crontabParserOutput');
+                cpo.text("Next schedule: " + interval.next().toString());
+                cpo.removeClass("hidden");
+                $('#scheduleForm').removeClass("error");
+            } catch (e) {
+                $('#crontabParserOutput').addClass("hidden");
+                $('#validationErrorsSpan').text("Crontab Parsing " + e)
+                $('#scheduleForm').addClass("error")
+            }
+
+        }
     });
     $('#schedulerTable').DataTable({
         columns: [

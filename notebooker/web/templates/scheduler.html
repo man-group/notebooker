@@ -4,7 +4,7 @@
 
 <html>
 <head>
-    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/scheduler.js') }}"></script>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/scheduler_bundle.js') }}"></script>
 </head>
 <body>
 
@@ -22,7 +22,7 @@
     <div class="ui modal" id="schedulerModal">
         <div class="header"><span id="scheduleAction">Add</span> a schedule</div>
         <div class="content">
-            <form class="ui form">
+            <form class="ui form" id="scheduleForm">
                 <div class="field" id="jobNameField">
                     <label>
                         Job Name
@@ -47,13 +47,18 @@
                         <code id="notebookParameters">Select a Notebook Template above</code>
                     </div>
                 </div>
-                <div class="field">
+                <div class="field" id="cronScheduleField">
                     <label>
                         Cron Schedule
-                        <input type="text" name="cronSchedule" placeholder="* * * * *">
+                        <input type="text" id="cronScheduleText" name="cronSchedule" placeholder="* * * * *">
                     </label>
+                    <div class="ui pointing yellow basic label hidden" id="crontabParserOutput"></div>
                 </div>
-                <button class="ui button" type="submit">Submit</button>
+                  <div class="ui error message">
+                    <div class="header">Errors were found</div>
+                    <span id="validationErrorsSpan"></span>
+                  </div>
+                <button class="ui button" type="submit" id="submitScheduleChanges">Submit</button>
             </form>
         </div>
     </div>
