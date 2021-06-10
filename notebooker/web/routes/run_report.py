@@ -7,7 +7,7 @@ import sys
 import threading
 import uuid
 from logging import getLogger
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
@@ -210,21 +210,39 @@ def run_report(
     return job_id
 
 
+class RunReportParams(NamedTuple):
+    report_title: AnyStr
+    mailto: AnyStr
+    generate_pdf_output: bool
+    hide_code: bool
+
+
+def validate_run_params(params, issues: List[str]) -> RunReportParams:
+    # Find and cleanse the title of the report
+    report_title = validate_title(params.get("report_title"), issues)
+    # Get mailto email address
+    mailto = validate_mailto(params.get("mailto"), issues)
+    # Find whether to generate PDF output
+    generate_pdf_output = validate_generate_pdf_output(params.get("generatepdf"), issues)
+    hide_code = params.get("hide_code") == "on"
+
+    return RunReportParams(report_title=report_title, mailto=mailto, generate_pdf_output=generate_pdf_output, hide_code=hide_code)
+
+
 def _handle_run_report(
     report_name: str, overrides_dict: Dict[str, Any], issues: List[str]
 ) -> Tuple[str, int, Dict[str, str]]:
-    # Find and cleanse the title of the report
-    report_title = validate_title(request.values.get("report_title"), issues)
-    # Get mailto email address
-    mailto = validate_mailto(request.values.get("mailto"), issues)
-    # Find whether to generate PDF output
-    generate_pdf_output = validate_generate_pdf_output(request.values.get("generatepdf"), issues)
-    hide_code = request.values.get("hide_code") == "on"
+    params = validate_run_params(request.values, issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
     job_id = run_report(
-        report_name, report_title, mailto, overrides_dict, generate_pdf_output=generate_pdf_output, hide_code=hide_code
+        report_name,
+        params.report_title,
+        params.mailto,
+        overrides_dict,
+        generate_pdf_output=params.generate_pdf_output,
+        hide_code=params.hide_code,
     )
     return (
         jsonify({"id": job_id}),
