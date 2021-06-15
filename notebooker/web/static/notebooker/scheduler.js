@@ -1,5 +1,34 @@
 var parser = require('cron-parser');
 
+addDeleteButtonCallback = () => {
+    $('.deleteScheduleButton').click((clicked) => {
+        const deleteHref = clicked.target.closest('button').dataset.href;
+        $('#deleteModal').modal({
+            closable: true,
+            onDeny() {
+                return true;
+            },
+            onApprove() {
+                $.ajax({
+                    type: 'DELETE',
+                    url: deleteHref,
+                    dataType: 'json',
+                    success(data, status, request) {
+                        if (data.status === 'error') {
+                            $('#errorMsg').text(data.content);
+                            $('#errorPopup').show();
+                        } else {
+                            location.reload();
+                        }
+                    },
+                    error(xhr, error) {
+                    },
+                });
+            },
+        }).modal('show');
+    });
+}
+
 load_data = () => {
     $.ajax({
         url: `/scheduler/jobs`,
@@ -10,13 +39,14 @@ load_data = () => {
             table.rows.add(result);
             table.draw();
             $('#schedulerTableContainer').fadeIn();
-            add_delete_callback();
+            addDeleteButtonCallback();
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
         },
     });
 };
+
 
 function loadTemplateParameters(templateName) {
     $.ajax({
@@ -31,10 +61,10 @@ function loadTemplateParameters(templateName) {
 function setScheduleModalMode(mode) {
     // mode should be "adding" or "modifying"
     if (mode === "adding") {
-        $('#jobNameField').removeClass("disabled");
+        $('#jobTitleField').removeClass("disabled");
         $('#nbTemplateNameField').removeClass("disabled");
     } else {
-        $('#jobNameField').addClass("disabled");
+        $('#jobTitleField').addClass("disabled");
         $('#nbTemplateNameField').addClass("disabled");
     }
 }
@@ -62,7 +92,23 @@ load_all_templates = () => {
 };
 
 
+function handleFormError(errorMsg) {
+    let ul = $('#formErrorMessage ul');
+    ul.empty();
+    ul.append(`<li>${errorMsg}</li>`);
+    $('#scheduleForm').addClass('error');
+}
+
+function handleCrontabError(errorMsg) {
+    let cpo = $('#crontabParserOutput');
+    cpo.addClass("red");
+    cpo.text("Parsing " + errorMsg)
+    cpo.removeClass(["yellow", "hidden"]);
+    $('#schedulerSubmitButton').addClass("disabled");
+}
+
 $(document).ready(() => {
+    $('.ui.checkbox').checkbox();
     $('#showScheduler').click(() => {
         setScheduleModalMode("adding");
         $('#schedulerModal').modal('show');
@@ -76,40 +122,124 @@ $(document).ready(() => {
             valueChanged = true;
         }
         if (valueChanged && event.target.value.length > 3) {
+            if (event.target.value.trim().split(' ').length !== 5) {
+                handleCrontabError('Error: crontab must have 5 parts: minute/hour/day/month/day of week');
+                return
+            }
             try {
                 var interval = parser.parseExpression(event.target.value);
                 let cpo = $('#crontabParserOutput');
                 cpo.text("Next schedule: " + interval.next().toString());
-                cpo.removeClass("hidden");
+                cpo.addClass("yellow");
+                cpo.removeClass(["red", "hidden"]);
                 $('#scheduleForm').removeClass("error");
+                $('#schedulerSubmitButton').removeClass("disabled");
             } catch (e) {
-                $('#crontabParserOutput').addClass("hidden");
-                $('#validationErrorsSpan').text("Crontab Parsing " + e)
-                $('#scheduleForm').addClass("error")
+                handleCrontabError(e)
             }
 
         }
     });
+    var the_form = $('#scheduleForm');
+    the_form.form({
+        fields: {
+            jobTitle: {
+                identifier: 'jobTitle',
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Please enter a unique name for your scheduled job.'
+                    }
+                ]
+            },
+            templateToExecute: {
+                identifier: 'templateToExecute',
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Please select a template to be executed.'
+                    }
+                ]
+            },
+            cronSchedule: {
+                identifier: 'cronSchedule',
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Please add a valid cron schedule.'
+                    }
+                ]
+            },
+        },
+        onSuccess: function(event) {
+            const form = $(this);
+            const reportName = $('input[name="templateToExecute"]').val();
+            const formObj = form.serializeArray().reduce(function(obj, item) {
+                obj[item.name] = item.value;
+                return obj;
+            }, {});
+            console.log(form);
+            $.ajax({
+                type: 'POST',
+                url: `/scheduler/create/${reportName}`,
+                data: {
+                    report_title: formObj.jobTitle,
+                    report_name: formObj.templateToExecute,
+                    overrides: formObj.overrides,
+                    cron_schedule: formObj.cronSchedule,
+                    mailto: formObj.mailto,
+                    generate_pdf: formObj.generate_pdf,
+                    hide_code: formObj.hide_code,
+                },
+                success(data, status, request) {
+                    if (data.status === 'Failed') {
+                        handleFormError(data.content);
+                    } else {
+                        location.reload();
+                    }
+                },
+                error(jqXHR, textStatus, errorThrown) {
+                    handleFormError(`${jqXHR.status} ${textStatus} ${errorThrown}`)
+                },
+            });
+            return false;
+        }
+    });
+    the_form.submit(function() {
+        return false;
+    });
     $('#schedulerTable').DataTable({
         columns: [
             {
-                title: 'Report ID',
+                title: 'Report Unique ID',
                 name: 'id',
                 data: 'id',
             },
             {
-                title: 'Status',
-                name: 'status',
-                data: 'status',
+                title: 'Report Title',
+                name: 'report_title',
+                data: 'params.report_title',
             },
             {
-                title: 'Last Successful Run',
-                name: 'run_date',
-                data: 'run_date',
+                title: 'Report Name',
+                name: 'report_name',
+                data: 'params.report_name',
+            },
+            {
+                title: 'Next Run Time',
+                name: 'next_run_time',
+                data: 'next_run_time',
                 render: (dt) => {
                     const d = new Date(dt);
                     return d.toISOString().replace('T', ' ').slice(0, 19);
                 },
+            },
+            {
+                title: 'Delete',
+                name: 'delete_url',
+                data: 'delete_url',
+                render: (url, type, row) => '<button type="button" class="ui button red deleteScheduleButton" '
+                        + `id="delete_${row.id}" data-href="${url}"> <i class="trash icon"></i>`,
             },
         ],
         order: [[0, 'asc']],

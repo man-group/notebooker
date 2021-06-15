@@ -1,14 +1,15 @@
 import json
 from typing import Optional, List
 
-from flask import Blueprint, jsonify, render_template, current_app, request
+from apscheduler.jobstores.base import ConflictingIdError
+from flask import Blueprint, jsonify, render_template, current_app, request, url_for
 
 from notebooker.web.handle_overrides import handle_overrides
 from notebooker.web.routes.run_report import validate_run_params
 from notebooker.web.utils import get_all_possible_templates
 from apscheduler.triggers import cron
 
-scheduling_bp = Blueprint("scheduling", __name__)
+scheduling_bp = Blueprint("scheduling_bp", __name__)
 
 
 @scheduling_bp.route("/scheduler")
@@ -25,14 +26,13 @@ def all_schedules():  # TODO: use real data
     return jsonify(result), 200
 
 
-@scheduling_bp.route("/scheduler/<path:report_name>/<string:job_id>", methods=["DELETE"])
-def remove_schedule(report_name, job_id):
+@scheduling_bp.route("/scheduler/<string:job_id>", methods=["DELETE"])
+def remove_schedule(job_id):
     job = current_app.apscheduler.get_job(job_id)
-    if job is None or job.kwargs.get("report_name") != report_name:
+    if job is None:
         return {"status": "Not found"}, 404
     job.remove()
-
-    return "", 200
+    return jsonify({"status": "Complete"}), 200
 
 
 @scheduling_bp.route("/scheduler/update/<path:report_name>/<string:job_id>", methods=["POST"])
@@ -62,7 +62,7 @@ def update_schedule(report_name, job_id):
     job.trigger = trigger
     job.kwargs = params
 
-    return _job_to_json(job), 200
+    return jsonify(_job_to_json(job)), 200
 
 
 @scheduling_bp.route("/scheduler/create/<path:report_name>", methods=["POST"])
@@ -70,12 +70,13 @@ def create_schedule(report_name):
     if report_name not in get_all_possible_templates():
         return {"status": "Not found"}, 404
     issues = []
-    trigger = validate_crontab(request.values.get("crontab", ""), issues)
+    print(request.values)
+    trigger = validate_crontab(request.values.get("cron_schedule", ""), issues)
     params = validate_run_params(request.values, issues)
-    overrides_dict = handle_overrides(request.values.get("overrides"), issues)
+    overrides_dict = handle_overrides(request.values.get("overrides", ""), issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
-    params = {
+    dict_params = {
         "report_name": report_name,
         "overrides": overrides_dict,
         "report_title": params.report_title,
@@ -83,14 +84,15 @@ def create_schedule(report_name):
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
     }
-    job = current_app.apscheduler.add_job(
-        "notebooker.web.scheduler:run_report",
-        jobstore="mongo",
-        trigger=trigger,
-        kwargs=params,
-    )
+    job_id = f"{report_name}_{params.report_title}"
+    try:
+        job = current_app.apscheduler.add_job(
+            "notebooker.web.scheduler:run_report", jobstore="mongo", trigger=trigger, kwargs=dict_params, id=job_id
+        )
 
-    return _job_to_json(job), 201
+        return jsonify(_job_to_json(job)), 201
+    except ConflictingIdError as e:
+        return jsonify({"status": "Failed", "content": str(e)})
 
 
 @scheduling_bp.route("/scheduler/hello")
@@ -101,16 +103,16 @@ def hello():
 def validate_crontab(crontab: str, issues: List[str]) -> cron.CronTrigger:
     parts = crontab.split()
     if len(parts) != 5:
-        issues.append("the contrab key must be passed with a string using the crontab(8) format")
+        issues.append("The crontab key must be passed with a string using 5 crontab parts")
     else:
         return cron.CronTrigger(minute=parts[0], hour=parts[1], day=parts[2], month=parts[3], day_of_week=parts[4])
 
+
 def _job_to_json(job):
-     return {
+    return {
         "id": job.id,
-        "trigger": {
-            "fields": {field.name: [str(expr) for expr in field.expressions] for field in job.trigger.fields},
-        },
+        "trigger": {"fields": {field.name: [str(expr) for expr in field.expressions] for field in job.trigger.fields}},
         "params": job.kwargs,
         "next_run_time": job.next_run_time.isoformat(),
+        "delete_url": url_for("scheduling_bp.remove_schedule", job_id=job.id),
     }
