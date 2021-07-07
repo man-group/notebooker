@@ -140,6 +140,11 @@ def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir)
     is_flag=True,
     help='Used for debugging and testing. Whether to actually execute the notebook or just "prepare" it.',
 )
+@click.option(
+    "--scheduler-job-id",
+    default=None,
+    help="If available, it stores the id of the scheduler job which triggered this execution as part of the report."
+)
 @pass_config
 def execute_notebook(
     config: BaseConfig,
@@ -155,6 +160,7 @@ def execute_notebook(
     pdf_output,
     hide_code,
     prepare_notebook_only,
+    scheduler_job_id,
 ):
     if report_name is None:
         raise ValueError("Error! Please provide a --report-name.")
@@ -172,6 +178,7 @@ def execute_notebook(
         pdf_output,
         hide_code,
         prepare_notebook_only,
+        scheduler_job_id,
     )
 
 

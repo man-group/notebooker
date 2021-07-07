@@ -8,6 +8,7 @@ import threading
 import uuid
 from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
+from click.core import Option
 
 import nbformat
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
@@ -140,7 +141,14 @@ def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
 
 
 def run_report(
-    report_name, report_title, mailto, overrides, hide_code=False, generate_pdf_output=False, prepare_only=False
+    report_name,
+    report_title,
+    mailto,
+    overrides,
+    hide_code=False,
+    generate_pdf_output=False,
+    prepare_only=False,
+    scheduler_job_id=None,
 ):
     """
     Actually run the report in earnest.
@@ -151,6 +159,7 @@ def run_report(
     :param overrides: `Optional[Dict[str, Any]]` The parameters to be passed into the report
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
+    :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -166,6 +175,7 @@ def run_report(
         mailto=mailto,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
+        scheduler_job_id=scheduler_job_id,
     )
     app_config = current_app.config
     p = subprocess.Popen(
@@ -198,7 +208,8 @@ def run_report(
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
             "--hide-code" if hide_code else "--show-code",
         ]
-        + (["--prepare-notebook-only"] if prepare_only else []),
+        + (["--prepare-notebook-only"] if prepare_only else [])
+        + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else []),
         stderr=subprocess.PIPE,
     )
     stderr_thread = threading.Thread(
@@ -215,6 +226,7 @@ class RunReportParams(NamedTuple):
     mailto: AnyStr
     generate_pdf_output: bool
     hide_code: bool
+    scheduler_job_id: Optional[str]
 
 
 def validate_run_params(params, issues: List[str]) -> RunReportParams:
@@ -226,7 +238,13 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
     generate_pdf_output = validate_generate_pdf_output(params.get("generatepdf"), issues)
     hide_code = params.get("hide_code") == "on"
 
-    return RunReportParams(report_title=report_title, mailto=mailto, generate_pdf_output=generate_pdf_output, hide_code=hide_code)
+    return RunReportParams(
+        report_title=report_title,
+        mailto=mailto,
+        generate_pdf_output=generate_pdf_output,
+        hide_code=hide_code,
+        scheduler_job_id=params.get("scheduler_job_id"),
+    )
 
 
 def _handle_run_report(
@@ -243,6 +261,7 @@ def _handle_run_report(
         overrides_dict,
         generate_pdf_output=params.generate_pdf_output,
         hide_code=params.hide_code,
+        scheduler_job_id=params.scheduler_job_id,
     )
     return (
         jsonify({"id": job_id}),
@@ -296,6 +315,7 @@ def _rerun_report(job_id, prepare_only=False):
         result.overrides,
         generate_pdf_output=result.generate_pdf_output,
         prepare_only=prepare_only,
+        scheduler_job_id=None,  # the scheduler will never call rerun
     )
     return new_job_id
 

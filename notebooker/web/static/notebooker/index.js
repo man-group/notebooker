@@ -105,6 +105,18 @@ $(document).ready(() => {
                 },
             },
             {
+                title: 'Scheduler Job',
+                name: 'scheduler_job_id',
+                data: 'scheduler_job_id',
+                render: (url, type, row) => {
+                    if (row.scheduler_job_id) {
+                        return `<button onclick="location.href='/scheduler'" class="ui button blue">Scheduler</button>`;
+                    } else {
+                        return '';
+                    }
+                }
+            },
+            {
                 title: 'Rerun',
                 name: 'rerun_url',
                 data: 'rerun_url',
