@@ -1,5 +1,6 @@
 import json
 from typing import Optional, List
+import uuid
 
 from apscheduler.jobstores.base import ConflictingIdError
 from flask import Blueprint, jsonify, render_template, current_app, request, url_for
@@ -58,7 +59,7 @@ def update_schedule(report_name, job_id):
     }
     job.modify(trigger=trigger, kwargs=params)
 
-    # Modify won't change the current object, we need to make this change manually so we can display it properly.
+    # job.modify won't change the current object, so we need to do it manually before converting to json
     job.trigger = trigger
     job.kwargs = params
 
@@ -76,6 +77,7 @@ def create_schedule(report_name):
     overrides_dict = handle_overrides(request.values.get("overrides", ""), issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
+    job_id = f"{report_name}_{params.report_title}"
     dict_params = {
         "report_name": report_name,
         "overrides": overrides_dict,
@@ -83,8 +85,8 @@ def create_schedule(report_name):
         "mailto": params.mailto,
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
+        "scheduler_job_id": job_id,
     }
-    job_id = f"{report_name}_{params.report_title}"
     try:
         job = current_app.apscheduler.add_job(
             "notebooker.web.scheduler:run_report", jobstore="mongo", trigger=trigger, kwargs=dict_params, id=job_id

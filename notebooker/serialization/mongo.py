@@ -101,6 +101,7 @@ class MongoResultSerializer:
         mailto: str = "",
         generate_pdf_output: bool = True,
         hide_code: bool = False,
+        scheduler_job_id: Optional[str] = False,
     ) -> None:
         """ Call this when we are just starting a check. Saves a "pending" job into storage. """
         job_start_time = job_start_time or datetime.datetime.now()
@@ -115,6 +116,7 @@ class MongoResultSerializer:
             generate_pdf_output=generate_pdf_output,
             overrides=overrides or {},
             hide_code=hide_code,
+            scheduler_job_id=scheduler_job_id,
         )
         self._save_to_db(pending_result)
 
@@ -189,6 +191,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", None),
             )
         elif cls == NotebookResultPending:
             return NotebookResultPending(
@@ -203,6 +206,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", None),
             )
 
         elif cls == NotebookResultError:
@@ -219,6 +223,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", False),
             )
         else:
             raise ValueError("Could not deserialise {} into result object.".format(result))

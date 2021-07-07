@@ -45,6 +45,7 @@ def _run_checks(
     notebooker_disable_git: bool = False,
     py_template_base_dir: str = "",
     py_template_subdir: str = "",
+    scheduler_job_id: Optional[str] = None,
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -72,6 +73,8 @@ def _run_checks(
         Comma-separated email addresses to send on completion (or error).
     prepare_only : `Optional[bool]`
         Internal usage. Whether we want to do everything apart from executing the notebook.
+    scheduler_job_id : `Optional[str]`
+        If available, it will be part of the Error or Completed run report.
 
 
     Returns
@@ -122,6 +125,7 @@ def _run_checks(
         report_name=template_name,
         report_title=report_title,
         overrides=overrides,
+        scheduler_job_id=scheduler_job_id,
     )
     return notebook_result
 
@@ -145,6 +149,7 @@ def run_report(
     notebooker_disable_git=False,
     py_template_base_dir="",
     py_template_subdir="",
+    scheduler_job_id=None,
 ):
 
     job_id = job_id or str(uuid.uuid4())
@@ -179,6 +184,7 @@ def run_report(
             notebooker_disable_git=notebooker_disable_git,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
+            scheduler_job_id=scheduler_job_id,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -195,6 +201,7 @@ def run_report(
             overrides=overrides,
             mailto=error_mailto or mailto,
             generate_pdf_output=generate_pdf_output,
+            scheduler_job_id=scheduler_job_id,
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
@@ -224,6 +231,7 @@ def run_report(
                 notebooker_disable_git=notebooker_disable_git,
                 py_template_base_dir=py_template_base_dir,
                 py_template_subdir=py_template_subdir,
+                scheduler_job_id=scheduler_job_id,
             )
         else:
             logger.info("Abandoning attempt to run report. It failed too many times.")
@@ -310,6 +318,7 @@ def execute_notebook_entrypoint(
     pdf_output: bool,
     hide_code: bool,
     prepare_notebook_only: bool,
+    scheduler_job_id: Optional[str],
 ):
     report_title = report_title or report_name
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
@@ -334,6 +343,7 @@ def execute_notebook_entrypoint(
     logger.info("pdf_output = %s", pdf_output)
     logger.info("hide_code = %s", hide_code)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
+    logger.info("scheduler job id = %s", scheduler_job_id)
     logger.info("notebooker_disable_git = %s", notebooker_disable_git)
     logger.info("py_template_base_dir = %s", py_template_base_dir)
     logger.info("py_template_subdir = %s", py_template_subdir)
@@ -363,6 +373,7 @@ def execute_notebook_entrypoint(
             notebooker_disable_git=notebooker_disable_git,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
+            scheduler_job_id=scheduler_job_id,
         )
         if result.mailto:
             send_result_email(result)
