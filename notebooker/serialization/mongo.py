@@ -11,7 +11,7 @@ from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResu
 
 logger = getLogger(__name__)
 REMOVE_ID_PROJECTION = {"_id": 0}
-REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0}
+REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0, "email_html": 0}
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
