@@ -5,7 +5,7 @@ import click
 
 from notebooker import notebook_templates_example
 from notebooker._version import __version__
-from notebooker.constants import DEFAULT_SERIALIZER
+from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_DATABASE_NAME, DEFAULT_SCHEDULER_COLLECTION_NAME
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
 from notebooker.settings import BaseConfig, WebappConfig
@@ -98,13 +98,19 @@ def base_notebooker(
 @click.option("--logging-level", default="INFO")
 @click.option("--debug", default=False)
 @click.option("--base-cache-dir", default=filesystem_default_value("webcache"))
+@click.option("--scheduler-mongo-database", default=DEFAULT_DATABASE_NAME)
+@click.option("--scheduler-mongo-collection", default=DEFAULT_SCHEDULER_COLLECTION_NAME)
 @pass_config
-def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir):
+def start_webapp(
+    config: BaseConfig, port, logging_level, debug, base_cache_dir, scheduler_mongo_database, scheduler_mongo_collection
+):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
     web_config.LOGGING_LEVEL = logging_level
     web_config.DEBUG = debug
     web_config.CACHE_DIR = base_cache_dir
+    web_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
+    web_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
     return main(web_config)
 
 
@@ -143,7 +149,7 @@ def start_webapp(config: BaseConfig, port, logging_level, debug, base_cache_dir)
 @click.option(
     "--scheduler-job-id",
     default=None,
-    help="If available, it stores the id of the scheduler job which triggered this execution as part of the report."
+    help="If available, it stores the id of the scheduler job which triggered this execution as part of the report.",
 )
 @pass_config
 def execute_notebook(

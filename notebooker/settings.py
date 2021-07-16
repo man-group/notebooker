@@ -44,3 +44,6 @@ class WebappConfig(BaseConfig):
     # The temporary directory which will contain the .ipynb templates which have been converted from the .py templates.
     # Defaults to a random directory in ~/.notebooker/webcache.
     CACHE_DIR: str = ""
+
+    SCHEDULER_MONGO_DATABASE: str = ""
+    SCHEDULER_MONGO_COLLECTION: str = ""

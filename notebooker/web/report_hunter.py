@@ -65,7 +65,7 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
                             result.job_id, existing.status if existing else None, result.status
                         )
                     )
-            logger.info("Found {} updates since {}.".format(ct, last_query))
+            logger.debug("Found {} updates since {}.".format(ct, last_query))
             last_query = _last_query
         except Exception as e:
             logger.exception(str(e))

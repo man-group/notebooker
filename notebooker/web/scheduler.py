@@ -8,7 +8,15 @@ from notebooker.web.app import GLOBAL_CONFIG
 logger = getLogger(__name__)
 
 
-def run_report(report_name: str, overrides: dict, report_title: str, mailto: str, generate_pdf: bool, hide_code: bool, scheduler_job_id: str):
+def run_report(
+    report_name: str,
+    overrides: dict,
+    report_title: str,
+    mailto: str,
+    generate_pdf: bool,
+    hide_code: bool,
+    scheduler_job_id: str,
+):
     url = f"http://localhost:{GLOBAL_CONFIG.PORT}/run_report_json/{report_name}"
     payload = {
         "overrides": overrides,

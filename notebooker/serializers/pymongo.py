@@ -39,10 +39,11 @@ class PyMongoResultSerializer(MongoResultSerializer, cli_options=cli_options):
         self.mongo_password = mongo_password or None
         super(PyMongoResultSerializer, self).__init__(database_name, mongo_host, result_collection_name)
 
+    def get_mongo_connection(self):
+        return MongoClient(self.mongo_host, username=self.mongo_user, password=self.mongo_password)
+
     def get_mongo_database(self):
-        return MongoClient(self.mongo_host, username=self.mongo_user, password=self.mongo_password).get_database(
-            self.database_name
-        )
+        return self.get_mongo_connection().get_database(self.database_name)
 
 
 name = PyMongoResultSerializer.get_name()

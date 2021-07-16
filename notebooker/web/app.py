@@ -12,7 +12,8 @@ from flask import Flask
 from gevent.pywsgi import WSGIServer
 
 from notebooker.constants import CANCEL_MESSAGE, JobStatus
-from notebooker.serialization.serialization import initialize_serializer_from_config
+from notebooker.serialization.mongo import MongoResultSerializer
+from notebooker.serialization.serialization import initialize_serializer_from_config, get_serializer_from_cls
 from notebooker.settings import WebappConfig
 from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
 from notebooker.web.converters import DateConverter
@@ -90,6 +91,26 @@ def create_app():
     return flask_app
 
 
+def setup_scheduler(flask_app, web_config):
+    serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
+    if isinstance(serializer, MongoResultSerializer):
+        client = serializer.get_mongo_connection()
+        database = web_config.SCHEDULER_MONGO_DATABASE
+        collection = web_config.SCHEDULER_MONGO_COLLECTION
+        jobstores = {"mongo": MongoDBJobStore(database=database, collection=collection, client=client)}
+    else:
+        raise ValueError(
+            "We cannot support scheduling if we are not using a Mongo Result serializer, "
+            "since we re-use the connection details from the serializer to store metadata "
+            "about scheduling."
+        )
+    scheduler = BackgroundScheduler(jobstores=jobstores)
+    scheduler.start()
+    scheduler.print_jobs()
+    flask_app.apscheduler = scheduler
+    return flask_app
+
+
 def setup_app(flask_app: Flask, web_config: WebappConfig):
     # Setup environment
     initialise_base_dirs(web_config)
@@ -98,11 +119,7 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
     flask_app.config.update(
         TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
     )
-    jobstores = {"mongo": MongoDBJobStore()}  # TODO: Use existing mongo connection
-    scheduler = BackgroundScheduler(jobstores=jobstores, job_defaults={"notebooker_port": web_config.PORT})
-    scheduler.start()
-    scheduler.print_jobs()
-    flask_app.apscheduler = scheduler
+    flask_app = setup_scheduler(flask_app, web_config)
     return flask_app
 
 

@@ -1,4 +1,5 @@
 import datetime
+from abc import ABC
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 
@@ -15,7 +16,7 @@ REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
-class MongoResultSerializer:
+class MongoResultSerializer(ABC):
     # This class is the interface between Mongo and the rest of the application
 
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
@@ -51,6 +52,9 @@ class MongoResultSerializer:
     @classmethod
     def get_name(cls):
         return cls.__name__
+
+    def get_mongo_connection(self):
+        raise NotImplementedError()
 
     def get_mongo_database(self):
         raise NotImplementedError()

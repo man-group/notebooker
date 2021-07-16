@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_DATABASE_NAME = "notebooker"
-DEFAULT_MONGO_HOST = "localhost"
 DEFAULT_RESULT_COLLECTION_NAME = "NOTEBOOK_OUTPUT"
+DEFAULT_SCHEDULER_COLLECTION_NAME = "APSCHEDULER_METADATA"
+DEFAULT_MONGO_HOST = "localhost"
 
 
 def kernel_spec():
