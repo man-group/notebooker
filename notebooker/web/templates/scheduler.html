@@ -11,7 +11,7 @@
     {{ header.sidebar(all_reports) }}
     <div class="ui centered grid" style="display:none" id="schedulerTableContainer">
         <div class="two wide column">
-            <div class="ui animated blue button" id="showScheduler">
+            <div class="ui animated blue button" id="showSchedulerButton">
                 <div class="visible content">Add a schedule</div>
                 <div class="hidden content"><i class="plus icon"></i></div>
             </div>
@@ -40,9 +40,11 @@
                     </div>
                 </div>
                 <div class="two fields">
-                    <div class="field" name="overrides">
-                        <label>Parameter overrides</label>
-                        <textarea rows="3"></textarea>
+                    <div class="field">
+                        <label>
+                            Parameter overrides
+                            <textarea rows="3" name="overrides"></textarea>
+                        </label>
                     </div>
                     <div class="field">
                         <label>Parameters</label>

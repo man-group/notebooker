@@ -49,7 +49,3 @@ def validate_title(title: AnyStr, issues: List[AnyStr]) -> AnyStr:
     out_s = title.strip()
     _check_bad_chars(out_s, issues)
     return out_s
-
-
-def validate_generate_pdf_output(generate_pdf_output: AnyStr, issues: List[AnyStr]) -> bool:
-    return bool(generate_pdf_output)

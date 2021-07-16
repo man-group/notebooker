@@ -3,31 +3,21 @@ from __future__ import unicode_literals
 import datetime
 import json
 import subprocess
-import sys
 import threading
 import uuid
 from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
-from click.core import Option
 
 import nbformat
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
 from nbformat import NotebookNode
 
-from notebooker import execute_notebook
-from notebooker.constants import JobStatus, python_template_dir
+from notebooker.constants import JobStatus
 from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.conversion import generate_ipynb_from_py
-
 from notebooker.utils.filesystem import get_template_dir, get_output_dir
 from notebooker.utils.templates import _get_parameters_cell_idx, _get_preview
-from notebooker.utils.web import (
-    convert_report_name_url_to_path,
-    json_to_python,
-    validate_generate_pdf_output,
-    validate_mailto,
-    validate_title,
-)
+from notebooker.utils.web import convert_report_name_url_to_path, json_to_python, validate_mailto, validate_title
 from notebooker.web.handle_overrides import handle_overrides
 from notebooker.web.utils import get_serializer, _get_python_template_dir, get_all_possible_templates
 
@@ -235,7 +225,7 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
     # Find whether to generate PDF output
-    generate_pdf_output = validate_generate_pdf_output(params.get("generatepdf"), issues)
+    generate_pdf_output = params.get("generate_pdf") == "on"
     hide_code = params.get("hide_code") == "on"
 
     return RunReportParams(

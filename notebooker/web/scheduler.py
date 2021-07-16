@@ -1,3 +1,4 @@
+import json
 import urllib
 
 import requests
@@ -19,7 +20,7 @@ def run_report(
 ):
     url = f"http://localhost:{GLOBAL_CONFIG.PORT}/run_report_json/{report_name}"
     payload = {
-        "overrides": overrides,
+        "overrides": json.dumps(overrides),
         "report_title": report_title,
         "mailto": mailto,
         "generate_pdf": generate_pdf,

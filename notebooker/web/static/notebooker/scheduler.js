@@ -1,6 +1,8 @@
 var parser = require('cron-parser');
+var schedulerModalState = "Add";
 
-addDeleteButtonCallback = () => {
+addCallbacks = () => {
+    $('#schedulerTable').on('click', 'tbody tr', handleRowClick);
     $('.deleteScheduleButton').click((clicked) => {
         const deleteHref = clicked.target.closest('button').dataset.href;
         $('#deleteModal').modal({
@@ -27,6 +29,7 @@ addDeleteButtonCallback = () => {
             },
         }).modal('show');
     });
+
 }
 
 load_data = () => {
@@ -39,7 +42,7 @@ load_data = () => {
             table.rows.add(result);
             table.draw();
             $('#schedulerTableContainer').fadeIn();
-            addDeleteButtonCallback();
+            addCallbacks();
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -59,8 +62,10 @@ function loadTemplateParameters(templateName) {
 }
 
 function setScheduleModalMode(mode) {
-    // mode should be "adding" or "modifying"
-    if (mode === "adding") {
+    // mode should be "Add" or "Modify"
+    $('#scheduleAction').text(mode);
+    schedulerModalState = mode;
+    if (mode === "Add") {
         $('#jobTitleField').removeClass("disabled");
         $('#nbTemplateNameField').removeClass("disabled");
     } else {
@@ -91,6 +96,43 @@ load_all_templates = () => {
     })
 };
 
+function handleRowClick(e) {
+    if ($(e.target).closest('button').length) {
+        return;
+    }
+    let table = $('#schedulerTable').DataTable();
+    let row = table.row($(this)).data();
+    $('#scheduleForm').form('set values',
+        {
+            jobTitle: row.params.report_title,
+            templateToExecute: row.params.report_name,
+            overrides: row.params.overrides,
+            hide_code: row.params.hide_code,
+            generate_pdf: row.params.generate_pdf,
+            mailto: row.params.mailto,
+            cronSchedule: row.cron_schedule,
+        }
+    );
+    setScheduleModalMode("Modify");
+    $('#schedulerModal').modal('show');
+}
+
+function handleAddButtonClick() {
+    $('#scheduleForm').form('set values',
+        {
+            jobTitle: "",
+            templateToExecute: "",
+            overrides: "",
+            hide_code: "",
+            generate_pdf: "",
+            mailto: "",
+            cronSchedule: "",
+        }
+    );
+    setScheduleModalMode("Add");
+    $('#schedulerModal').modal('show');
+}
+
 
 function handleFormError(errorMsg) {
     let ul = $('#formErrorMessage ul');
@@ -109,10 +151,7 @@ function handleCrontabError(errorMsg) {
 
 $(document).ready(() => {
     $('.ui.checkbox').checkbox();
-    $('#showScheduler').click(() => {
-        setScheduleModalMode("adding");
-        $('#schedulerModal').modal('show');
-    });
+    $('#showSchedulerButton').click(handleAddButtonClick);
     $('#cronScheduleText').on('propertychange input', function(event) {
         var valueChanged = false;
         // debugger;
@@ -173,15 +212,14 @@ $(document).ready(() => {
         },
         onSuccess: function(event) {
             const form = $(this);
-            const reportName = $('input[name="templateToExecute"]').val();
             const formObj = form.serializeArray().reduce(function(obj, item) {
                 obj[item.name] = item.value;
                 return obj;
             }, {});
-            console.log(form);
+            let urlAction = schedulerModalState === "Add" ? "create" : "update";
             $.ajax({
                 type: 'POST',
-                url: `/scheduler/create/${reportName}`,
+                url: `/scheduler/${urlAction}/${formObj.templateToExecute}`,
                 data: {
                     report_title: formObj.jobTitle,
                     report_name: formObj.templateToExecute,
@@ -226,12 +264,17 @@ $(document).ready(() => {
                 data: 'params.report_name',
             },
             {
+                title: 'Cron Schedule',
+                name: 'cron_schedule',
+                data: 'cron_schedule',
+            },
+            {
                 title: 'Next Run Time',
                 name: 'next_run_time',
                 data: 'next_run_time',
                 render: (dt) => {
                     const d = new Date(dt);
-                    return d.toISOString().replace('T', ' ').slice(0, 19);
+                    return d.toLocaleString();
                 },
             },
             {
