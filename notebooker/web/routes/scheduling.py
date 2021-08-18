@@ -20,7 +20,7 @@ def scheduler_ui():
 
 
 @scheduling_bp.route("/scheduler/jobs")
-def all_schedules():  # TODO: use real data
+def all_schedules():
     jobs = current_app.apscheduler.get_jobs()
     result = []
     for job in jobs:
