@@ -18,8 +18,10 @@ def run_report(
     hide_code: bool,
     scheduler_job_id: str,
 ):
-    port = GLOBAL_CONFIG.PORT if GLOBAL_CONFIG else "5000"
-    url = f"http://localhost:{port}/run_report_json/{report_name}"
+    if GLOBAL_CONFIG is None:
+        url = f"http://localhost/run_report_json/{report_name}"
+    else:
+        url = f"http://localhost:{GLOBAL_CONFIG.PORT}/run_report_json/{report_name}"
     payload = {
         "overrides": json.dumps(overrides),
         "report_title": report_title,

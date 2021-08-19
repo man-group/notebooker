@@ -160,7 +160,7 @@ def test_create_schedule(flask_app, setup_workspace):
             "/scheduler/create/fake",
             data={
                 "report_title": "test2",
-                "report_name": "fake",
+                "report_name": "fake/report",
                 "overrides": "",
                 "mailto": "",
                 "cron_schedule": "* * * * *",
@@ -218,7 +218,7 @@ def test_list_scheduled_jobs(flask_app, setup_workspace):
             "/scheduler/create/fake",
             data={
                 "report_title": "test2",
-                "report_name": "fake",
+                "report_name": "fake/report",
                 "overrides": "",
                 "mailto": "",
                 "cron_schedule": "* * * * *",
@@ -239,7 +239,7 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace):
             "/scheduler/create/fake",
             data={
                 "report_title": "test2",
-                "report_name": "fake",
+                "report_name": "fake/report",
                 "overrides": "",
                 "mailto": "",
                 "cron_schedule": "* * * * *",
@@ -273,7 +273,7 @@ def test_scheduler_runs_notebooks(flask_app, setup_workspace):
                 "/scheduler/create/fake",
                 data={
                     "report_title": "test2",
-                    "report_name": "fake",
+                    "report_name": "fake/report",
                     "overrides": "",
                     "mailto": "",
                     "cron_schedule": "* * * * *",
