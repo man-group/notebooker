@@ -47,13 +47,22 @@ def py_template_dir(workspace):
     return workspace.workspace
 
 
+def safe_cache_clear():
+    if caching.cache is not None:
+        try:
+            caching.cache.clear()
+        except FileNotFoundError:
+            pass
+
+
 @pytest.fixture
 def clean_file_cache(monkeypatch, workspace):
-    """Set up cache encironment."""
-    assert caching.cache is None
+    """Set up cache environment."""
+    safe_cache_clear()
     monkeypatch.setenv("CACHE_DIR", workspace.workspace)
     yield
     # purge the cache
+    safe_cache_clear()
     caching.cache = None
 
 
