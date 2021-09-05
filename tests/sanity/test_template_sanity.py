@@ -5,7 +5,7 @@ import pytest
 from notebooker.utils.conversion import generate_ipynb_from_py
 from notebooker.utils.templates import _get_parameters_cell_idx, _get_preview, template_name_to_notebook_node
 
-from ..utils import _all_templates
+from ..utils import all_templates
 
 logger = getLogger("template_sanity_check")
 
@@ -15,7 +15,7 @@ def clean_file_cache(clean_file_cache):
     pass
 
 
-@pytest.mark.parametrize("template_name", _all_templates())
+@pytest.mark.parametrize("template_name", all_templates())
 def test_conversion_doesnt_fail(template_name, template_dir):
     # Test conversion to ipynb - this will throw if stuff goes wrong
     generate_ipynb_from_py(
@@ -23,7 +23,7 @@ def test_conversion_doesnt_fail(template_name, template_dir):
     )
 
 
-@pytest.mark.parametrize("template_name", _all_templates())
+@pytest.mark.parametrize("template_name", all_templates())
 def test_template_has_parameters(template_name, template_dir, flask_app):
     flask_app.config["PY_TEMPLATE_DIR"] = ""
     with flask_app.app_context():
@@ -37,7 +37,7 @@ def test_template_has_parameters(template_name, template_dir, flask_app):
         assert metadata_idx is not None, 'Template {} does not have a "parameters"-tagged cell.'.format(template_name)
 
 
-@pytest.mark.parametrize("template_name", _all_templates())
+@pytest.mark.parametrize("template_name", all_templates())
 def test_template_can_generate_preview(template_dir, template_name, flask_app):
     flask_app.config["PY_TEMPLATE_DIR"] = ""
     with flask_app.app_context():

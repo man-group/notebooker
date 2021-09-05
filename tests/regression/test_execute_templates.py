@@ -5,10 +5,10 @@ import pytest
 
 from notebooker.execute_notebook import _run_checks
 
-from ..utils import _all_templates
+from ..utils import all_templates
 
 
-@pytest.mark.parametrize("template_name", _all_templates())
+@pytest.mark.parametrize("template_name", all_templates())
 def test_execution_of_templates(template_name, template_dir, output_dir, flask_app):
     flask_app.config["PY_TEMPLATE_DIR"] = ""
     with flask_app.app_context():
