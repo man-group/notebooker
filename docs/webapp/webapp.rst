@@ -96,12 +96,8 @@ report copied into the "override parameters" box.
 
 Configuring the webapp
 ----------------------
-The webapp comes with premade dummy settings, found in :py:class:`BaseConfig`.
-Environments are determined by the NOTEBOOKER_ENVIRONMENT environment variable. When deploying the webapp
-you may wish to override the values in these files with your own. To do this, you can either create your own patch
-over the Notebooker settings file; or you can override each value with an environment variable of the same name.
-The environment variables to be overridden are commented in detail in the settings file.
+The webapp itself is configured via the command line notebooker-cli:
 
-.. literalinclude:: ../../notebooker/web/config/settings.py
-   :language: python
-   :lines: 4-38
+.. click:: notebooker._entrypoints:base_notebooker
+   :prog: notebooker-cli
+   :nested: full
