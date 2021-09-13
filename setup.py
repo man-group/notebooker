@@ -79,6 +79,7 @@ setup(
             "sphinx<3.0.0",
             "numpydoc",
             "sphinxcontrib-httpdomain",
+            "sphinx-click"
         ],  # Sphinx v3 doesn't play nicely with Flask, yet.
     },
     tests_require=test_requirements,

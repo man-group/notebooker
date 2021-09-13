@@ -20,7 +20,8 @@
     "format": "npm run sort-imports && npm run format-prettier",
     "lint": "npm run lint-js",
     "lint-js": "eslint notebooker *.js --ext .js --fix",
-    "bundle": "browserify notebooker/scheduler.js -o notebooker/scheduler_bundle.js"
+    "bundle": "browserify notebooker/scheduler.js -o notebooker/scheduler_bundle.js",
+    "build": "npm build && yarn bundle"
   },
   "author": "jbannister",
   "license": "AGPL-3.0-only"
