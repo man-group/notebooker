@@ -80,6 +80,49 @@ It is also possible to either rerun a report from this view, or to clone its par
 you can download using the button on the sidebar, or you can download as raw .ipynb.
 
 
+Scheduling a report
+-------------------
+Once you are happy with your report, you can choose to schedule the report within the Notebooker webapp.
+Setting up a schedule is relatively simple, and it begins in the Scheduler tab.
+
+.. warning::
+    In order for a schedule to be executed successfully, the Notebooker webapp must be running. Upon restart,
+    the latest schedule is *not* executed and instead the scheduler will wait until the next scheduled slot.
+
+First, click the "Add a Schedule" button:
+
+
+.. image:: /images/add_a_schedule_button.png
+   :width: 600
+   :alt: Screenshot of the Add a Schedule button
+
+Then fill out the form. Please note that the schedule is in Cron syntax - please see
+`the APScheduler docs <https://apscheduler.readthedocs.io/en/stable/modules/triggers/cron.html>`_ for more
+information.
+
+
+.. image:: /images/new_schedule.png
+   :width: 600
+   :alt: Screenshot of the new scheduler form.
+
+
+Once the schedule has been saved, it will appear in the list under the scheduler tab.
+If you wish to modify a schedule, you can click on the row and it will pop up the same modal. Please note
+that the report name cannot be changed. Reports can also be deleted from this table by clicking on the trash icon.
+
+.. image:: /images/existing_schedules.png
+   :width: 600
+   :alt: Screenshot of the scheduler tab.
+
+
+Once the schedule has been triggered and the job has run, a new entry will appear on the homepage and the results
+will be accessible. You can tell it has been scheduled by the presence of a Scheduler button.
+
+.. image:: /images/finished_schedule_jobs.png
+   :width: 600
+   :alt: Screenshot of the homepage with completed, scheduled jobs.
+
+
 Rerunning a report
 ------------------
 There are three ways to rerun a report in the Notebooker webapp.

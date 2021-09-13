@@ -146,7 +146,7 @@ class NotebookResultComplete(NotebookResultBase):
     scheduler_job_id = attr.ib(default=None)
 
     def html_resources(self):
-        """ We have to save the raw images using Mongo GridFS - figure out where they will go here """
+        """We have to save the raw images using Mongo GridFS - figure out where they will go here"""
         resources = {}
         for k, v in self.raw_html_resources.items():
             if k == "outputs":

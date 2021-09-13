@@ -107,7 +107,7 @@ class MongoResultSerializer(ABC):
         hide_code: bool = False,
         scheduler_job_id: Optional[str] = None,
     ) -> None:
-        """ Call this when we are just starting a check. Saves a "pending" job into storage. """
+        """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
         report_title = report_title or report_name
         pending_result = NotebookResultPending(
@@ -311,25 +311,25 @@ class MongoResultSerializer(ABC):
         return [x[1] for x in self.get_all_result_keys(mongo_filter=mongo_filter, limit=limit)]
 
     def get_all_job_ids_for_name_and_params(self, report_name: str, params: Optional[Dict]) -> List[str]:
-        """ Get all the result ids for a given name and parameters, newest first """
+        """Get all the result ids for a given name and parameters, newest first"""
         return self._get_all_job_ids(report_name, params)
 
     def get_latest_job_id_for_name_and_params(
         self, report_name: str, params: Optional[Dict], as_of: Optional[datetime.datetime] = None
     ) -> Optional[str]:
-        """ Get the latest result id for a given name and parameters """
+        """Get the latest result id for a given name and parameters"""
         all_job_ids = self._get_all_job_ids(report_name, params, as_of=as_of, limit=1)
         return all_job_ids[0] if all_job_ids else None
 
     def get_latest_successful_job_id_for_name_and_params(
         self, report_name: str, params: Optional[Dict], as_of: Optional[datetime.datetime] = None
     ) -> Optional[str]:
-        """ Get the latest successful job id for a given name and parameters """
+        """Get the latest successful job id for a given name and parameters"""
         all_job_ids = self._get_all_job_ids(report_name, params, JobStatus.DONE, as_of, limit=1)
         return all_job_ids[0] if all_job_ids else None
 
     def get_latest_successful_job_ids_for_name_all_params(self, report_name: str) -> List[str]:
-        """ Get the latest successful job ids for all parameter variants of a given name"""
+        """Get the latest successful job ids for all parameter variants of a given name"""
         mongo_filter = self._mongo_filter(report_name, status=JobStatus.DONE)
         results = self.library.aggregate(
             [

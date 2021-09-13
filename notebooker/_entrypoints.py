@@ -94,12 +94,33 @@ def base_notebooker(
 
 
 @base_notebooker.command()
-@click.option("--port", default=11828)
-@click.option("--logging-level", default="INFO")
-@click.option("--debug", default=False)
-@click.option("--base-cache-dir", default=filesystem_default_value("webcache"))
-@click.option("--scheduler-mongo-database", default=DEFAULT_DATABASE_NAME)
-@click.option("--scheduler-mongo-collection", default=DEFAULT_SCHEDULER_COLLECTION_NAME)
+@click.option("--port", default=11828, help="The port upon which the webapp will be running.")
+@click.option("--logging-level", default="INFO", help="The logging level. Set to DEBUG for lots of extra info.")
+@click.option(
+    "--debug",
+    default=False,
+    is_flag=True,
+    help="Enables Flask's DEBUG mode (see https://flask.palletsprojects.com/en/2.0.x/config/#DEBUG). "
+    "Also sets TEMPLATES_AUTO_RELOAD to "
+    "True (see https://flask.palletsprojects.com/en/2.0.x/config/#TEMPLATES_AUTO_RELOAD).",
+)
+@click.option(
+    "--base-cache-dir",
+    default=filesystem_default_value("webcache"),
+    help="Where the filesystem-based short-term cache stores its data.",
+)
+@click.option(
+    "--scheduler-mongo-database",
+    default=DEFAULT_DATABASE_NAME,
+    help=f"The name of the mongo database which is used for the scheduling back-end. "
+    f"Defaults to '{DEFAULT_DATABASE_NAME}'.",
+)
+@click.option(
+    "--scheduler-mongo-collection",
+    default=DEFAULT_SCHEDULER_COLLECTION_NAME,
+    help=f"The name of the mongo collection within the scheduler-mongo-database which is used for "
+    f"the scheduling back-end. Defaults to '{DEFAULT_SCHEDULER_COLLECTION_NAME}'.",
+)
 @pass_config
 def start_webapp(
     config: BaseConfig, port, logging_level, debug, base_cache_dir, scheduler_mongo_database, scheduler_mongo_collection

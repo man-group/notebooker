@@ -49,7 +49,7 @@ def setup_metrics(app):
 
 @prometheus_bp.route("/metrics")
 def metrics():
-    """ Default URL for prometheus metrics, as required by the prometheus collector. """
+    """Default URL for prometheus metrics, as required by the prometheus collector."""
     response = make_response(generate_latest(REGISTRY), 200)
     response.headers[str("Content-type")] = CONTENT_TYPE_LATEST
     return response

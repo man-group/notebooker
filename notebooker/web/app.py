@@ -104,7 +104,7 @@ def setup_scheduler(flask_app, web_config):
             "since we re-use the connection details from the serializer to store metadata "
             "about scheduling."
         )
-    scheduler = BackgroundScheduler(jobstores=jobstores)
+    scheduler = BackgroundScheduler(jobstores=jobstores, job_defaults={"misfire_grace_time": 60 * 60})
     scheduler.start()
     scheduler.print_jobs()
     flask_app.apscheduler = scheduler

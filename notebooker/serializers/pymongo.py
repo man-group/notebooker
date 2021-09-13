@@ -30,9 +30,9 @@ class PyMongoResultSerializer(MongoResultSerializer, cli_options=cli_options):
         self,
         mongo_user=None,
         mongo_password=None,
-        database_name="notebooker",
-        mongo_host="localhost",
-        result_collection_name="NOTEBOOK_OUTPUT",
+        database_name=DEFAULT_DATABASE_NAME,
+        mongo_host=DEFAULT_MONGO_HOST,
+        result_collection_name=DEFAULT_RESULT_COLLECTION_NAME,
         **kwargs,
     ):
         self.mongo_user = mongo_user or None
