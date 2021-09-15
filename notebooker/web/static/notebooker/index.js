@@ -110,7 +110,7 @@ $(document).ready(() => {
                 data: 'scheduler_job_id',
                 render: (url, type, row) => {
                     if (row.scheduler_job_id) {
-                        return `<button onclick="location.href='/scheduler'" class="ui button blue">Scheduler</button>`;
+                        return `<button onclick="location.href='/scheduler?id=${row.scheduler_job_id}'" class="ui button blue">Scheduler</button>`;
                     } else {
                         return '';
                     }

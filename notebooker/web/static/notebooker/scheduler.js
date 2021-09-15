@@ -43,6 +43,7 @@ load_data = () => {
             table.draw();
             $('#schedulerTableContainer').fadeIn();
             addCallbacks();
+            showSelection();
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -96,12 +97,20 @@ load_all_templates = () => {
     })
 };
 
-function handleRowClick(e) {
-    if ($(e.target).closest('button').length) {
-        return;
+function showSelection() {
+    let params = new URL(window.location.href).searchParams;
+    if (params.get('id')) {
+        let table = $('#schedulerTable').DataTable();
+        for (let row of table.rows().data().toArray()) {
+            if (row.id == params.get('id')) {
+                createModal(row);
+                break;
+            }
+        }
     }
-    let table = $('#schedulerTable').DataTable();
-    let row = table.row($(this)).data();
+}
+
+function createModal(row) {
     $('#scheduleForm').form('set values',
         {
             jobTitle: row.params.report_title,
@@ -115,6 +124,15 @@ function handleRowClick(e) {
     );
     setScheduleModalMode("Modify");
     $('#schedulerModal').modal('show');
+}
+
+function handleRowClick(e) {
+    if ($(e.target).closest('button').length) {
+        return;
+    }
+    let table = $('#schedulerTable').DataTable();
+    let row = table.row($(this)).data();
+    createModal(row);
 }
 
 function handleAddButtonClick() {
