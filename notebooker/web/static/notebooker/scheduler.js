@@ -32,7 +32,7 @@ addCallbacks = () => {
 
 }
 
-load_data = () => {
+load_data = (callback) => {
     $.ajax({
         url: `/scheduler/jobs`,
         dataType: 'json',
@@ -43,7 +43,7 @@ load_data = () => {
             table.draw();
             $('#schedulerTableContainer').fadeIn();
             addCallbacks();
-            showSelection();
+            callback();
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -75,7 +75,7 @@ function setScheduleModalMode(mode) {
     }
 }
 
-load_all_templates = () => {
+load_all_templates = (callback) => {
     $.ajax({
         url: '/core/all_possible_templates',
         dataType: 'json',
@@ -90,6 +90,7 @@ load_all_templates = () => {
                     loadTemplateParameters(value);
                 }
             });
+            callback();
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -103,14 +104,28 @@ function showSelection() {
         let table = $('#schedulerTable').DataTable();
         for (let row of table.rows().data().toArray()) {
             if (row.id == params.get('id')) {
-                createModal(row);
+                modifySchedulerModal(row);
                 break;
             }
         }
     }
 }
 
-function createModal(row) {
+function showSchedulerModal() {
+    $('#schedulerModal').modal({
+        closable: true,
+        onHidden() {
+            let url = new URL(window.location.href);
+            url.searchParams.delete('id');
+            history.replaceState({}, null, url.toString());
+        }
+    }).modal('show');
+}
+
+function modifySchedulerModal(row) {
+    let url = new URL(window.location.href);
+    url.searchParams.set('id', row.id);
+    history.replaceState({}, null, url.toString());
     $('#scheduleForm').form('set values',
         {
             jobTitle: row.params.report_title,
@@ -123,7 +138,7 @@ function createModal(row) {
         }
     );
     setScheduleModalMode("Modify");
-    $('#schedulerModal').modal('show');
+    showSchedulerModal();
 }
 
 function handleRowClick(e) {
@@ -132,7 +147,7 @@ function handleRowClick(e) {
     }
     let table = $('#schedulerTable').DataTable();
     let row = table.row($(this)).data();
-    createModal(row);
+    modifySchedulerModal(row);
 }
 
 function handleAddButtonClick() {
@@ -148,7 +163,7 @@ function handleAddButtonClick() {
         }
     );
     setScheduleModalMode("Add");
-    $('#schedulerModal').modal('show');
+    showSchedulerModal();
 }
 
 
@@ -305,6 +320,7 @@ $(document).ready(() => {
         ],
         order: [[0, 'asc']],
     });
-    load_data();
-    load_all_templates();
+    // We can only call the showSelection function after both load_data and load_all_templates are loaded. Even though
+    // the two requests can be initiated simultaneously, we are serializing them in order to simplify the flow.
+    load_data(() => load_all_templates(showSelection));
 });
