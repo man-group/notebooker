@@ -1,4 +1,5 @@
 import datetime
+from abc import ABC
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 
@@ -11,11 +12,11 @@ from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResu
 
 logger = getLogger(__name__)
 REMOVE_ID_PROJECTION = {"_id": 0}
-REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0}
+REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0, "email_html": 0}
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
-class MongoResultSerializer:
+class MongoResultSerializer(ABC):
     # This class is the interface between Mongo and the rest of the application
 
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
@@ -51,6 +52,9 @@ class MongoResultSerializer:
     @classmethod
     def get_name(cls):
         return cls.__name__
+
+    def get_mongo_connection(self):
+        raise NotImplementedError()
 
     def get_mongo_database(self):
         raise NotImplementedError()
@@ -101,8 +105,9 @@ class MongoResultSerializer:
         mailto: str = "",
         generate_pdf_output: bool = True,
         hide_code: bool = False,
+        scheduler_job_id: Optional[str] = None,
     ) -> None:
-        """ Call this when we are just starting a check. Saves a "pending" job into storage. """
+        """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
         report_title = report_title or report_name
         pending_result = NotebookResultPending(
@@ -115,6 +120,7 @@ class MongoResultSerializer:
             generate_pdf_output=generate_pdf_output,
             overrides=overrides or {},
             hide_code=hide_code,
+            scheduler_job_id=scheduler_job_id,
         )
         self._save_to_db(pending_result)
 
@@ -189,6 +195,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", None),
             )
         elif cls == NotebookResultPending:
             return NotebookResultPending(
@@ -203,6 +210,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", None),
             )
 
         elif cls == NotebookResultError:
@@ -219,6 +227,7 @@ class MongoResultSerializer:
                 mailto=result.get("mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
+                scheduler_job_id=result.get("scheduler_job_id", False),
             )
         else:
             raise ValueError("Could not deserialise {} into result object.".format(result))
@@ -302,25 +311,25 @@ class MongoResultSerializer:
         return [x[1] for x in self.get_all_result_keys(mongo_filter=mongo_filter, limit=limit)]
 
     def get_all_job_ids_for_name_and_params(self, report_name: str, params: Optional[Dict]) -> List[str]:
-        """ Get all the result ids for a given name and parameters, newest first """
+        """Get all the result ids for a given name and parameters, newest first"""
         return self._get_all_job_ids(report_name, params)
 
     def get_latest_job_id_for_name_and_params(
         self, report_name: str, params: Optional[Dict], as_of: Optional[datetime.datetime] = None
     ) -> Optional[str]:
-        """ Get the latest result id for a given name and parameters """
+        """Get the latest result id for a given name and parameters"""
         all_job_ids = self._get_all_job_ids(report_name, params, as_of=as_of, limit=1)
         return all_job_ids[0] if all_job_ids else None
 
     def get_latest_successful_job_id_for_name_and_params(
         self, report_name: str, params: Optional[Dict], as_of: Optional[datetime.datetime] = None
     ) -> Optional[str]:
-        """ Get the latest successful job id for a given name and parameters """
+        """Get the latest successful job id for a given name and parameters"""
         all_job_ids = self._get_all_job_ids(report_name, params, JobStatus.DONE, as_of, limit=1)
         return all_job_ids[0] if all_job_ids else None
 
     def get_latest_successful_job_ids_for_name_all_params(self, report_name: str) -> List[str]:
-        """ Get the latest successful job ids for all parameter variants of a given name"""
+        """Get the latest successful job ids for all parameter variants of a given name"""
         mongo_filter = self._mongo_filter(report_name, status=JobStatus.DONE)
         results = self.library.aggregate(
             [

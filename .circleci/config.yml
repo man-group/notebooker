@@ -61,6 +61,11 @@ defaults: &defaults
           git diff --name-status
           git diff-files --quiet || (echo 'The files above have not been formatted!' && (exit 1))
     - run:
+        name: Browserify
+        command: |
+             pushd $YARN_STATIC_DIR
+             yarn run bundle
+    - run:
        name: Create and activate virtualenv
        command: |
          virtualenv ci

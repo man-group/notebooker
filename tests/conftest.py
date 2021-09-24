@@ -47,13 +47,22 @@ def py_template_dir(workspace):
     return workspace.workspace
 
 
+def safe_cache_clear():
+    if caching.cache is not None:
+        try:
+            caching.cache.clear()
+        except FileNotFoundError:
+            pass
+
+
 @pytest.fixture
 def clean_file_cache(monkeypatch, workspace):
-    """Set up cache encironment."""
-    assert caching.cache is None
+    """Set up cache environment."""
+    safe_cache_clear()
     monkeypatch.setenv("CACHE_DIR", workspace.workspace)
     yield
     # purge the cache
+    safe_cache_clear()
     caching.cache = None
 
 
@@ -71,6 +80,8 @@ def webapp_config(mongo_host, test_db_name, test_lib_name, template_dir, cache_d
         },
         PY_TEMPLATE_BASE_DIR=workspace.workspace,
         PY_TEMPLATE_SUBDIR="templates",
+        SCHEDULER_MONGO_COLLECTION=test_lib_name,
+        SCHEDULER_MONGO_DATABASE=test_db_name,
     )
 
 

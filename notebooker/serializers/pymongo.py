@@ -30,19 +30,20 @@ class PyMongoResultSerializer(MongoResultSerializer, cli_options=cli_options):
         self,
         mongo_user=None,
         mongo_password=None,
-        database_name="notebooker",
-        mongo_host="localhost",
-        result_collection_name="NOTEBOOK_OUTPUT",
+        database_name=DEFAULT_DATABASE_NAME,
+        mongo_host=DEFAULT_MONGO_HOST,
+        result_collection_name=DEFAULT_RESULT_COLLECTION_NAME,
         **kwargs,
     ):
         self.mongo_user = mongo_user or None
         self.mongo_password = mongo_password or None
         super(PyMongoResultSerializer, self).__init__(database_name, mongo_host, result_collection_name)
 
+    def get_mongo_connection(self):
+        return MongoClient(self.mongo_host, username=self.mongo_user, password=self.mongo_password)
+
     def get_mongo_database(self):
-        return MongoClient(self.mongo_host, username=self.mongo_user, password=self.mongo_password).get_database(
-            self.database_name
-        )
+        return self.get_mongo_connection().get_database(self.database_name)
 
 
 name = PyMongoResultSerializer.get_name()

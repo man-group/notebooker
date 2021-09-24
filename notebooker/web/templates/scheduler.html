@@ -1,0 +1,105 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html>
+<head>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/scheduler_bundle.js') }}"></script>
+</head>
+<body>
+
+    {{ header.sidebar(all_reports) }}
+    <div class="ui centered grid" style="display:none" id="schedulerTableContainer">
+        <div class="two wide column">
+            <div class="ui animated blue button" id="showSchedulerButton">
+                <div class="visible content">Add a schedule</div>
+                <div class="hidden content"><i class="plus icon"></i></div>
+            </div>
+        </div>
+        <div class="twelve wide column">
+            <table id="schedulerTable" class="ui sortable selectable padded table">
+            </table>
+        </div>
+    </div>
+    <div class="ui modal" id="schedulerModal">
+        <div class="header"><span id="scheduleAction">Add</span> a schedule</div>
+        <div class="content">
+            <form class="ui form" id="scheduleForm">
+                <div class="field" id="jobTitleField">
+                    <label>
+                        Job Title
+                        <input type="text" name="jobTitle" placeholder="Job Title (mandatory)">
+                    </label>
+                </div>
+                <div class="field" id="nbTemplateNameField">
+                    <label>Notebook Template to execute</label>
+                    <div class="ui selection dropdown" id="templateChoices">
+                        <input type="hidden" name="templateToExecute">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Notebook template name</div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>
+                            Parameter overrides
+                            <textarea rows="3" name="overrides"></textarea>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <label>Parameters</label>
+                        <code id="notebookParameters">Select a Notebook Template above</code>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="seven wide field" id="mailto">
+                        <label>
+                            Mailto
+                            <input type="text" name="mailto" placeholder="Mailto:">
+                        </label>
+                    </div>
+                    <div class="four wide field" id="mailto">
+                        <div class="ui toggle checkbox">
+                            <label>Generate PDF?</label>
+                            <input type="checkbox" name="generate_pdf" class="hidden">
+                        </div>
+                    </div>
+                    <div class="five wide field" id="hide_code">
+                        <div class="ui toggle checkbox">
+                            <label>Hide Code Output?</label>
+                            <input type="checkbox" name="hide_code" class="hidden">
+                        </div>
+                    </div>
+                </div>
+                <div class="field" id="cronScheduleField">
+                    <label>
+                        Cron Schedule
+                        <input
+                                type="text"
+                                id="cronScheduleText"
+                                name="cronSchedule"
+                                autocomplete="off"
+                                placeholder="* * * * *"
+                        >
+                    </label>
+                    <div class="ui pointing yellow basic label hidden" id="crontabParserOutput"></div>
+                </div>
+                  <div class="ui error message" id="formErrorMessage">
+                      <ul></ul>
+                  </div>
+                <button class="ui button" id="schedulerSubmitButton">Submit</button>
+            </form>
+        </div>
+        <div class="ui modal" id="deleteModal">
+          <div class="header">Delete schedule</div>
+          <div class="content">
+            <p>Are you sure you wish to delete this schedule?</p>
+          </div>
+          <div class="actions">
+            <div class="ui approve button red">Delete</div>
+            <div class="ui cancel button">Cancel</div>
+          </div>
+        </div>
+    </div>
+</body>
+</html>

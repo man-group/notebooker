@@ -13,7 +13,7 @@ from notebooker.web.report_hunter import _report_hunter
 
 @pytest.fixture(autouse=True)
 def clean_file_cache(clean_file_cache):
-    """Set up cache encironment."""
+    """Set up cache environment."""
 
 
 def test_report_hunter_with_nothing(bson_library, webapp_config):

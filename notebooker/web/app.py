@@ -6,11 +6,14 @@ from typing import Optional
 
 import sys
 import time
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.mongodb import MongoDBJobStore
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 
 from notebooker.constants import CANCEL_MESSAGE, JobStatus
-from notebooker.serialization.serialization import initialize_serializer_from_config
+from notebooker.serialization.mongo import MongoResultSerializer
+from notebooker.serialization.serialization import initialize_serializer_from_config, get_serializer_from_cls
 from notebooker.settings import WebappConfig
 from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
 from notebooker.web.converters import DateConverter
@@ -19,6 +22,7 @@ from notebooker.web.routes.core import core_bp
 from notebooker.web.routes.index import index_bp
 from notebooker.web.routes.pending_results import pending_results_bp
 from notebooker.web.routes.run_report import run_report_bp
+from notebooker.web.routes.scheduling import scheduling_bp
 from notebooker.web.routes.serve_results import serve_results_bp
 
 logger = logging.getLogger(__name__)
@@ -71,6 +75,7 @@ def create_app():
     flask_app.register_blueprint(core_bp)
     flask_app.register_blueprint(serve_results_bp)
     flask_app.register_blueprint(pending_results_bp)
+    flask_app.register_blueprint(scheduling_bp)
     try:
         import prometheus_client
     except ImportError:
@@ -86,6 +91,26 @@ def create_app():
     return flask_app
 
 
+def setup_scheduler(flask_app, web_config):
+    serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
+    if isinstance(serializer, MongoResultSerializer):
+        client = serializer.get_mongo_connection()
+        database = web_config.SCHEDULER_MONGO_DATABASE
+        collection = web_config.SCHEDULER_MONGO_COLLECTION
+        jobstores = {"mongo": MongoDBJobStore(database=database, collection=collection, client=client)}
+    else:
+        raise ValueError(
+            "We cannot support scheduling if we are not using a Mongo Result serializer, "
+            "since we re-use the connection details from the serializer to store metadata "
+            "about scheduling."
+        )
+    scheduler = BackgroundScheduler(jobstores=jobstores, job_defaults={"misfire_grace_time": 60 * 60})
+    scheduler.start()
+    scheduler.print_jobs()
+    flask_app.apscheduler = scheduler
+    return flask_app
+
+
 def setup_app(flask_app: Flask, web_config: WebappConfig):
     # Setup environment
     initialise_base_dirs(web_config)
@@ -94,6 +119,7 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
     flask_app.config.update(
         TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
     )
+    flask_app = setup_scheduler(flask_app, web_config)
     return flask_app
 
 

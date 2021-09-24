@@ -8,7 +8,7 @@ pending_results_bp = Blueprint("pending_results_bp", __name__)
 
 
 def task_loading(report_name, job_id):
-    """ Loaded once, when the user queries /results/<report_name>/<job_id> and it is pending. """
+    """Loaded once, when the user queries /results/<report_name>/<job_id> and it is pending."""
     return render_template(
         "loading.html",
         job_id=job_id,

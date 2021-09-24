@@ -42,7 +42,7 @@ def template_name_to_notebook_node(
 def _get_preview(
     template_name: str, notebooker_disable_git: bool, py_template_dir: str, warn_on_local: Optional[bool] = True
 ) -> str:
-    """ Returns an HTML render of a report template, with parameters highlighted. """
+    """Returns an HTML render of a report template, with parameters highlighted."""
     cached = get_cache(("preview", template_name))
     if cached:
         logger.info("Getting %s preview from cache.", template_name)

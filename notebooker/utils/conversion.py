@@ -105,12 +105,12 @@ def _get_output_path_hex(notebooker_disable_git, py_template_dir) -> str:
 
 
 def convert_report_name_into_path(report_name: str) -> str:
-    """ This reverses convert_report_path_into_name() so that we can find the templates within notebooker_templates/ """
+    """This reverses convert_report_path_into_name() so that we can find the templates within notebooker_templates/"""
     return report_name.replace(TEMPLATE_DIR_SEPARATOR, os.path.sep)
 
 
 def convert_report_path_into_name(report_path: str) -> str:
-    """ We remove the os.sep here so that we can have a flat hierarchy of output ipynbs. """
+    """We remove the os.sep here so that we can have a flat hierarchy of output ipynbs."""
     return report_path.replace(os.path.sep, TEMPLATE_DIR_SEPARATOR)
 
 

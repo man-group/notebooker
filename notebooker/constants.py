@@ -15,8 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_DATABASE_NAME = "notebooker"
-DEFAULT_MONGO_HOST = "localhost"
 DEFAULT_RESULT_COLLECTION_NAME = "NOTEBOOK_OUTPUT"
+DEFAULT_SCHEDULER_COLLECTION_NAME = "APSCHEDULER_METADATA"
+DEFAULT_MONGO_HOST = "localhost"
 
 
 def kernel_spec():
@@ -77,6 +78,7 @@ class NotebookResultBase(object):
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
     stdout = attr.ib(default=attr.Factory(list))
+    scheduler_job_id = attr.ib(default=None)
 
     def saveable_output(self):
         out = attr.asdict(self)
@@ -93,6 +95,7 @@ class NotebookResultPending(NotebookResultBase):
     mailto = attr.ib(default="")
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
+    scheduler_job_id = attr.ib(default=None)
 
 
 @attr.s()
@@ -105,6 +108,7 @@ class NotebookResultError(NotebookResultBase):
     mailto = attr.ib(default="")
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
+    scheduler_job_id = attr.ib(default=None)
 
     @property
     def email_subject(self):
@@ -139,9 +143,10 @@ class NotebookResultComplete(NotebookResultBase):
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
     stdout = attr.ib(default=attr.Factory(list))
+    scheduler_job_id = attr.ib(default=None)
 
     def html_resources(self):
-        """ We have to save the raw images using Mongo GridFS - figure out where they will go here """
+        """We have to save the raw images using Mongo GridFS - figure out where they will go here"""
         resources = {}
         for k, v in self.raw_html_resources.items():
             if k == "outputs":
@@ -168,6 +173,7 @@ class NotebookResultComplete(NotebookResultBase):
             "generate_pdf_output": self.generate_pdf_output,
             "hide_code": self.hide_code,
             "update_time": self.update_time,
+            "scheduler_job_id": self.scheduler_job_id,
         }
 
     def __repr__(self):
@@ -175,7 +181,8 @@ class NotebookResultComplete(NotebookResultBase):
             "NotebookResultComplete(job_id={job_id}, status={status}, report_name={report_name}, "
             "job_start_time={job_start_time}, job_finish_time={job_finish_time}, update_time={update_time}, "
             "report_title={report_title}, overrides={overrides}, mailto={mailto}, "
-            "email_subject={email_subject}, generate_pdf_output={generate_pdf_output}, hide_code={hide_code})".format(
+            "email_subject={email_subject}, generate_pdf_output={generate_pdf_output}, hide_code={hide_code}, "
+            "scheduler_job_id={scheduler_job_id})".format(
                 job_id=self.job_id,
                 status=self.status,
                 report_name=self.report_name,
@@ -188,5 +195,6 @@ class NotebookResultComplete(NotebookResultBase):
                 email_subject=self.email_subject,
                 generate_pdf_output=self.generate_pdf_output,
                 hide_code=self.hide_code,
+                scheduler_job_id=self.scheduler_job_id,
             )
         )

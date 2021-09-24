@@ -3,29 +3,21 @@ from __future__ import unicode_literals
 import datetime
 import json
 import subprocess
-import sys
 import threading
 import uuid
 from logging import getLogger
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
+from nbformat import NotebookNode
 
-from notebooker import execute_notebook
-from notebooker.constants import JobStatus, python_template_dir
+from notebooker.constants import JobStatus
 from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.conversion import generate_ipynb_from_py
-
 from notebooker.utils.filesystem import get_template_dir, get_output_dir
 from notebooker.utils.templates import _get_parameters_cell_idx, _get_preview
-from notebooker.utils.web import (
-    convert_report_name_url_to_path,
-    json_to_python,
-    validate_generate_pdf_output,
-    validate_mailto,
-    validate_title,
-)
+from notebooker.utils.web import convert_report_name_url_to_path, json_to_python, validate_mailto, validate_title
 from notebooker.web.handle_overrides import handle_overrides
 from notebooker.web.utils import get_serializer, _get_python_template_dir, get_all_possible_templates
 
@@ -59,6 +51,42 @@ def run_report_get_preview(report_name):
     )
 
 
+def get_report_as_nb(relative_report_path: str) -> NotebookNode:
+    path = generate_ipynb_from_py(
+        current_app.config["TEMPLATE_DIR"],
+        relative_report_path,
+        current_app.config["NOTEBOOKER_DISABLE_GIT"],
+        _get_python_template_dir(),
+    )
+    nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
+    return nb
+
+
+def get_report_parameters_html(relative_report_path: str) -> str:
+    nb = get_report_as_nb(relative_report_path)
+    metadata_idx = _get_parameters_cell_idx(nb)
+    parameters_as_html = ""
+    if metadata_idx is not None:
+        metadata = nb["cells"][metadata_idx]
+        parameters_as_html = metadata["source"].strip()
+    return parameters_as_html
+
+
+@run_report_bp.route("/get_report_parameters/<path:report_name>", methods=["GET"])
+def run_report_get_parameters(report_name):
+    """
+    Get the parameters of the Notebook Template which is about to be executed in Python.
+
+    :param report_name: The parameter here should be a "/"-delimited string which mirrors the directory structure of \
+        the notebook templates.
+
+    :returns: Get the parameters of the Notebook Template which is about to be executed in Python syntax.
+    """
+    report_name = convert_report_name_url_to_path(report_name)
+    params_as_html = get_report_parameters_html(report_name)
+    return jsonify({"result": params_as_html}) if params_as_html else ("", 404)
+
+
 @run_report_bp.route("/run_report/<path:report_name>", methods=["GET"])
 def run_report_http(report_name):
     """
@@ -72,28 +100,14 @@ def run_report_http(report_name):
     report_name = convert_report_name_url_to_path(report_name)
     json_params = request.args.get("json_params")
     initial_python_parameters = json_to_python(json_params) or ""
-    try:
-        path = generate_ipynb_from_py(
-            current_app.config["TEMPLATE_DIR"],
-            report_name,
-            current_app.config["NOTEBOOKER_DISABLE_GIT"],
-            _get_python_template_dir(),
-        )
-    except FileNotFoundError as e:
-        logger.exception(e)
-        return "", 404
-    nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
+    nb = get_report_as_nb(report_name)
     metadata_idx = _get_parameters_cell_idx(nb)
-    parameters_as_html = ""
     has_prefix = has_suffix = False
     if metadata_idx is not None:
-        metadata = nb["cells"][metadata_idx]
-        parameters_as_html = metadata["source"].strip()
         has_prefix, has_suffix = (bool(nb["cells"][:metadata_idx]), bool(nb["cells"][metadata_idx + 1 :]))
-    logger.info("initial_python_parameters = {}".format(initial_python_parameters))
     return render_template(
         "run_report.html",
-        parameters_as_html=parameters_as_html,
+        parameters_as_html=get_report_parameters_html(report_name),
         has_prefix=has_prefix,
         has_suffix=has_suffix,
         report_name=report_name,
@@ -117,7 +131,14 @@ def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
 
 
 def run_report(
-    report_name, report_title, mailto, overrides, hide_code=False, generate_pdf_output=False, prepare_only=False
+    report_name,
+    report_title,
+    mailto,
+    overrides,
+    hide_code=False,
+    generate_pdf_output=False,
+    prepare_only=False,
+    scheduler_job_id=None,
 ):
     """
     Actually run the report in earnest.
@@ -128,6 +149,7 @@ def run_report(
     :param overrides: `Optional[Dict[str, Any]]` The parameters to be passed into the report
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
+    :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -143,6 +165,7 @@ def run_report(
         mailto=mailto,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
+        scheduler_job_id=scheduler_job_id,
     )
     app_config = current_app.config
     p = subprocess.Popen(
@@ -175,7 +198,8 @@ def run_report(
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
             "--hide-code" if hide_code else "--show-code",
         ]
-        + (["--prepare-notebook-only"] if prepare_only else []),
+        + (["--prepare-notebook-only"] if prepare_only else [])
+        + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else []),
         stderr=subprocess.PIPE,
     )
     stderr_thread = threading.Thread(
@@ -187,21 +211,47 @@ def run_report(
     return job_id
 
 
+class RunReportParams(NamedTuple):
+    report_title: AnyStr
+    mailto: AnyStr
+    generate_pdf_output: bool
+    hide_code: bool
+    scheduler_job_id: Optional[str]
+
+
+def validate_run_params(params, issues: List[str]) -> RunReportParams:
+    # Find and cleanse the title of the report
+    report_title = validate_title(params.get("report_title"), issues)
+    # Get mailto email address
+    mailto = validate_mailto(params.get("mailto"), issues)
+    # Find whether to generate PDF output
+    generate_pdf_output = params.get("generate_pdf") == "on"
+    hide_code = params.get("hide_code") == "on"
+
+    return RunReportParams(
+        report_title=report_title,
+        mailto=mailto,
+        generate_pdf_output=generate_pdf_output,
+        hide_code=hide_code,
+        scheduler_job_id=params.get("scheduler_job_id"),
+    )
+
+
 def _handle_run_report(
     report_name: str, overrides_dict: Dict[str, Any], issues: List[str]
 ) -> Tuple[str, int, Dict[str, str]]:
-    # Find and cleanse the title of the report
-    report_title = validate_title(request.values.get("report_title"), issues)
-    # Get mailto email address
-    mailto = validate_mailto(request.values.get("mailto"), issues)
-    # Find whether to generate PDF output
-    generate_pdf_output = validate_generate_pdf_output(request.values.get("generatepdf"), issues)
-    hide_code = request.values.get("hide_code") == "on"
+    params = validate_run_params(request.values, issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
     job_id = run_report(
-        report_name, report_title, mailto, overrides_dict, generate_pdf_output=generate_pdf_output, hide_code=hide_code
+        report_name,
+        params.report_title,
+        params.mailto,
+        overrides_dict,
+        generate_pdf_output=params.generate_pdf_output,
+        hide_code=params.hide_code,
+        scheduler_job_id=params.scheduler_job_id,
     )
     return (
         jsonify({"id": job_id}),
@@ -255,6 +305,7 @@ def _rerun_report(job_id, prepare_only=False):
         result.overrides,
         generate_pdf_output=result.generate_pdf_output,
         prepare_only=prepare_only,
+        scheduler_job_id=None,  # the scheduler will never call rerun
     )
     return new_job_id
 
