@@ -48,61 +48,61 @@ load_data = (limit) => {
 
 $(document).ready(() => {
     let columns = [
-    {
-        title: 'Title',
-        name: 'title',
-        data: 'report_title',
-    },
-    {
-        title: 'Report Template Name',
-        name: 'report_name',
-        data: 'report_name',
-    },
-    {
-        title: 'Status',
-        name: 'status',
-        data: 'status',
-    },
-    {
-        title: 'Start Time',
-        name: 'job_start_time',
-        data: 'job_start_time',
-        render: (dt) => {
-            const d = new Date(dt);
-            return d.toISOString().replace('T', ' ').slice(0, 19);
+        {
+            title: 'Title',
+            name: 'title',
+            data: 'report_title',
         },
-    },
-    {
-        title: 'Completion Time',
-        name: 'job_finish_time',
-        data: 'job_finish_time',
-        render: (dt) => {
-            if (dt) {
+        {
+            title: 'Report Template Name',
+            name: 'report_name',
+            data: 'report_name',
+        },
+        {
+            title: 'Status',
+            name: 'status',
+            data: 'status',
+        },
+        {
+            title: 'Start Time',
+            name: 'job_start_time',
+            data: 'job_start_time',
+            render: (dt) => {
                 const d = new Date(dt);
                 return d.toISOString().replace('T', ' ').slice(0, 19);
-            }
-            return '';
+            },
         },
-    },
-    {
-        title: 'Results',
-        name: 'result_url',
-        data: 'result_url',
-        render: (url) => `<button onclick="location.href='${url}'" type="button" `
+        {
+            title: 'Completion Time',
+            name: 'job_finish_time',
+            data: 'job_finish_time',
+            render: (dt) => {
+                if (dt) {
+                    const d = new Date(dt);
+                    return d.toISOString().replace('T', ' ').slice(0, 19);
+                }
+                return '';
+            },
+        },
+        {
+            title: 'Results',
+            name: 'result_url',
+            data: 'result_url',
+            render: (url) => `<button onclick="location.href='${url}'" type="button" `
                 + 'class="ui button blue">Result</button>',
-    },
-    {
-        title: 'PDF',
-        name: 'pdf_url',
-        data: 'pdf_url',
-        render: (url, type, row) => {
-            if (row.generate_pdf_output) {
-                return `<button onclick="location.href='${url}'" type="button" `
-                    + 'class="ui button green"><i class="download icon"></i></button>';
-            }
-            return '';
         },
-    }]
+        {
+            title: 'PDF',
+            name: 'pdf_url',
+            data: 'pdf_url',
+            render: (url, type, row) => {
+                if (row.generate_pdf_output) {
+                    return `<button onclick="location.href='${url}'" type="button" `
+                    + 'class="ui button green"><i class="download icon"></i></button>';
+                }
+                return '';
+            },
+        }]
     var usingScheduler = undefined;
     $.ajax({
         async: false,
