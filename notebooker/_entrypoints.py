@@ -110,6 +110,13 @@ def base_notebooker(
     help="Where the filesystem-based short-term cache stores its data.",
 )
 @click.option(
+    "--disable-scheduler",
+    default=False,
+    is_flag=True,
+    help="If --disable-scheduler is given, then the scheduling back-end of the webapp will not start up. It will also "
+         "not display the scheduler from the front-end of the webapp."
+)
+@click.option(
     "--scheduler-mongo-database",
     default=DEFAULT_DATABASE_NAME,
     help=f"The name of the mongo database which is used for the scheduling back-end. "
@@ -123,13 +130,14 @@ def base_notebooker(
 )
 @pass_config
 def start_webapp(
-    config: BaseConfig, port, logging_level, debug, base_cache_dir, scheduler_mongo_database, scheduler_mongo_collection
+    config: BaseConfig, port, logging_level, debug, base_cache_dir, disable_scheduler, scheduler_mongo_database, scheduler_mongo_collection
 ):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
     web_config.LOGGING_LEVEL = logging_level
     web_config.DEBUG = debug
     web_config.CACHE_DIR = base_cache_dir
+    web_config.DISABLE_SCHEDULER = disable_scheduler
     web_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
     web_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
     return main(web_config)

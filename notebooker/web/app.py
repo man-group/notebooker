@@ -64,7 +64,7 @@ def start_app(webapp_config: WebappConfig):
     all_report_refresher.start()
 
 
-def create_app():
+def create_app(webapp_config=None):
     import pkg_resources
 
     flask_app = Flask(__name__, template_folder=f"{pkg_resources.resource_filename(__name__, 'templates')}")
@@ -75,7 +75,8 @@ def create_app():
     flask_app.register_blueprint(core_bp)
     flask_app.register_blueprint(serve_results_bp)
     flask_app.register_blueprint(pending_results_bp)
-    flask_app.register_blueprint(scheduling_bp)
+    if webapp_config and not webapp_config.DISABLE_SCHEDULER:
+        flask_app.register_blueprint(scheduling_bp)
     try:
         import prometheus_client
     except ImportError:
@@ -92,6 +93,9 @@ def create_app():
 
 
 def setup_scheduler(flask_app, web_config):
+    if web_config.DISABLE_SCHEDULER:
+        flask_app.apscheduler = None
+        return flask_app
     serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
     if isinstance(serializer, MongoResultSerializer):
         client = serializer.get_mongo_connection()
@@ -126,7 +130,7 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
 def main(web_config: WebappConfig):
     global GLOBAL_CONFIG
     GLOBAL_CONFIG = web_config
-    flask_app = create_app()
+    flask_app = create_app(web_config)
     flask_app = setup_app(flask_app, web_config)
     start_app(web_config)
     logger.info("Notebooker is now running at http://0.0.0.0:%d", web_config.PORT)

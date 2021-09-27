@@ -26,6 +26,7 @@ def setup_test(template_dir):
             web_config = WebappConfig()
             web_config.PY_TEMPLATE_BASE_DIR = template_dir
             web_config.CACHE_DIR = tmpdir
+            web_config.DISABLE_SCHEDULER = True
             app = setup_app(app, web_config)
             with app.app_context():
                 yield
@@ -36,10 +37,10 @@ def setup_test(template_dir):
 @click.command()
 @click.option("--template-dir", default="notebook_templates")
 def sanity_check(template_dir):
-    logger.info("Starting sanity check")
+    logger.info(f"Starting sanity check in {template_dir}")
     with setup_test(template_dir):
         for template_name in notebooker.web.utils._all_templates():
-            logger.info("========================[ Sanity checking {} ]========================".format(template_name))
+            logger.info(f"========================[ Sanity checking {template_name} ]========================")
             # Test conversion to ipynb - this will throw if stuff goes wrong
             generate_ipynb_from_py(
                 filesystem.get_template_dir(),
@@ -55,7 +56,7 @@ def sanity_check(template_dir):
             )
             param_idx = templates._get_parameters_cell_idx(nb)
             if param_idx is None:
-                logger.warning('Template {} does not have a "parameters"-tagged cell.'.format(template_name))
+                logger.warning(f'Template {template_name} does not have a "parameters"-tagged cell.')
 
             # Test that we can generate a preview from the template
             preview = templates._get_preview(
@@ -65,8 +66,8 @@ def sanity_check(template_dir):
                 warn_on_local=False,
             )
             # Previews in HTML are gigantic since they include all jupyter css and js.
-            assert len(preview) > 1000, "Preview was not properly generated for {}".format(template_name)
-            logger.info("========================[ {} PASSED ]========================".format(template_name))
+            assert len(preview) > 1000, f"Preview was not properly generated for {template_name}"
+            logger.info(f"========================[ {template_name} PASSED ]========================")
 
 
 @click.command()
@@ -76,7 +77,7 @@ def regression_test(template_dir):
     with setup_test(template_dir):
         attempted_templates, failed_templates = [], set()
         for template_name in notebooker.web.utils._all_templates():
-            logger.info("============================[ Testing {} ]============================".format(template_name))
+            logger.info(f"============================[ Testing {template_name} ]============================")
             try:
                 attempted_templates.append(template_name)
                 _run_checks(
@@ -94,7 +95,7 @@ def regression_test(template_dir):
             except Exception:
                 failed_templates.add(template_name)
                 logger.info("===============================[ FAILED ]===============================")
-                logger.exception("Failed to execute template {}".format(template_name))
+                logger.exception(f"Failed to execute template {template_name}")
 
         for template in attempted_templates:
             logger.info("{}: {}".format(template, "FAILED" if template in failed_templates else "PASSED"))

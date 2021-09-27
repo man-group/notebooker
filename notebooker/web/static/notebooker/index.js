@@ -47,63 +47,75 @@ load_data = (limit) => {
 
 
 $(document).ready(() => {
-    $('#resultsTable').DataTable({
-        columns: [
-            {
-                title: 'Title',
-                name: 'title',
-                data: 'report_title',
-            },
-            {
-                title: 'Report Template Name',
-                name: 'report_name',
-                data: 'report_name',
-            },
-            {
-                title: 'Status',
-                name: 'status',
-                data: 'status',
-            },
-            {
-                title: 'Start Time',
-                name: 'job_start_time',
-                data: 'job_start_time',
-                render: (dt) => {
-                    const d = new Date(dt);
-                    return d.toISOString().replace('T', ' ').slice(0, 19);
-                },
-            },
-            {
-                title: 'Completion Time',
-                name: 'job_finish_time',
-                data: 'job_finish_time',
-                render: (dt) => {
-                    if (dt) {
-                        const d = new Date(dt);
-                        return d.toISOString().replace('T', ' ').slice(0, 19);
-                    }
-                    return '';
-                },
-            },
-            {
-                title: 'Results',
-                name: 'result_url',
-                data: 'result_url',
-                render: (url) => `<button onclick="location.href='${url}'" type="button" `
-                        + 'class="ui button blue">Result</button>',
-            },
-            {
-                title: 'PDF',
-                name: 'pdf_url',
-                data: 'pdf_url',
-                render: (url, type, row) => {
-                    if (row.generate_pdf_output) {
-                        return `<button onclick="location.href='${url}'" type="button" `
-                            + 'class="ui button green"><i class="download icon"></i></button>';
-                    }
-                    return '';
-                },
-            },
+    let columns = [
+    {
+        title: 'Title',
+        name: 'title',
+        data: 'report_title',
+    },
+    {
+        title: 'Report Template Name',
+        name: 'report_name',
+        data: 'report_name',
+    },
+    {
+        title: 'Status',
+        name: 'status',
+        data: 'status',
+    },
+    {
+        title: 'Start Time',
+        name: 'job_start_time',
+        data: 'job_start_time',
+        render: (dt) => {
+            const d = new Date(dt);
+            return d.toISOString().replace('T', ' ').slice(0, 19);
+        },
+    },
+    {
+        title: 'Completion Time',
+        name: 'job_finish_time',
+        data: 'job_finish_time',
+        render: (dt) => {
+            if (dt) {
+                const d = new Date(dt);
+                return d.toISOString().replace('T', ' ').slice(0, 19);
+            }
+            return '';
+        },
+    },
+    {
+        title: 'Results',
+        name: 'result_url',
+        data: 'result_url',
+        render: (url) => `<button onclick="location.href='${url}'" type="button" `
+                + 'class="ui button blue">Result</button>',
+    },
+    {
+        title: 'PDF',
+        name: 'pdf_url',
+        data: 'pdf_url',
+        render: (url, type, row) => {
+            if (row.generate_pdf_output) {
+                return `<button onclick="location.href='${url}'" type="button" `
+                    + 'class="ui button green"><i class="download icon"></i></button>';
+            }
+            return '';
+        },
+    }]
+    var usingScheduler = undefined;
+    $.ajax({
+        async: false,
+        url: '/scheduler/health',
+        success: () => {
+            usingScheduler = true;
+        },
+        error: () => {
+            usingScheduler = false;
+        },
+    });
+    if (usingScheduler === true) {
+        columns = columns.concat([
             {
                 title: 'Scheduler Job',
                 name: 'scheduler_job_id',
@@ -115,23 +127,28 @@ $(document).ready(() => {
                         return '';
                     }
                 }
-            },
-            {
-                title: 'Rerun',
-                name: 'rerun_url',
-                data: 'rerun_url',
-                render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
-                           + 'type="button" class="ui yellow button rerunButton">'
-                        + '<i class="redo alternate icon"></i>Rerun</button>',
-            },
-            {
-                title: 'Delete',
-                name: 'result_url',
-                data: 'result_url',
-                render: (url, type, row) => `${'<button type="button" class="ui button red deletebutton" '
-                        + 'id="delete_'}${row.job_id}"> <i class="trash icon"></i>`,
-            },
-        ],
+            }
+        ])
+    }
+    columns = columns.concat([
+        {
+            title: 'Rerun',
+            name: 'rerun_url',
+            data: 'rerun_url',
+            render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
+                       + 'type="button" class="ui yellow button rerunButton">'
+                    + '<i class="redo alternate icon"></i>Rerun</button>',
+        },
+        {
+            title: 'Delete',
+            name: 'result_url',
+            data: 'result_url',
+            render: (url, type, row) => `${'<button type="button" class="ui button red deletebutton" '
+                    + 'id="delete_'}${row.job_id}"> <i class="trash icon"></i>`,
+        },
+    ])
+    $('#resultsTable').DataTable({
+        columns: columns,
         order: [[3, 'desc']],
     });
     load_data(50);

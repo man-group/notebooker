@@ -3,7 +3,7 @@ from typing import Optional, List
 import uuid
 
 from apscheduler.jobstores.base import ConflictingIdError
-from flask import Blueprint, jsonify, render_template, current_app, request, url_for
+from flask import Blueprint, jsonify, render_template, current_app, request, url_for, abort
 
 from notebooker.utils.web import json_to_python
 from notebooker.web.handle_overrides import handle_overrides
@@ -12,6 +12,13 @@ from notebooker.web.utils import get_all_possible_templates
 from apscheduler.triggers import cron
 
 scheduling_bp = Blueprint("scheduling_bp", __name__)
+
+
+@scheduling_bp.route("/scheduler/health")
+def scheduler_is_up():
+    if not hasattr(current_app, "apscheduler") or current_app.apscheduler is None:
+        abort(404)
+    return jsonify({"status": "OK"})  # TODO: Add an actual health check here
 
 
 @scheduling_bp.route("/scheduler")
