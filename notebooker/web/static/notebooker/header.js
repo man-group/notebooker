@@ -26,6 +26,15 @@ $(document).ready(() => {
             $('#authArea').hide();
         },
     });
+    $.ajax({
+        url: '/scheduler/health',
+        success: () => {
+            // Show the status at some point
+        },
+        error: () => {
+            $('#schedulerButton').hide();
+        },
+    });
 
     const sb = $('.ui.left.sidebar');
     sb.sidebar({

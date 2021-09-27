@@ -47,3 +47,4 @@ class WebappConfig(BaseConfig):
 
     SCHEDULER_MONGO_DATABASE: str = ""
     SCHEDULER_MONGO_COLLECTION: str = ""
+    DISABLE_SCHEDULER: bool = False
