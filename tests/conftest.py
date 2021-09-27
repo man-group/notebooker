@@ -72,6 +72,7 @@ def webapp_config(mongo_host, test_db_name, test_lib_name, template_dir, cache_d
         CACHE_DIR=cache_dir,
         OUTPUT_DIR=output_dir,
         TEMPLATE_DIR=template_dir,
+        DISABLE_SCHEDULER=False,
         SERIALIZER_CLS=DEFAULT_SERIALIZER,
         SERIALIZER_CONFIG={
             "mongo_host": mongo_host,
@@ -87,7 +88,7 @@ def webapp_config(mongo_host, test_db_name, test_lib_name, template_dir, cache_d
 
 @pytest.fixture
 def flask_app(webapp_config):
-    flask_app = create_app()
+    flask_app = create_app(webapp_config)
     flask_app = setup_app(flask_app, webapp_config)
     return flask_app
 

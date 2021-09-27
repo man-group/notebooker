@@ -39,7 +39,7 @@ def all_schedules():
 def remove_schedule(job_id):
     job = current_app.apscheduler.get_job(job_id)
     if job is None:
-        return {"status": "Not found"}, 404
+        return jsonify({"status": "Not found"}), 404
     job.remove()
     return jsonify({"status": "Complete"}), 200
 
@@ -55,7 +55,7 @@ def update_schedule(report_name):
     job_id = get_job_id(report_name, params.report_title)
     job = current_app.apscheduler.get_job(job_id)
     if job is None or job.kwargs.get("report_name") != report_name:
-        return {"status": "Not found"}, 404
+        return jsonify({"status": "Not found"}), 404
     print(request.values)
     trigger = validate_crontab(request.values.get("cron_schedule", ""), issues)
     overrides_dict = handle_overrides(request.values.get("overrides", ""), issues)
@@ -84,7 +84,7 @@ def update_schedule(report_name):
 @scheduling_bp.route("/scheduler/create/<path:report_name>", methods=["POST"])
 def create_schedule(report_name):
     if report_name not in get_all_possible_templates():
-        return {"status": "Not found"}, 404
+        return jsonify({"status": "Not found"}), 404
     issues = []
     trigger = validate_crontab(request.values.get("cron_schedule", ""), issues)
     params = validate_run_params(request.values, issues)
