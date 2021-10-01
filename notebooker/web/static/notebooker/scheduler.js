@@ -77,12 +77,13 @@ function setScheduleModalMode(mode) {
 
 load_all_templates = (callback) => {
     $.ajax({
-        url: '/core/all_possible_templates',
+        url: '/core/all_possible_templates_flattened',
         dataType: 'json',
         success: (result) => {
-            var templates = Array();
-            for (var key in result) {
-                templates = templates.concat({"name": key, "value": key})
+            let templates = Array();
+            for (let i = 0; i < result.result.length; i++) {
+                let value = result.result[i]
+                templates = templates.concat({"name": value, "value": value})
             }
             $('.selection.dropdown').dropdown({
                 values: templates,
@@ -111,13 +112,17 @@ function showSelection() {
     }
 }
 
+function removeSchedulerIdFromURL() {
+    let url = new URL(window.location.href);
+    url.searchParams.delete('id');
+    history.replaceState({}, null, url.toString());
+}
+
 function showSchedulerModal() {
     $('#schedulerModal').modal({
         closable: true,
         onHidden() {
-            let url = new URL(window.location.href);
-            url.searchParams.delete('id');
-            history.replaceState({}, null, url.toString());
+            removeSchedulerIdFromURL()
         }
     }).modal('show');
 }
@@ -266,6 +271,7 @@ $(document).ready(() => {
                     if (data.status === 'Failed') {
                         handleFormError(data.content);
                     } else {
+                        removeSchedulerIdFromURL();
                         location.reload();
                     }
                 },

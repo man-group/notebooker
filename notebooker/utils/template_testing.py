@@ -39,7 +39,7 @@ def setup_test(template_dir):
 def sanity_check(template_dir):
     logger.info(f"Starting sanity check in {template_dir}")
     with setup_test(template_dir):
-        for template_name in notebooker.web.utils._all_templates():
+        for template_name in notebooker.web.utils.all_templates_flattened():
             logger.info(f"========================[ Sanity checking {template_name} ]========================")
             # Test conversion to ipynb - this will throw if stuff goes wrong
             generate_ipynb_from_py(
@@ -76,7 +76,7 @@ def regression_test(template_dir):
     logger.info("Starting regression test")
     with setup_test(template_dir):
         attempted_templates, failed_templates = [], set()
-        for template_name in notebooker.web.utils._all_templates():
+        for template_name in notebooker.web.utils.all_templates_flattened():
             logger.info(f"============================[ Testing {template_name} ]============================")
             try:
                 attempted_templates.append(template_name)

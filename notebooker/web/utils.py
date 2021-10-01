@@ -60,6 +60,6 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
     return all_dirs[rootdir[start:]]
 
 
-def _all_templates():
+def all_templates_flattened():
     templates = list(_gen_all_templates(get_all_possible_templates(warn_on_local=False)))
     return templates
