@@ -5,7 +5,7 @@ import click
 
 from notebooker import notebook_templates_example
 from notebooker._version import __version__
-from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_DATABASE_NAME, DEFAULT_SCHEDULER_COLLECTION_NAME
+from notebooker.constants import DEFAULT_SERIALIZER
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
 from notebooker.settings import BaseConfig, WebappConfig
@@ -114,23 +114,30 @@ def base_notebooker(
     default=False,
     is_flag=True,
     help="If --disable-scheduler is given, then the scheduling back-end of the webapp will not start up. It will also "
-         "not display the scheduler from the front-end of the webapp."
+    "not display the scheduler from the front-end of the webapp.",
 )
 @click.option(
     "--scheduler-mongo-database",
-    default=DEFAULT_DATABASE_NAME,
-    help=f"The name of the mongo database which is used for the scheduling back-end. "
-    f"Defaults to '{DEFAULT_DATABASE_NAME}'.",
+    default="",
+    help="The name of the mongo database which is used for the scheduling back-end. "
+    "Defaults to the same as the serializer's mongo database.",
 )
 @click.option(
     "--scheduler-mongo-collection",
-    default=DEFAULT_SCHEDULER_COLLECTION_NAME,
-    help=f"The name of the mongo collection within the scheduler-mongo-database which is used for "
-    f"the scheduling back-end. Defaults to '{DEFAULT_SCHEDULER_COLLECTION_NAME}'.",
+    default="",
+    help="The name of the mongo collection within the scheduler-mongo-database which is used for "
+    "the scheduling back-end. Defaults to the same as the serializer's mongo collection + '_scheduler'.",
 )
 @pass_config
 def start_webapp(
-    config: BaseConfig, port, logging_level, debug, base_cache_dir, disable_scheduler, scheduler_mongo_database, scheduler_mongo_collection
+    config: BaseConfig,
+    port,
+    logging_level,
+    debug,
+    base_cache_dir,
+    disable_scheduler,
+    scheduler_mongo_database,
+    scheduler_mongo_collection,
 ):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
