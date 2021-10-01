@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, render_template, current_app, request, url
 from notebooker.utils.web import json_to_python
 from notebooker.web.handle_overrides import handle_overrides
 from notebooker.web.routes.run_report import validate_run_params
-from notebooker.web.utils import get_all_possible_templates
+from notebooker.web.utils import get_all_possible_templates, all_templates_flattened
 from apscheduler.triggers import cron
 
 scheduling_bp = Blueprint("scheduling_bp", __name__)
@@ -35,7 +35,7 @@ def all_schedules():
     return jsonify(result), 200
 
 
-@scheduling_bp.route("/scheduler/<string:job_id>", methods=["DELETE"])
+@scheduling_bp.route("/scheduler/<path:job_id>", methods=["DELETE"])
 def remove_schedule(job_id):
     job = current_app.apscheduler.get_job(job_id)
     if job is None:
@@ -83,7 +83,7 @@ def update_schedule(report_name):
 
 @scheduling_bp.route("/scheduler/create/<path:report_name>", methods=["POST"])
 def create_schedule(report_name):
-    if report_name not in get_all_possible_templates():
+    if report_name not in all_templates_flattened():
         return jsonify({"status": "Not found"}), 404
     issues = []
     trigger = validate_crontab(request.values.get("cron_schedule", ""), issues)

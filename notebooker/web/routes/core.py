@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from notebooker.utils.results import get_all_available_results_json
-from notebooker.web.utils import get_serializer, get_all_possible_templates
+from notebooker.web.utils import get_serializer, get_all_possible_templates, all_templates_flattened
 
 core_bp = Blueprint("core_bp", __name__)
 
@@ -43,3 +43,13 @@ def get_all_possible_templates_url():
     :returns: A JSON which points from a report name to either its children or None if it is a leaf node.
     """
     return jsonify(get_all_possible_templates())
+
+
+@core_bp.route("/core/all_possible_templates_flattened")
+def all_possible_templates_flattened():
+    """
+    Core function which returns a flattened list of possible reports which a user can execute from the webapp.
+
+    :returns: A JSON which is a list of all possible templates with their full names.
+    """
+    return jsonify({"result": all_templates_flattened()})
