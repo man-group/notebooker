@@ -110,10 +110,12 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace):
 
 def test_scheduler_runs_notebooks(flask_app, setup_workspace):
     with flask_app.test_client() as client:
+
         def fake_post(url, params):
             path = url.replace("http://", "").split("/", 1)[1]
             client.post(f"/{path}?{params}")
             return mock.MagicMock()
+
         with mock.patch("notebooker.web.scheduler.requests.post", side_effect=fake_post):
             rv = client.get("/core/get_all_available_results?limit=50")
             assert len(json.loads(rv.data)) == 0
