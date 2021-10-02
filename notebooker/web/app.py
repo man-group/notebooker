@@ -99,7 +99,7 @@ def setup_scheduler(flask_app, web_config):
     serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
     if isinstance(serializer, MongoResultSerializer):
         client = serializer.get_mongo_connection()
-        database = web_config.SCHEDULER_MONGO_DATABASE or serializer.mongo_host
+        database = web_config.SCHEDULER_MONGO_DATABASE or serializer.database_name
         collection = web_config.SCHEDULER_MONGO_COLLECTION or f"{serializer.result_collection_name}_scheduler"
         jobstores = {"mongo": MongoDBJobStore(database=database, collection=collection, client=client)}
     else:
