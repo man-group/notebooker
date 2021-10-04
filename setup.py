@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 def get_version():
     # https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version
     base_dir = os.path.abspath(os.path.dirname(__file__))
-    version_file_loc = os.path.join(base_dir, ".", "notebooker", "_version.py")
+    version_file_loc = os.path.join(base_dir, ".", "notebooker", "version.py")
     version = {}
     with open(version_file_loc) as version_file:
         exec(version_file.read(), version)

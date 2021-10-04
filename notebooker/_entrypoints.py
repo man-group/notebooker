@@ -4,7 +4,7 @@ import uuid
 import click
 
 from notebooker import notebook_templates_example
-from notebooker._version import __version__
+from notebooker.version import __version__
 from notebooker.constants import DEFAULT_SERIALIZER
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS

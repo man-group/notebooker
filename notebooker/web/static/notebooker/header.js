@@ -1,4 +1,14 @@
 $(document).ready(() => {
+    $.ajax({
+        url: '/core/version',
+        success: (result) => {
+            $('#versionTitle').text("v" + result.version);
+            $('#versionTitle').show();
+        },
+        error: () => {
+            $('#versionTitle').hide();
+        },
+    });
     // Check auth is enabled on our host
     $.ajax({
         url: '/oauth/health',
