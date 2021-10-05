@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 
+import notebooker.version
 from notebooker.utils.results import get_all_available_results_json
 from notebooker.web.utils import get_serializer, get_all_possible_templates, all_templates_flattened
 
@@ -53,3 +54,13 @@ def all_possible_templates_flattened():
     :returns: A JSON which is a list of all possible templates with their full names.
     """
     return jsonify({"result": all_templates_flattened()})
+
+
+@core_bp.route("/core/version")
+def get_version_no():
+    """
+    Core function which returns the Notebooker version number.
+
+    :returns: A JSON mapping from "version" to the string repr of the version number.
+    """
+    return jsonify({"version": notebooker.version.__version__})

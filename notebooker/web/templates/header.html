@@ -43,16 +43,21 @@
           <a class="item" id="schedulerButton" href="/scheduler">
               Scheduler
           </a>
-          <div class="right menu" id="authArea">
-            <div class="ui item loggedIn" style="display: none">
-                Logged in as: <span id="usernameInfo"></span>
+          <div class="right menu">
+            <div class="ui item">
+                <span id="versionTitle"></span>
             </div>
-            <a class="ui item loggedIn" style="display: none" href="/oauth/logout?redirect=/">
-                Logout
-            </a>
-            <a class="ui item loggedOut" style="display: none" href="/oauth/authorize">
-              Log in
-            </a>
+            <div id="authArea">
+              <div class="ui item loggedIn" style="display: none">
+                  Logged in as: <span id="usernameInfo"></span>
+              </div>
+              <a class="ui item loggedIn" style="display: none" href="/oauth/logout?redirect=/">
+                  Logout
+              </a>
+              <a class="ui item loggedOut" style="display: none" href="/oauth/authorize">
+                Log in
+              </a>
+          </div>
           </div>
 
         </div>
@@ -89,5 +94,6 @@
             </a>
         </div>
         </body>
+        <footer></footer>
     </html>
 {% endmacro %}

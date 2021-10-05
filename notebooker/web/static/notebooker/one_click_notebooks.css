@@ -43,3 +43,8 @@ td button i {
 #usernameInfo {
     margin-left: 0.5em;
 }
+
+#versionTitle {
+    width: 3em;
+    display: none;
+}

@@ -18,7 +18,7 @@ Do also make sure to run the webapp and make sure you haven't broken anything.
 
 # Releasing a new version
 When releasing a new version, please increment the version number in:
-* `notebooker/_version.py`
+* `notebooker/version.py`
 * `.circleci/config.yml`
 * `docs/config.yml`
 * `notebooker/web/static/package.json`

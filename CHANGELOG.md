@@ -1,3 +1,12 @@
+0.3.0 (2021-10-05)
+------------------
+
+* Major feature: scheduling natively within Notebooker
+    * See [the docs](https://notebooker.readthedocs.io/en/latest/webapp/webapp.html#scheduling-a-report) for more info.
+* Bugfix: Newer versions of uuid now work properly with Notebooker
+* Improvement: See the version number in the Notebooker GUI and with a /core/version GET call.
+
+
 0.2.1 (2021-02-11) 
 ------------------
 
