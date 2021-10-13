@@ -54,7 +54,7 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
         if not _valid_dirname(path):
             continue
         folders = path[start:].split(os.sep)
-        subdir = {os.sep.join(folders[1:] + [f.replace(".py", "")]): None for f in files if _valid_filename(f)}
+        subdir = {os.sep.join(folders[1:] + [f.replace(".ipynb", "").replace(".py", "")]): None for f in files if _valid_filename(f)}
         parent = reduce(dict.get, folders[:-1], all_dirs)
         parent[folders[-1]] = subdir
     return all_dirs[rootdir[start:]]

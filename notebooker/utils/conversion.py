@@ -1,4 +1,5 @@
 import os
+import shutil
 import uuid
 from typing import Any, AnyStr, Dict, Optional
 
@@ -66,9 +67,14 @@ def _git_pull_latest(repo: git.repo.Repo):
     repo.git.pull("origin", "master")
 
 
-def _python_template(report_path: AnyStr, py_template_dir: AnyStr) -> AnyStr:
-    file_name = "{}.py".format(report_path)
-    return os.path.join(py_template_dir, file_name)
+def _template(report_path: str, py_template_dir: AnyStr) -> AnyStr:
+    py_path = os.path.join(py_template_dir, "{}.py".format(report_path))
+    ipynb_path = os.path.join(py_template_dir, "{}.ipynb".format(report_path))
+
+    if os.path.isfile(py_path):
+        return py_path
+
+    return ipynb_path
 
 
 def _ipynb_output_path(template_base_dir: AnyStr, report_path: AnyStr, git_hex: AnyStr) -> AnyStr:
@@ -76,15 +82,15 @@ def _ipynb_output_path(template_base_dir: AnyStr, report_path: AnyStr, git_hex: 
     return os.path.join(template_base_dir, git_hex, file_name)
 
 
-def _get_python_template_path(report_path: str, warn_on_local: bool, py_template_dir) -> str:
+def _get_template_path(report_path: str, warn_on_local: bool, py_template_dir: str) -> str:
     if py_template_dir:
-        return _python_template(report_path, py_template_dir)
+        return _template(report_path, py_template_dir)
     else:
         if warn_on_local:
             logger.warning(
                 "Loading from notebooker default templates. This is only expected if you are running locally."
             )
-        return pkg_resources.resource_filename(__name__, "../notebook_templates_example/{}.py".format(report_path))
+        return _template(report_path, pkg_resources.resource_filename(__name__, "../notebook_templates_example"))
 
 
 def _get_output_path_hex(notebooker_disable_git, py_template_dir) -> str:
@@ -126,21 +132,24 @@ def generate_ipynb_from_py(
     Pulls the latest version of the notebook templates from git, and regenerates templates if there is a new HEAD
     OR: finds the local template from the template repository using a relative path
 
-    In both cases, this method converts the .py file into an .ipynb file which can be executed by papermill.
+    If the report template is already an ipynb file, then this is simply copied to the output path, otherwise the
+    .py file is converted into an .ipynb file, which can be executed by papermill.
 
     :param template_base_dir: The directory in which converted notebook templates reside.
     :param report_name: The name of the report which we are running.
     :param notebooker_disable_git: Whether or not to pull the latest version from git, if a change is available.
-    :param py_template_dir: The directory which contains raw python templates. This should be a subdir in a git repo.
+    :param py_template_dir: The directory which contains raw py/ipynb templates. This should be a subdir in a git repo.
     :param warn_on_local: Whether to warn when we are searching for notebooks in the notebooker repo itself.
 
     :return: The filepath of the .ipynb which we have just converted.
     """
     report_path = convert_report_name_into_path(report_name)
-    python_template_path = _get_python_template_path(report_path, warn_on_local, py_template_dir)
+    template_path = _get_template_path(report_path, warn_on_local, py_template_dir)
     output_template_path = _ipynb_output_path(
         template_base_dir, report_path, _get_output_path_hex(notebooker_disable_git, py_template_dir)
     )
+
+    mkdir_p(os.path.dirname(output_template_path))
 
     try:
         with open(output_template_path, "r") as f:
@@ -150,15 +159,18 @@ def generate_ipynb_from_py(
     except IOError:
         pass
 
-    # "touch" the output file
-    print("Creating ipynb at: %s", output_template_path)
-    mkdir_p(os.path.dirname(output_template_path))
-    with open(output_template_path, "w") as f:
-        os.utime(output_template_path, None)
+    if template_path.endswith("ipynb"):
+        shutil.copy(template_path, output_template_path)
+    else:
+        # "touch" the output file
+        print("Creating ipynb at: %s", output_template_path)
+        with open(output_template_path, "w") as f:
+            os.utime(output_template_path, None)
 
-    jupytext_nb = jupytext.read(python_template_path)
-    jupytext_nb["metadata"]["kernelspec"] = kernel_spec()  # Override the kernel spec since we want to run it..
-    jupytext.write(jupytext_nb, output_template_path)
+        jupytext_nb = jupytext.read(template_path)
+        jupytext_nb["metadata"]["kernelspec"] = kernel_spec()  # Override the kernel spec since we want to run it..
+        jupytext.write(jupytext_nb, output_template_path)
+
     return output_template_path
 
 

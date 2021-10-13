@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import uuid
 
+import pytest
 import mock
 from click.testing import CliRunner
 
@@ -13,13 +14,20 @@ from notebooker.utils.caching import set_cache
 from notebooker.utils.conversion import _output_ipynb_name
 
 
-def test_generate_ipynb_from_py(setup_and_cleanup_notebooker_filesystem, webapp_config, flask_app):
+@pytest.mark.parametrize(
+    "file_type",
+    [
+        "py",
+        "ipynb",
+    ],
+)
+def test_generate_ipynb_from_py(file_type, setup_and_cleanup_notebooker_filesystem, webapp_config, flask_app):
     python_dir = webapp_config.PY_TEMPLATE_BASE_DIR
     with flask_app.app_context():
         set_cache("latest_sha", "fake_sha_early")
 
         os.mkdir(python_dir + "/extra_path")
-        with open(os.path.join(python_dir, "extra_path", "test_report.py"), "w") as f:
+        with open(os.path.join(python_dir, "extra_path", f"test_report.{file_type}"), "w") as f:
             f.write("#hello world\n")
         report_path = os.sep.join(["extra_path", "test_report"])
         with mock.patch("notebooker.utils.conversion.git.repo.Repo") as repo:
@@ -38,10 +46,10 @@ def test_generate_ipynb_from_py(setup_and_cleanup_notebooker_filesystem, webapp_
         uuid_1 = uuid.UUID(int=12345)
         uuid_2 = uuid.UUID(int=67890)
         with mock.patch("notebooker.utils.conversion.uuid.uuid4") as uuid4:
-            with mock.patch("notebooker.utils.conversion.pkg_resources.resource_filename") as resource_filename:
+            with mock.patch("notebooker.utils.conversion._template") as template:
                 conversion.python_template_dir = lambda *a, **kw: None
                 uuid4.return_value = uuid_1
-                resource_filename.return_value = python_dir + "/extra_path/test_report.py"
+                template.return_value = python_dir + f"/extra_path/test_report.{file_type}"
                 conversion.generate_ipynb_from_py(python_dir, "extra_path/test_report", False, py_template_dir="")
 
         expected_ipynb_path = os.path.join(python_dir, str(uuid_1), expected_filename)
