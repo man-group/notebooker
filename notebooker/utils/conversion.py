@@ -82,7 +82,7 @@ def _ipynb_output_path(template_base_dir: AnyStr, report_path: AnyStr, git_hex: 
     return os.path.join(template_base_dir, git_hex, file_name)
 
 
-def _get_template_path(report_path: str, warn_on_local: bool, py_template_dir: str) -> str:
+def _get_template_path(report_path: str, warn_on_local: bool, py_template_dir: AnyStr) -> str:
     if py_template_dir:
         return _template(report_path, py_template_dir)
     else:
@@ -160,6 +160,7 @@ def generate_ipynb_from_py(
         pass
 
     if template_path.endswith("ipynb"):
+        print("Copying existing ipynb to: %s", output_template_path)
         shutil.copy(template_path, output_template_path)
     else:
         # "touch" the output file
