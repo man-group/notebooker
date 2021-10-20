@@ -1,3 +1,8 @@
+0.3.2 (2021-11-??)
+------------------
+
+* Feature: .ipynb files are now natively supported and can be used as Notebook Templates (#57)
+
 0.3.1 (2021-10-29)
 ------------------
 
@@ -5,6 +10,7 @@
 * Bugfix: hide_code and generate_pdf options now work as intended with the scheduler.
 * Bugfix: Large notebooks were causing serialisation errors; now safely stored in gridfs.
 * **Incompatibility**: Reports run with this version onwards will not be readable by older versions of Notebooker.
+
 
 0.3.0 (2021-10-05)
 ------------------
