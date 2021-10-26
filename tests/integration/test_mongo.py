@@ -21,6 +21,14 @@ def test_mongo_saving_ipynb_json_to_gridfs(bson_library, webapp_config):
         job_start_time=datetime.datetime(2018, 1, 12, 2, 30),
         job_finish_time=datetime.datetime(2018, 1, 12, 2, 58),
         raw_ipynb_json="x"*32*(2**20),  # 16MB document max
+        raw_html="x"*32*(2**20),  # 16MB document max
+        email_html="x"*32*(2**20),  # 16MB document max
+        pdf=b"x"*32*(2**20),  # 16MB document max
+        raw_html_resources={"inlining": {"big_thing": "a"*32*(2**20)}}
     ))
     result = serializer.get_check_result(job_id)
     assert result.raw_ipynb_json
+    assert result.raw_html
+    assert result.email_html
+    assert result.pdf
+    assert result.raw_html_resources["inlining"]

@@ -150,6 +150,8 @@ class NotebookResultComplete(NotebookResultBase):
         for k, v in self.raw_html_resources.items():
             if k == "outputs":
                 resources[k] = list(v)
+            elif k == "inlining":
+                continue
             else:
                 resources[k] = v
         return resources
@@ -159,8 +161,6 @@ class NotebookResultComplete(NotebookResultBase):
             "status": self.status.value,
             "report_name": self.report_name,
             "report_title": self.report_title,
-            "raw_html": self.raw_html,
-            "email_html": self.email_html,
             "raw_html_resources": self.html_resources(),
             "job_id": self.job_id,
             "job_start_time": self.job_start_time,

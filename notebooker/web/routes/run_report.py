@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime
 import json
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -10,6 +11,7 @@ from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
+import os
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
 from nbformat import NotebookNode
 
@@ -171,7 +173,7 @@ def run_report(
     app_config = current_app.config
     command = (
         [
-            "notebooker-cli",
+            os.path.join(sys.exec_prefix, "bin", "notebooker-cli"),
             "--output-base-dir",
             get_output_dir(),
             "--template-base-dir",
@@ -191,7 +193,7 @@ def run_report(
             "--report-name",
             report_name,
             "--report-title",
-            f"'{report_title}'",
+            report_title,
             "--mailto",
             mailto,
             "--overrides-as-json",

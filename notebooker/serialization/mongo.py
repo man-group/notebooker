@@ -1,4 +1,5 @@
 import datetime
+import json
 from abc import ABC
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
@@ -6,7 +7,6 @@ from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 import click
 import gridfs
 import pymongo
-from gridfs import NoFile
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
 
@@ -125,25 +125,42 @@ class MongoResultSerializer(ABC):
         self._save_to_db(pending_result)
 
     def save_check_result(self, notebook_result: Union[NotebookResultComplete, NotebookResultError]) -> None:
+        # Save to gridfs
+        if isinstance(notebook_result, NotebookResultComplete):
+            if notebook_result.raw_html_resources:
+                if "outputs" in notebook_result.raw_html_resources:
+                    for filename, binary_data in notebook_result.raw_html_resources["outputs"].items():  # type: ignore
+                        self.result_data_store.put(binary_data, filename=filename, encoding="utf-8")
+                if "inlining" in notebook_result.raw_html_resources:
+                    self.result_data_store.put(
+                        json.dumps(notebook_result.raw_html_resources["inlining"]),
+                        filename=_css_inlining_filename(notebook_result.job_id),
+                        encoding="utf-8",
+                    )
+            for filelike_attribute, filename_func in [
+                ("pdf", _pdf_filename),
+                ("raw_html", _raw_html_filename),
+                ("email_html", _raw_email_html_filename),
+            ]:
+                if getattr(notebook_result, filelike_attribute):
+                    self.result_data_store.put(
+                        getattr(notebook_result, filelike_attribute),
+                        filename=filename_func(notebook_result.job_id),
+                        encoding="utf-8",
+                    )
+            for dict_attribute, filename_func in [
+                ("raw_ipynb_json", _raw_json_filename),
+            ]:
+                if getattr(notebook_result, dict_attribute):
+                    self.result_data_store.put(
+                        json.dumps(getattr(notebook_result, dict_attribute)),
+                        filename=filename_func(notebook_result.job_id),
+                        encoding="utf-8",
+                    )
+
         # Save to mongo
         logger.info("Saving {}".format(notebook_result.job_id))
         self._save_to_db(notebook_result)
-
-        # Save to gridfs
-        if isinstance(notebook_result, NotebookResultComplete):
-            if notebook_result.raw_html_resources and "outputs" in notebook_result.raw_html_resources:
-                for filename, binary_data in notebook_result.raw_html_resources["outputs"].items():  # type: ignore
-                    self.result_data_store.put(binary_data, filename=filename, encoding="utf-8")
-            if notebook_result.pdf:
-                self.result_data_store.put(
-                    notebook_result.pdf, filename=_pdf_filename(notebook_result.job_id), encoding="utf-8"
-                )
-            if notebook_result.raw_ipynb_json:
-                self.result_data_store.put(
-                    notebook_result.raw_ipynb_json,
-                    filename=_raw_json_filename(notebook_result.job_id),
-                    encoding="utf-8",
-                )
 
     def _convert_result(
         self, result: Dict, load_payload: bool = True
@@ -166,15 +183,10 @@ class MongoResultSerializer(ABC):
         }.get(job_status)
         if cls is None:
             return None
-
         if load_payload and job_status == JobStatus.DONE:
 
             def read_file(path):
-                try:
-                    return self.result_data_store.get_last_version(path).read()
-                except NoFile:
-                    logger.error("Could not find file %s in %s", path, self.result_data_store)
-                    return ""
+                return self.result_data_store.get_last_version(path).read()
 
             outputs = {path: read_file(path) for path in result.get("raw_html_resources", {}).get("outputs", [])}
             result["raw_html_resources"]["outputs"] = outputs
@@ -182,7 +194,15 @@ class MongoResultSerializer(ABC):
                 pdf_filename = _pdf_filename(result["job_id"])
                 result["pdf"] = read_file(pdf_filename)
             if not result.get("raw_ipynb_json"):
-                result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]))
+                result["raw_ipynb_json"] = json.loads(read_file(_raw_json_filename(result["job_id"])))
+            if not result.get("raw_html"):
+                result["raw_html"] = str(read_file(_raw_html_filename(result["job_id"])))
+            if not result.get("email_html"):
+                result["email_html"] = str(read_file(_raw_email_html_filename(result["job_id"])))
+            if result.get("raw_html_resources") and not result.get("raw_html_resources", {}).get("inlining"):
+                result["raw_html_resources"]["inlining"] = json.loads(
+                    read_file(_css_inlining_filename(result["job_id"]))
+                )
 
         if cls == NotebookResultComplete:
             return NotebookResultComplete(
@@ -363,3 +383,15 @@ def _pdf_filename(job_id: str) -> str:
 
 def _raw_json_filename(job_id: str) -> str:
     return f"{job_id}.ipynb.json"
+
+
+def _raw_html_filename(job_id: str) -> str:
+    return f"{job_id}.rawhtml"
+
+
+def _raw_email_html_filename(job_id: str) -> str:
+    return f"{job_id}.email.rawhtml"
+
+
+def _css_inlining_filename(job_id: str) -> str:
+    return f"{job_id}.inline.css"
