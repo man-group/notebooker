@@ -156,7 +156,6 @@ class NotebookResultComplete(NotebookResultBase):
 
     def saveable_output(self):
         return {
-            "raw_ipynb_json": self.raw_ipynb_json,
             "status": self.status.value,
             "report_name": self.report_name,
             "report_title": self.report_title,

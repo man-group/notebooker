@@ -138,6 +138,12 @@ class MongoResultSerializer(ABC):
                 self.result_data_store.put(
                     notebook_result.pdf, filename=_pdf_filename(notebook_result.job_id), encoding="utf-8"
                 )
+            if notebook_result.raw_ipynb_json:
+                self.result_data_store.put(
+                    notebook_result.raw_ipynb_json,
+                    filename=_raw_json_filename(notebook_result.job_id),
+                    encoding="utf-8",
+                )
 
     def _convert_result(
         self, result: Dict, load_payload: bool = True
@@ -175,6 +181,8 @@ class MongoResultSerializer(ABC):
             if result.get("generate_pdf_output"):
                 pdf_filename = _pdf_filename(result["job_id"])
                 result["pdf"] = read_file(pdf_filename)
+            if not result.get("raw_ipynb_json"):
+                result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]))
 
         if cls == NotebookResultComplete:
             return NotebookResultComplete(
@@ -351,3 +359,7 @@ class MongoResultSerializer(ABC):
 
 def _pdf_filename(job_id: str) -> str:
     return "{}.pdf".format(job_id)
+
+
+def _raw_json_filename(job_id: str) -> str:
+    return f"{job_id}.ipynb.json"
