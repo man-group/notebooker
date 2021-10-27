@@ -7,6 +7,7 @@ from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 import click
 import gridfs
 import pymongo
+from gridfs import NoFile
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
 
@@ -81,6 +82,10 @@ class MongoResultSerializer(ABC):
         return result
 
     def update_check_status(self, job_id: str, status: JobStatus, **extra):
+        if status == JobStatus.DONE:
+            raise ValueError(
+                "update_check_status() should not be called with a completed job; use save_check_result() instead."
+            )
         existing = self.library.find_one({"job_id": job_id})
         if not existing:
             logger.warning(
@@ -185,8 +190,13 @@ class MongoResultSerializer(ABC):
             return None
         if load_payload and job_status == JobStatus.DONE:
 
-            def read_file(path):
-                return self.result_data_store.get_last_version(path).read()
+            def read_file(path, is_json=False):
+                try:
+                    r = self.result_data_store.get_last_version(path).read()
+                    return "" if not r else json.loads(r) if is_json else r.decode("utf8")
+                except NoFile:
+                    logger.error("Could not find file %s in %s", path, self.result_data_store)
+                    return ""
 
             outputs = {path: read_file(path) for path in result.get("raw_html_resources", {}).get("outputs", [])}
             result["raw_html_resources"]["outputs"] = outputs
@@ -194,14 +204,14 @@ class MongoResultSerializer(ABC):
                 pdf_filename = _pdf_filename(result["job_id"])
                 result["pdf"] = read_file(pdf_filename)
             if not result.get("raw_ipynb_json"):
-                result["raw_ipynb_json"] = json.loads(read_file(_raw_json_filename(result["job_id"])))
+                result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]), is_json=True)
             if not result.get("raw_html"):
-                result["raw_html"] = str(read_file(_raw_html_filename(result["job_id"])))
+                result["raw_html"] = read_file(_raw_html_filename(result["job_id"]))
             if not result.get("email_html"):
-                result["email_html"] = str(read_file(_raw_email_html_filename(result["job_id"])))
+                result["email_html"] = read_file(_raw_email_html_filename(result["job_id"]))
             if result.get("raw_html_resources") and not result.get("raw_html_resources", {}).get("inlining"):
-                result["raw_html_resources"]["inlining"] = json.loads(
-                    read_file(_css_inlining_filename(result["job_id"]))
+                result["raw_html_resources"]["inlining"] = read_file(
+                    _css_inlining_filename(result["job_id"]), is_json=True
                 )
 
         if cls == NotebookResultComplete:

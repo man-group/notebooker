@@ -36,7 +36,7 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
+        mailto = ""
         job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
         _check_report_output(
             job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto
@@ -59,7 +59,7 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
+        mailto = ""
         job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
         _check_report_output(
             job_id,
@@ -94,7 +94,7 @@ def test_run_report_hide_code(bson_library, flask_app, setup_and_cleanup_noteboo
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
+        mailto = ""
         job_id = run_report(
             report_name, report_title, mailto, overrides, hide_code=True, generate_pdf_output=False, prepare_only=True
         )

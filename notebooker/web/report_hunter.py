@@ -68,6 +68,8 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             logger.debug("Found {} updates since {}.".format(ct, last_query))
             last_query = _last_query
         except Exception as e:
+            if run_once:
+                raise
             logger.exception(str(e))
         if run_once:
             break
