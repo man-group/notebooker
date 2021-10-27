@@ -142,6 +142,7 @@ def run_report(
     generate_pdf_output=False,
     prepare_only=False,
     scheduler_job_id=None,
+    run_synchronously=False,
 ) -> str:
     """
     Actually run the report in earnest.
@@ -153,6 +154,7 @@ def run_report(
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
+    :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -216,6 +218,8 @@ def run_report(
     )
     stderr_thread.daemon = True
     stderr_thread.start()
+    if run_synchronously:
+        stderr_thread.join(120)  # 2 minutes should be enough
     return job_id
 
 
@@ -303,7 +307,7 @@ def run_checks_http(report_name):
     return _handle_run_report(report_name, overrides_dict, issues)
 
 
-def _rerun_report(job_id, prepare_only=False):
+def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
     result = get_serializer().get_check_result(job_id)
     if not result:
         abort(404)
@@ -317,6 +321,7 @@ def _rerun_report(job_id, prepare_only=False):
         generate_pdf_output=result.generate_pdf_output,
         prepare_only=prepare_only,
         scheduler_job_id=None,  # the scheduler will never call rerun
+        run_synchronously=run_synchronously,
     )
     return new_job_id
 

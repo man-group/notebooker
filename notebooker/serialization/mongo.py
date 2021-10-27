@@ -13,7 +13,7 @@ from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResu
 
 logger = getLogger(__name__)
 REMOVE_ID_PROJECTION = {"_id": 0}
-REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0, "email_html": 0}
+REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "stdout": 0}
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
@@ -102,12 +102,6 @@ class MongoResultSerializer(ABC):
                         filename=_error_info_filename(job_id),
                         encoding="utf-8",
                     )
-                elif k == "stdout" and v:
-                    self.result_data_store.put(
-                        json.dumps(v),
-                        filename=_stdout_filename(job_id),
-                        encoding="utf-8",
-                    )
                 else:
                     existing[k] = v
             self._save_raw_to_db(existing)
@@ -158,7 +152,6 @@ class MongoResultSerializer(ABC):
                 )
         for json_attribute, filename_func in [
             ("raw_ipynb_json", _raw_json_filename),
-            ("stdout", _stdout_filename),
         ]:
             if getattr(notebook_result, json_attribute, None):
                 self.result_data_store.put(
@@ -215,10 +208,7 @@ class MongoResultSerializer(ABC):
                 logger.error("Could not find file %s in %s", path, self.result_data_store)
                 return ""
 
-        if load_payload:
-            if not result.get("stdout"):
-                result["stdout"] = read_file(_stdout_filename(result["job_id"]), is_json=True)
-        else:
+        if not load_payload:
             result.pop("stdout", None)
 
         if cls == NotebookResultComplete:
@@ -443,7 +433,3 @@ def _css_inlining_filename(job_id: str) -> str:
 
 def _error_info_filename(job_id: str) -> str:
     return f"{job_id}.errorinfo"
-
-
-def _stdout_filename(job_id: str) -> str:
-    return f"{job_id}.stdout.log"
