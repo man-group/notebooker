@@ -53,6 +53,21 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
 
 
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
+def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+    with flask_app.app_context():
+        serialiser = get_serializer()
+        overrides = {"n_points": 5}
+        report_name = "fake/report_failing"
+        report_title = "my report title"
+        mailto = ""
+        job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=False)
+        result = _get_report_output(job_id, serialiser)
+        assert result.status == JobStatus.ERROR
+        assert result.error_info
+        assert result.stdout != ""
+
+
+@freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
     with flask_app.app_context():
         serialiser = get_serializer()

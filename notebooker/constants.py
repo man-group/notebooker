@@ -123,6 +123,11 @@ class NotebookResultError(NotebookResultBase):
     def email_html(self):
         return self.raw_html
 
+    def saveable_output(self):
+        out = super().saveable_output()
+        out.pop("error_info", None)
+        return out
+
 
 @attr.s(repr=False)
 class NotebookResultComplete(NotebookResultBase):
