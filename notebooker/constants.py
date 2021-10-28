@@ -125,7 +125,7 @@ class NotebookResultError(NotebookResultBase):
 
     def saveable_output(self):
         out = super().saveable_output()
-        out.pop("error_info", None)
+        out["error_info"] = ""  # backwards compatibility for versions<0.3.1
         return out
 
 
@@ -177,6 +177,7 @@ class NotebookResultComplete(NotebookResultBase):
             "hide_code": self.hide_code,
             "update_time": self.update_time,
             "scheduler_job_id": self.scheduler_job_id,
+            "raw_html": "",  # backwards compatibility for versions<0.3.1
         }
 
     def __repr__(self):
