@@ -18,6 +18,10 @@ def run_report(
     hide_code: bool,
     scheduler_job_id: str,
 ):
+    """
+    This is the entrypoint of the scheduler; APScheduler has to
+    run a python function and so we invoke an API call from a thin wrapper.
+    """
     if GLOBAL_CONFIG is None:
         url = f"http://localhost/run_report_json/{report_name}"
     else:

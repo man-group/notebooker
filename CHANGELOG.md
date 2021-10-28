@@ -1,8 +1,9 @@
 0.3.1 (2021-10-??)
 ------------------
 
-* Bugfix: Large notebooks were causing serialisation errors; now properly stored in gridfs
-* Improvement: index page should be a lot quicker due to storage improvements
+* Improvement: index page should be a lot quicker due to storage improvements.
+* Bugfix: hide_code and generate_pdf options now work as intended with the scheduler.
+* Bugfix: Large notebooks were causing serialisation errors; now safely stored in gridfs.
 * **Incompatibility**: Reports run with this version onwards will not be readable by older versions of Notebooker.
 
 0.3.0 (2021-10-05)

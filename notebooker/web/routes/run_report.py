@@ -232,21 +232,24 @@ class RunReportParams(NamedTuple):
 
 
 def validate_run_params(params, issues: List[str]) -> RunReportParams:
+    logger.info(f"Validating input params: {params}")
     # Find and cleanse the title of the report
     report_title = validate_title(params.get("report_title"), issues)
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
-    # Find whether to generate PDF output
-    generate_pdf_output = params.get("generate_pdf") == "on"
-    hide_code = params.get("hide_code") == "on"
+    # "on" comes from HTML, "True" comes from urlencoded JSON params
+    generate_pdf_output = params.get("generate_pdf") in ("on", "True")
+    hide_code = params.get("hide_code") in ("on", "True")
 
-    return RunReportParams(
+    out = RunReportParams(
         report_title=report_title,
         mailto=mailto,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=params.get("scheduler_job_id"),
     )
+    logger.info(f"Validated params: {out}")
+    return out
 
 
 def _handle_run_report(
@@ -256,6 +259,13 @@ def _handle_run_report(
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
+    logger.info(f"Handling run report with parameters report_name={report_name} "
+                f"report_title={params.report_title}"
+                f"mailto={params.mailto} "
+                f"overrides_dict={overrides_dict} "
+                f"generate_pdf_output={params.generate_pdf_output} "
+                f"hide_code={params.hide_code} "
+                f"scheduler_job_id={params.scheduler_job_id}")
     try:
         job_id = run_report(
             report_name,

@@ -12,6 +12,7 @@ def test_create_schedule(flask_app, setup_workspace):
                 "report_name": "fake/report",
                 "overrides": "",
                 "mailto": "",
+                "generate_pdf": True,
                 "cron_schedule": "* * * * *",
             },
         )
@@ -23,7 +24,7 @@ def test_create_schedule(flask_app, setup_workspace):
             "delete_url": "/scheduler/fake/report_test2",
             "id": "fake/report_test2",
             "params": {
-                "generate_pdf": False,
+                "generate_pdf": True,
                 "hide_code": False,
                 "mailto": "",
                 "overrides": "",
@@ -44,6 +45,27 @@ def test_create_schedule(flask_app, setup_workspace):
                 }
             },
         }
+
+
+def test_scheduler_handles_booleans_properly(flask_app, setup_workspace):
+    with flask_app.test_client() as client:
+        rv = client.post(
+            "/scheduler/create/fake/report",
+            data={
+                "report_title": "test2",
+                "report_name": "fake/report",
+                "overrides": "",
+                "mailto": "",
+                "generate_pdf": True,
+                "hide_code": True,
+                "cron_schedule": "* * * * *",
+            },
+        )
+        assert rv.status_code == 201
+        data = json.loads(rv.data)
+        assert data.pop("next_run_time")
+        assert data["params"]["generate_pdf"] is True
+        assert data["params"]["hide_code"] is True
 
 
 def test_create_schedule_bad_report_name(flask_app, setup_workspace):
