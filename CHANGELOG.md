@@ -1,4 +1,4 @@
-0.3.1 (2021-10-??)
+0.3.1 (2021-10-29)
 ------------------
 
 * Improvement: index page should be a lot quicker due to storage improvements.
