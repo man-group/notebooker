@@ -2,9 +2,10 @@ import subprocess
 import sys
 
 import mock
+from werkzeug.datastructures import CombinedMultiDict, ImmutableMultiDict
 
 from notebooker.constants import DEFAULT_SERIALIZER
-from notebooker.web.routes.run_report import _monitor_stderr
+from notebooker.web.routes.run_report import _monitor_stderr, validate_run_params, RunReportParams
 
 
 def test_monitor_stderr():
@@ -31,3 +32,32 @@ This is going to stderr a bit later
             mock.call("abc123", new_lines=["This is going to stderr a bit later\n"]),
         ]
     )
+
+
+def test_validate_run_params():
+    input_params = CombinedMultiDict(
+        [
+            ImmutableMultiDict(
+                [
+                    ("overrides", "{}"),
+                    ("report_title", "asdas"),
+                    ("mailto", ""),
+                    ("generate_pdf", "True"),
+                    ("hide_code", "True"),
+                    ("scheduler_job_id", "plot_random_asdas"),
+                ]
+            ),
+            ImmutableMultiDict([]),
+        ]
+    )
+    issues = []
+    expected_output = RunReportParams(
+        report_title="asdas",
+        mailto="",
+        generate_pdf_output=True,
+        hide_code=True,
+        scheduler_job_id="plot_random_asdas",
+    )
+    actual_output = validate_run_params(input_params, issues)
+    assert issues == []
+    assert actual_output == expected_output

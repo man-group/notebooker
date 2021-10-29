@@ -1,6 +1,6 @@
 import json
 from typing import Optional, List
-import uuid
+import logging
 
 from apscheduler.jobstores.base import ConflictingIdError
 from flask import Blueprint, jsonify, render_template, current_app, request, url_for, abort
@@ -12,6 +12,7 @@ from notebooker.web.utils import get_all_possible_templates, all_templates_flatt
 from apscheduler.triggers import cron
 
 scheduling_bp = Blueprint("scheduling_bp", __name__)
+logger = logging.getLogger(__name__)
 
 
 @scheduling_bp.route("/scheduler/health")
@@ -101,6 +102,7 @@ def create_schedule(report_name):
         "hide_code": params.hide_code,
         "scheduler_job_id": job_id,
     }
+    logger.info(f"Creating job with params: {dict_params}")
     try:
         job = current_app.apscheduler.add_job(
             "notebooker.web.scheduler:run_report", jobstore="mongo", trigger=trigger, kwargs=dict_params, id=job_id
