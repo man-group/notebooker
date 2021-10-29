@@ -19,7 +19,7 @@ def _get_report_output(job_id, serialiser):
 def _check_report_output(job_id, serialiser, **kwargs):
     result = _get_report_output(job_id, serialiser)
     assert result.status == JobStatus.DONE, result.error_info
-    assert result.stdout != ""
+    assert result.stdout
     assert result.raw_html
     assert result.email_html
     assert result.raw_ipynb_json
@@ -36,8 +36,16 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
-        job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
+        mailto = ""
+        job_id = run_report(
+            report_name,
+            report_title,
+            mailto,
+            overrides,
+            generate_pdf_output=False,
+            prepare_only=True,
+            run_synchronously=True,
+        )
         _check_report_output(
             job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto
         )
@@ -53,14 +61,45 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
 
 
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
+def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+    with flask_app.app_context():
+        serialiser = get_serializer()
+        overrides = {"n_points": 5}
+        report_name = "fake/report_failing"
+        report_title = "my report title"
+        mailto = ""
+        job_id = run_report(
+            report_name,
+            report_title,
+            mailto,
+            overrides,
+            generate_pdf_output=False,
+            prepare_only=False,
+            run_synchronously=True,
+        )
+        result = _get_report_output(job_id, serialiser)
+        assert result.status == JobStatus.ERROR
+        assert result.error_info
+        assert result.stdout
+
+
+@freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
-        job_id = run_report(report_name, report_title, mailto, overrides, generate_pdf_output=False, prepare_only=True)
+        mailto = ""
+        job_id = run_report(
+            report_name,
+            report_title,
+            mailto,
+            overrides,
+            generate_pdf_output=False,
+            prepare_only=True,
+            run_synchronously=True,
+        )
         _check_report_output(
             job_id,
             serialiser,
@@ -71,7 +110,7 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
             generate_pdf_output=False,
         )
 
-        new_job_id = _rerun_report(job_id, prepare_only=True)
+        new_job_id = _rerun_report(job_id, prepare_only=True, run_synchronously=True)
         _check_report_output(
             new_job_id,
             serialiser,
@@ -88,15 +127,22 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
 
 
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+def test_run_report_hide_code(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
         report_name = "fake/report"
         report_title = "my report title"
-        mailto = "jon@fakeemail.com"
+        mailto = ""
         job_id = run_report(
-            report_name, report_title, mailto, overrides, hide_code=True, generate_pdf_output=False, prepare_only=True
+            report_name,
+            report_title,
+            mailto,
+            overrides,
+            hide_code=True,
+            generate_pdf_output=False,
+            prepare_only=True,
+            run_synchronously=True,
         )
         _check_report_output(
             job_id, serialiser, overrides=overrides, report_name=report_name, report_title=report_title, mailto=mailto

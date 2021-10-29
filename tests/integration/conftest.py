@@ -29,6 +29,25 @@ cumulative = df.cumsum()
 cumulative.plot()
 """
 
+DUMMY_FAILING_REPORT = """
+# ---
+# jupyter:
+#   celltoolbar: Tags
+#   jupytext_format_version: '1.2'
+#   kernelspec:
+#     display_name: spark273
+#     language: python
+#     name: spark273
+# ---
+
+
+# + {"tags": ["parameters"]}
+n_points = 1
+# -
+
+1/0
+"""
+
 
 @pytest.fixture
 def setup_workspace(workspace):
@@ -37,3 +56,5 @@ def setup_workspace(workspace):
     (workspace.workspace + "/templates/fake").mkdir()
     report_to_run = workspace.workspace + "/templates/fake/report.py"
     report_to_run.write_lines(DUMMY_REPORT.split("\n"))
+    report_to_run_failing = workspace.workspace + "/templates/fake/report_failing.py"
+    report_to_run_failing.write_lines(DUMMY_FAILING_REPORT.split("\n"))

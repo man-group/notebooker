@@ -123,6 +123,11 @@ class NotebookResultError(NotebookResultBase):
     def email_html(self):
         return self.raw_html
 
+    def saveable_output(self):
+        out = super().saveable_output()
+        out["error_info"] = ""  # backwards compatibility for versions<0.3.1
+        return out
+
 
 @attr.s(repr=False)
 class NotebookResultComplete(NotebookResultBase):
@@ -150,18 +155,17 @@ class NotebookResultComplete(NotebookResultBase):
         for k, v in self.raw_html_resources.items():
             if k == "outputs":
                 resources[k] = list(v)
+            elif k == "inlining":
+                continue
             else:
                 resources[k] = v
         return resources
 
     def saveable_output(self):
         return {
-            "raw_ipynb_json": self.raw_ipynb_json,
             "status": self.status.value,
             "report_name": self.report_name,
             "report_title": self.report_title,
-            "raw_html": self.raw_html,
-            "email_html": self.email_html,
             "raw_html_resources": self.html_resources(),
             "job_id": self.job_id,
             "job_start_time": self.job_start_time,
@@ -173,6 +177,7 @@ class NotebookResultComplete(NotebookResultBase):
             "hide_code": self.hide_code,
             "update_time": self.update_time,
             "scheduler_job_id": self.scheduler_job_id,
+            "raw_html": "",  # backwards compatibility for versions<0.3.1
         }
 
     def __repr__(self):

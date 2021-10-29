@@ -1,4 +1,5 @@
 import datetime
+import json
 from abc import ABC
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
@@ -12,7 +13,7 @@ from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResu
 
 logger = getLogger(__name__)
 REMOVE_ID_PROJECTION = {"_id": 0}
-REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "raw_html": 0, "raw_ipynb_json": 0, "email_html": 0}
+REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "stdout": 0}
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
@@ -81,6 +82,10 @@ class MongoResultSerializer(ABC):
         return result
 
     def update_check_status(self, job_id: str, status: JobStatus, **extra):
+        if status == JobStatus.DONE:
+            raise ValueError(
+                "update_check_status() should not be called with a completed job; use save_check_result() instead."
+            )
         existing = self.library.find_one({"job_id": job_id})
         if not existing:
             logger.warning(
@@ -91,7 +96,14 @@ class MongoResultSerializer(ABC):
         else:
             existing["status"] = status.value
             for k, v in extra.items():
-                existing[k] = v
+                if k == "error_info" and v:
+                    self.result_data_store.put(
+                        v,
+                        filename=_error_info_filename(job_id),
+                        encoding="utf-8",
+                    )
+                else:
+                    existing[k] = v
             self._save_raw_to_db(existing)
 
     def save_check_stub(
@@ -125,19 +137,43 @@ class MongoResultSerializer(ABC):
         self._save_to_db(pending_result)
 
     def save_check_result(self, notebook_result: Union[NotebookResultComplete, NotebookResultError]) -> None:
+        # Save to gridfs
+        for filelike_attribute, filename_func in [
+            ("pdf", _pdf_filename),
+            ("raw_html", _raw_html_filename),
+            ("email_html", _raw_email_html_filename),
+            ("error_info", _error_info_filename),
+        ]:
+            if getattr(notebook_result, filelike_attribute, None):
+                self.result_data_store.put(
+                    getattr(notebook_result, filelike_attribute),
+                    filename=filename_func(notebook_result.job_id),
+                    encoding="utf-8",
+                )
+        for json_attribute, filename_func in [
+            ("raw_ipynb_json", _raw_json_filename),
+        ]:
+            if getattr(notebook_result, json_attribute, None):
+                self.result_data_store.put(
+                    json.dumps(getattr(notebook_result, json_attribute)),
+                    filename=filename_func(notebook_result.job_id),
+                    encoding="utf-8",
+                )
+        if isinstance(notebook_result, NotebookResultComplete):
+            if notebook_result.raw_html_resources:
+                if "outputs" in notebook_result.raw_html_resources:
+                    for filename, binary_data in notebook_result.raw_html_resources["outputs"].items():  # type: ignore
+                        self.result_data_store.put(binary_data, filename=filename, encoding="utf-8")
+                if "inlining" in notebook_result.raw_html_resources:
+                    self.result_data_store.put(
+                        json.dumps(notebook_result.raw_html_resources["inlining"]),
+                        filename=_css_inlining_filename(notebook_result.job_id),
+                        encoding="utf-8",
+                    )
+
         # Save to mongo
         logger.info("Saving {}".format(notebook_result.job_id))
         self._save_to_db(notebook_result)
-
-        # Save to gridfs
-        if isinstance(notebook_result, NotebookResultComplete):
-            if notebook_result.raw_html_resources and "outputs" in notebook_result.raw_html_resources:
-                for filename, binary_data in notebook_result.raw_html_resources["outputs"].items():  # type: ignore
-                    self.result_data_store.put(binary_data, filename=filename, encoding="utf-8")
-            if notebook_result.pdf:
-                self.result_data_store.put(
-                    notebook_result.pdf, filename=_pdf_filename(notebook_result.job_id), encoding="utf-8"
-                )
 
     def _convert_result(
         self, result: Dict, load_payload: bool = True
@@ -161,22 +197,43 @@ class MongoResultSerializer(ABC):
         if cls is None:
             return None
 
-        if load_payload and job_status == JobStatus.DONE:
-
-            def read_file(path):
+        def read_file(path, is_json=False):
+            try:
+                r = self.result_data_store.get_last_version(path).read()
                 try:
-                    return self.result_data_store.get_last_version(path).read()
-                except NoFile:
-                    logger.error("Could not find file %s in %s", path, self.result_data_store)
-                    return ""
+                    return "" if not r else json.loads(r) if is_json else r.decode("utf8")
+                except UnicodeDecodeError:
+                    return r
+            except NoFile:
+                logger.error("Could not find file %s in %s", path, self.result_data_store)
+                return ""
 
-            outputs = {path: read_file(path) for path in result.get("raw_html_resources", {}).get("outputs", [])}
-            result["raw_html_resources"]["outputs"] = outputs
-            if result.get("generate_pdf_output"):
-                pdf_filename = _pdf_filename(result["job_id"])
-                result["pdf"] = read_file(pdf_filename)
+        if not load_payload:
+            result.pop("stdout", None)
 
         if cls == NotebookResultComplete:
+            if load_payload:
+                outputs = {path: read_file(path) for path in result.get("raw_html_resources", {}).get("outputs", [])}
+                result["raw_html_resources"]["outputs"] = outputs
+                if result.get("generate_pdf_output"):
+                    pdf_filename = _pdf_filename(result["job_id"])
+                    result["pdf"] = read_file(pdf_filename)
+                if not result.get("raw_ipynb_json"):
+                    result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]), is_json=True)
+                if not result.get("raw_html"):
+                    result["raw_html"] = read_file(_raw_html_filename(result["job_id"]))
+                if not result.get("email_html"):
+                    result["email_html"] = read_file(_raw_email_html_filename(result["job_id"]))
+                if result.get("raw_html_resources") and not result.get("raw_html_resources", {}).get("inlining"):
+                    result["raw_html_resources"]["inlining"] = read_file(
+                        _css_inlining_filename(result["job_id"]), is_json=True
+                    )
+            else:
+                result.pop("raw_html", None)
+                result.pop("raw_ipynb_json", None)
+                result.pop("pdf", None)
+                result.pop("email_html", None)
+                result.pop("raw_html_resources", None)
             return NotebookResultComplete(
                 job_id=result["job_id"],
                 job_start_time=result["job_start_time"],
@@ -214,13 +271,18 @@ class MongoResultSerializer(ABC):
             )
 
         elif cls == NotebookResultError:
+            if load_payload:
+                if not result.get("error_info"):
+                    result["error_info"] = read_file(_error_info_filename(result["job_id"]))
+            else:
+                result.pop("error_info", None)
             return NotebookResultError(
                 job_id=result["job_id"],
                 job_start_time=result["job_start_time"],
                 report_name=result["report_name"],
                 status=job_status,
                 update_time=result["update_time"],
-                error_info=result["error_info"],
+                error_info=result.get("error_info", ""),
                 overrides=result.get("overrides", {}),
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
@@ -350,4 +412,24 @@ class MongoResultSerializer(ABC):
 
 
 def _pdf_filename(job_id: str) -> str:
-    return "{}.pdf".format(job_id)
+    return f"{job_id}.pdf"
+
+
+def _raw_json_filename(job_id: str) -> str:
+    return f"{job_id}.ipynb.json"
+
+
+def _raw_html_filename(job_id: str) -> str:
+    return f"{job_id}.rawhtml"
+
+
+def _raw_email_html_filename(job_id: str) -> str:
+    return f"{job_id}.email.rawhtml"
+
+
+def _css_inlining_filename(job_id: str) -> str:
+    return f"{job_id}.inline.css"
+
+
+def _error_info_filename(job_id: str) -> str:
+    return f"{job_id}.errorinfo"

@@ -1,3 +1,10 @@
+0.3.1 (2021-10-??)
+------------------
+
+* Bugfix: Large notebooks were causing serialisation errors; now properly stored in gridfs
+* Improvement: index page should be a lot quicker due to storage improvements
+* **Incompatibility**: Reports run with this version onwards will not be readable by older versions of Notebooker.
+
 0.3.0 (2021-10-05)
 ------------------
 

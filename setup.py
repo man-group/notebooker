@@ -76,6 +76,7 @@ setup(
         "prometheus": ["prometheus_client"],
         "test": test_requirements,
         "docs": [
+            "docutils<0.18",
             "sphinx<3.0.0",
             "numpydoc",
             "sphinxcontrib-httpdomain",

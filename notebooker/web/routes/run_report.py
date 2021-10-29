@@ -3,12 +3,15 @@ from __future__ import unicode_literals
 import datetime
 import json
 import subprocess
+import sys
 import threading
+import time
 import uuid
 from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
+import os
 from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
 from nbformat import NotebookNode
 
@@ -139,7 +142,8 @@ def run_report(
     generate_pdf_output=False,
     prepare_only=False,
     scheduler_job_id=None,
-):
+    run_synchronously=False,
+) -> str:
     """
     Actually run the report in earnest.
     Uses a subprocess to execute the report asynchronously, which is identical to the non-webapp entrypoint.
@@ -150,6 +154,7 @@ def run_report(
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
+    :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -168,9 +173,9 @@ def run_report(
         scheduler_job_id=scheduler_job_id,
     )
     app_config = current_app.config
-    p = subprocess.Popen(
+    command = (
         [
-            "notebooker-cli",
+            os.path.join(sys.exec_prefix, "bin", "notebooker-cli"),
             "--output-base-dir",
             get_output_dir(),
             "--template-base-dir",
@@ -199,15 +204,22 @@ def run_report(
             "--hide-code" if hide_code else "--show-code",
         ]
         + (["--prepare-notebook-only"] if prepare_only else [])
-        + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else []),
-        stderr=subprocess.PIPE,
+        + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
     )
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    time.sleep(5)
+    p.poll()
+    if p.returncode:
+        error_msg = "".join([chr(n) for n in p.stderr.read()])
+        raise RuntimeError(f"The process failed with the message: {error_msg}")
     stderr_thread = threading.Thread(
         target=_monitor_stderr,
         args=(p, job_id, current_app.config["SERIALIZER_CLS"], current_app.config["SERIALIZER_CONFIG"]),
     )
     stderr_thread.daemon = True
     stderr_thread.start()
+    if run_synchronously:
+        stderr_thread.join(120)  # 2 minutes should be enough
     return job_id
 
 
@@ -244,20 +256,23 @@ def _handle_run_report(
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
-    job_id = run_report(
-        report_name,
-        params.report_title,
-        params.mailto,
-        overrides_dict,
-        generate_pdf_output=params.generate_pdf_output,
-        hide_code=params.hide_code,
-        scheduler_job_id=params.scheduler_job_id,
-    )
-    return (
-        jsonify({"id": job_id}),
-        202,  # HTTP Accepted code
-        {"Location": url_for("pending_results_bp.task_status", report_name=report_name, job_id=job_id)},
-    )
+    try:
+        job_id = run_report(
+            report_name,
+            params.report_title,
+            params.mailto,
+            overrides_dict,
+            generate_pdf_output=params.generate_pdf_output,
+            hide_code=params.hide_code,
+            scheduler_job_id=params.scheduler_job_id,
+        )
+        return (
+            jsonify({"id": job_id}),
+            202,  # HTTP Accepted code
+            {"Location": url_for("pending_results_bp.task_status", report_name=report_name, job_id=job_id)},
+        )
+    except RuntimeError as e:
+        return jsonify({"status": "Failed", "content": f"The job failed to initialise. Error: {str(e)}"}), 500, {}
 
 
 @run_report_bp.route("/run_report_json/<path:report_name>", methods=["POST"])
@@ -292,7 +307,7 @@ def run_checks_http(report_name):
     return _handle_run_report(report_name, overrides_dict, issues)
 
 
-def _rerun_report(job_id, prepare_only=False):
+def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
     result = get_serializer().get_check_result(job_id)
     if not result:
         abort(404)
@@ -306,6 +321,7 @@ def _rerun_report(job_id, prepare_only=False):
         generate_pdf_output=result.generate_pdf_output,
         prepare_only=prepare_only,
         scheduler_job_id=None,  # the scheduler will never call rerun
+        run_synchronously=run_synchronously,
     )
     return new_job_id
 
