@@ -1,5 +1,4 @@
 import os
-import shutil
 import uuid
 from typing import Any, AnyStr, Dict, Optional
 
@@ -132,8 +131,8 @@ def generate_ipynb_from_py(
     Pulls the latest version of the notebook templates from git, and regenerates templates if there is a new HEAD
     OR: finds the local template from the template repository using a relative path
 
-    If the report template is already an ipynb file, then this is simply copied to the output path, otherwise the
-    .py file is converted into an .ipynb file, which can be executed by papermill.
+    Both .ipynb and .py report templates are handled, where .py templates are converted to .ipynb, which can
+    be executed by papermill
 
     :param template_base_dir: The directory in which converted notebook templates reside.
     :param report_name: The name of the report which we are running.
@@ -159,18 +158,14 @@ def generate_ipynb_from_py(
     except IOError:
         pass
 
-    if template_path.endswith("ipynb"):
-        print("Copying existing ipynb to: %s", output_template_path)
-        shutil.copy(template_path, output_template_path)
-    else:
-        # "touch" the output file
-        print("Creating ipynb at: %s", output_template_path)
-        with open(output_template_path, "w") as f:
-            os.utime(output_template_path, None)
+    # "touch" the output file
+    print("Writing ipynb to: %s", output_template_path)
+    with open(output_template_path, "w"):
+        os.utime(output_template_path, None)
 
-        jupytext_nb = jupytext.read(template_path)
-        jupytext_nb["metadata"]["kernelspec"] = kernel_spec()  # Override the kernel spec since we want to run it..
-        jupytext.write(jupytext_nb, output_template_path)
+    jupytext_nb = jupytext.read(template_path)
+    jupytext_nb["metadata"]["kernelspec"] = kernel_spec()  # Override the kernel spec since we want to run it..
+    jupytext.write(jupytext_nb, output_template_path)
 
     return output_template_path
 

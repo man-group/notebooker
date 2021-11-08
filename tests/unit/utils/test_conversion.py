@@ -28,7 +28,27 @@ def test_generate_ipynb_from_py(file_type, setup_and_cleanup_notebooker_filesyst
 
         os.mkdir(python_dir + "/extra_path")
         with open(os.path.join(python_dir, "extra_path", f"test_report.{file_type}"), "w") as f:
-            f.write("#hello world\n")
+            if file_type == "py":
+                f.write("#hello world\n")
+            elif file_type == "ipynb":
+                f.write(
+                    json.dumps(
+                        {
+                            "cells": [
+                                {
+                                    "cell_type": "code",
+                                    "execution_count": 2,
+                                    "metadata": {},
+                                    "outputs": [],
+                                    "source": ["import datetime"],
+                                }
+                            ],
+                            "metadata": {},
+                            "nbformat": 4,
+                            "nbformat_minor": 2,
+                        }
+                    )
+                )
         report_path = os.sep.join(["extra_path", "test_report"])
         with mock.patch("notebooker.utils.conversion.git.repo.Repo") as repo:
             repo().commit().hexsha = "fake_sha_early"
