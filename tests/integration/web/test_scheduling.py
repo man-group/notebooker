@@ -55,13 +55,20 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
         }
 
 
-def test_scheduler_handles_booleans_properly(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
-            "/scheduler/create/fake/report",
+            f"/scheduler/create/{report_name}",
             data={
                 "report_title": "test2",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
                 "generate_pdf": True,

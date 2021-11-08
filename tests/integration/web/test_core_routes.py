@@ -9,7 +9,7 @@ def test_create_schedule(flask_app, setup_workspace):
         )
         assert rv.status_code == 200
         data = json.loads(rv.data)
-        assert data == {"result": ["fake/report", "fake/report_failing", "fake/ipynb_report"]}
+        assert data == {"result": ["fake/py_report", "fake/ipynb_report", "fake/report_failing"]}
 
 
 def test_version_number(flask_app, setup_workspace):
