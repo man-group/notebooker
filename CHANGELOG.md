@@ -1,4 +1,4 @@
-0.3.2 (2021-11-??)
+0.3.2 (2021-11-10)
 ------------------
 
 * Feature: .ipynb files are now natively supported and can be used as Notebook Templates (#57)
