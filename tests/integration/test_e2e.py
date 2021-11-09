@@ -2,6 +2,7 @@
 import datetime
 
 import freezegun
+import pytest
 
 from notebooker.constants import JobStatus
 from notebooker.web.routes.run_report import _rerun_report, run_report
@@ -29,12 +30,18 @@ def _check_report_output(job_id, serialiser, **kwargs):
         assert getattr(result, k) == v, "Report output for attribute {} was incorrect!".format(k)
 
 
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
-        report_name = "fake/report"
         report_title = "my report title"
         mailto = ""
         job_id = run_report(
@@ -59,7 +66,6 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, None)
 
-
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
     with flask_app.app_context():
@@ -83,12 +89,18 @@ def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooke
         assert result.stdout
 
 
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
-        report_name = "fake/report"
         report_title = "my report title"
         mailto = ""
         job_id = run_report(
@@ -126,12 +138,18 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
         assert job_id != serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
 
 
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report_hide_code(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+def test_run_report_hide_code(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
-        report_name = "fake/report"
         report_title = "my report title"
         mailto = ""
         job_id = run_report(

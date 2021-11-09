@@ -18,7 +18,7 @@ def _valid_dirname(d):
 
 
 def _valid_filename(f):
-    return f.endswith(".py") and "__init__" not in f and "__pycache__" not in f
+    return (f.endswith(".py") or f.endswith(".ipynb")) and "__init__" not in f and "__pycache__" not in f
 
 
 def _get_parameters_cell_idx(notebook: nbformat.NotebookNode) -> Optional[int]:

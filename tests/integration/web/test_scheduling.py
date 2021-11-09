@@ -1,15 +1,23 @@
 import json
 import mock
 import time
+import pytest
 
 
-def test_create_schedule(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_create_schedule(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
-            "/scheduler/create/fake/report",
+            f"/scheduler/create/{report_name}",
             data={
                 "report_title": "test2",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
                 "generate_pdf": True,
@@ -21,16 +29,16 @@ def test_create_schedule(flask_app, setup_workspace):
         assert data.pop("next_run_time")
         assert data == {
             "cron_schedule": "* * * * *",
-            "delete_url": "/scheduler/fake/report_test2",
-            "id": "fake/report_test2",
+            "delete_url": f"/scheduler/{report_name}_test2",
+            "id": f"{report_name}_test2",
             "params": {
                 "generate_pdf": True,
                 "hide_code": False,
                 "mailto": "",
                 "overrides": "",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "report_title": "test2",
-                "scheduler_job_id": "fake/report_test2",
+                "scheduler_job_id": f"{report_name}_test2",
             },
             "trigger": {
                 "fields": {
@@ -47,13 +55,20 @@ def test_create_schedule(flask_app, setup_workspace):
         }
 
 
-def test_scheduler_handles_booleans_properly(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
-            "/scheduler/create/fake/report",
+            f"/scheduler/create/{report_name}",
             data={
                 "report_title": "test2",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
                 "generate_pdf": True,
@@ -83,13 +98,20 @@ def test_create_schedule_bad_report_name(flask_app, setup_workspace):
         assert rv.status_code == 404
 
 
-def test_list_scheduled_jobs(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
-            "/scheduler/create/fake/report",
+            f"/scheduler/create/{report_name}",
             data={
                 "report_title": "test2",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
                 "cron_schedule": "* * * * *",
@@ -101,16 +123,23 @@ def test_list_scheduled_jobs(flask_app, setup_workspace):
         assert rv.status_code == 200
         jobs = json.loads(rv.data)
         assert len(jobs) == 1
-        assert jobs[0]["id"] == "fake/report_test2"
+        assert jobs[0]["id"] == f"{report_name}_test2"
 
 
-def test_delete_scheduled_jobs(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
-            "/scheduler/create/fake/report",
+            f"/scheduler/create/{report_name}",
             data={
                 "report_title": "test2",
-                "report_name": "fake/report",
+                "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
                 "cron_schedule": "* * * * *",
@@ -122,7 +151,7 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace):
         assert rv.status_code == 200
         assert len(json.loads(rv.data)) == 1
 
-        rv = client.delete("/scheduler/fake/report_test2")
+        rv = client.delete(f"/scheduler/{report_name}_test2")
         assert rv.status_code == 200
 
         rv = client.get("/scheduler/jobs")
@@ -130,7 +159,14 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace):
         assert len(json.loads(rv.data)) == 0
 
 
-def test_scheduler_runs_notebooks(flask_app, setup_workspace):
+@pytest.mark.parametrize(
+    "report_name",
+    [
+        "fake/py_report",
+        "fake/ipynb_report"
+    ],
+)
+def test_scheduler_runs_notebooks(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
 
         def fake_post(url, params):
@@ -143,10 +179,10 @@ def test_scheduler_runs_notebooks(flask_app, setup_workspace):
             assert len(json.loads(rv.data)) == 0
 
             rv = client.post(
-                "/scheduler/create/fake/report",
+                f"/scheduler/create/{report_name}",
                 data={
                     "report_title": "test2",
-                    "report_name": "fake/report",
+                    "report_name": report_name,
                     "overrides": "",
                     "mailto": "",
                     "cron_schedule": "* * * * *",
