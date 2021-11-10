@@ -5,11 +5,15 @@ Intro to Notebook Templates
 
 Creating a Notebook Template
 ----------------------------
+Both :code:`ipynb` and :code:`py` file types are supported for use as templates.
+
 To create a Notebook Template, we use a tool called :code:`jupytext`.
 It allows for interchangeably converting between :code:`.ipynb` and :code:`.py` files.
-To create your own template from an existing :code:`.ipynb` file, you can either
-follow the instructions for installation `on their homepage <https://github.com/mwouts/jupytext>`_, or
-use :code:`convert_ipynb_to_py` directly from the console when Notebooker is installed.
+
+If you would like to convert an existing :code:`.ipynb` file to create a template in
+:code:`.py` form you can either follow the instructions for installation
+`on their homepage <https://github.com/mwouts/jupytext>`_, or use :code:`convert_ipynb_to_py`
+directly from the console when Notebooker is installed.
 
 The purpose of a notebook template is to allow you to write Jupyter notebooks as normal, and then
 commit them into source control as python files: allowing for simple diffs and control
@@ -19,7 +23,7 @@ Where should templates go?
 --------------------------
 It is possible (and encouraged) to use a separate git repository version controlling notebook templates.
 To use a git repository as a notebook templates repository, you simply need to create a folder called
-:code:`notebook_templates/` which contains the .py template files. Additionally, a
+:code:`notebook_templates/` which contains the :code:`.py` and :code:`.ipynb` template files. Additionally, a
 :code:`notebook_requirements.txt`, containing extra package requirements to be
 installed, should be added to that folder.
 
