@@ -14,7 +14,8 @@ logger = getLogger(__name__)
 
 
 def _valid_dirname(d):
-    return "__init__" not in d and "__pycache__" not in d
+    hidden_dirs = [dir for dir in d.split("/") if dir.startswith(".")]
+    return "__init__" not in d and "__pycache__" not in d and not hidden_dirs
 
 
 def _valid_filename(f):
