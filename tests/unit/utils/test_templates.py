@@ -19,6 +19,9 @@ def test_get_directory_structure():
             "this/report.py",
             "hello_again.ipynb",
             "depth/3.ipynb",
+            ".hidden/4.ipynb",
+            ".hidden/visible/5.ipynb",
+            ".hidden/.more-hidden/6.ipynb"
         ]
         for path in paths:
             abspath = os.path.join(temp_dir, path)
