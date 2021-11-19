@@ -47,16 +47,22 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
     Creates a nested dictionary that represents the folder structure of rootdir
     """
     starting_point = starting_point or _get_python_template_dir()
+    print(starting_point)
     all_dirs = {}
     rootdir = starting_point.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
+    print(start)
     for path, dirs, files in os.walk(rootdir):
+        print(path, dirs, files)
         if not _valid_dirname(path):
             continue
+        print(f"{path} is valid")
         folders = path[start:].split(os.sep)
         subdir = {os.sep.join(folders[1:] + [f.replace(".ipynb", "").replace(".py", "")]): None for f in files if _valid_filename(f)}
+        print(f"{subdir}88888")
         parent = reduce(dict.get, folders[:-1], all_dirs)
         parent[folders[-1]] = subdir
+    print(all_dirs)
     return all_dirs[rootdir[start:]]
 
 

@@ -1,5 +1,7 @@
 import datetime
 import json
+from collections import Counter, defaultdict
+
 from abc import ABC
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
@@ -300,6 +302,26 @@ class MongoResultSerializer(ABC):
         result = self.library.find_one({"job_id": job_id}, {"_id": 0})
         return self._convert_result(result)
 
+    def _get_raw_results(self, base_filter, projection, limit):
+        if "status" in base_filter:
+            base_filter["status"].update({"$ne": JobStatus.DELETED.value})
+        else:
+            base_filter["status"] = {"$ne": JobStatus.DELETED.value}
+        return self.library.find(base_filter, projection).sort("update_time", -1).limit(limit)
+
+    def get_count_and_latest_time_per_report(self):
+        reports = list(
+            self._get_raw_results(base_filter={}, projection={"report_name": 1, "job_start_time": 1, "_id": 0}, limit=0)
+        )
+        jobs_by_name = defaultdict(list)
+        for r in reports:
+            jobs_by_name[r["report_name"]].append(r)
+        output = {}
+        for report, all_runs in jobs_by_name.items():
+            latest_start_time = max(r["job_start_time"] for r in all_runs)
+            output[report] = {"count": len(all_runs), "latest_run": latest_start_time}
+        return output
+
     def get_all_results(
         self,
         since: Optional[datetime.datetime] = None,
@@ -307,13 +329,13 @@ class MongoResultSerializer(ABC):
         mongo_filter: Optional[Dict] = None,
         load_payload: bool = True,
     ) -> Iterator[Union[NotebookResultComplete, NotebookResultError, NotebookResultPending]]:
-        base_filter = {"status": {"$ne": JobStatus.DELETED.value}}
+        base_filter = {}
         if mongo_filter:
             base_filter.update(mongo_filter)
         if since:
             base_filter.update({"update_time": {"$gt": since}})
         projection = REMOVE_ID_PROJECTION if load_payload else REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION
-        results = self.library.find(base_filter, projection).sort("update_time", -1).limit(limit)
+        results = self._get_raw_results(base_filter, projection, limit)
         for res in results:
             if res:
                 converted_result = self._convert_result(res, load_payload=load_payload)
@@ -404,8 +426,8 @@ class MongoResultSerializer(ABC):
 
         return [result["job_id"] for result in results]
 
-    def n_all_results(self):
-        return self.library.find({"status": {"$ne": JobStatus.DELETED.value}}).count()
+    def n_all_results_for_report_name(self, report_name: str) -> int:
+        return self._get_raw_results({"report_name": report_name}, {}, 0).count()
 
     def delete_result(self, job_id: AnyStr) -> None:
         self.update_check_status(job_id, JobStatus.DELETED)

@@ -36,8 +36,8 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             )
             now = datetime.datetime.now()
             cutoff = {
-                JobStatus.SUBMITTED: now - datetime.timedelta(minutes=SUBMISSION_TIMEOUT),
-                JobStatus.PENDING: now - datetime.timedelta(minutes=RUNNING_TIMEOUT),
+                JobStatus.SUBMITTED.value: now - datetime.timedelta(minutes=SUBMISSION_TIMEOUT),
+                JobStatus.PENDING.value: now - datetime.timedelta(minutes=RUNNING_TIMEOUT),
             }
             for result in all_pending:
                 this_cutoff = cutoff.get(result.status)

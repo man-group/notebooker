@@ -1,43 +1,36 @@
-add_delete_callback = () => {
-    $('.deletebutton').click((clicked) => {
-        const to_delete = clicked.target.closest('button').id.split('_')[1];
-        $('#deleteModal').modal({
-            closable: true,
-            onDeny() {
-                return true;
-            },
-            onApprove() {
-                $.ajax({
-                    type: 'POST',
-                    url: `/delete_report/${to_delete}`, // We get this from loading.html, which comes from flask
-                    dataType: 'json',
-                    success(data, status, request) {
-                        if (data.status === 'error') {
-                            $('#errorMsg').text(data.content);
-                            $('#errorPopup').show();
-                        } else {
-                            window.location.reload();
-                        }
-                    },
-                    error(xhr, error) {
-                    },
-                });
-            },
-        }).modal('show');
-    });
-};
+
+
 
 load_data = (limit) => {
     $.ajax({
-        url: `/core/get_all_available_results?limit=${limit}`,
+        url: `/core/get_all_templates_with_results`,
         dataType: 'json',
         success: (result) => {
-            const table = $('#resultsTable').DataTable();
-            table.clear();
-            table.rows.add(result);
-            table.draw();
-            $('#indexTableContainer').fadeIn();
-            add_delete_callback();
+            let $cardContainer = $('#cardContainer');
+            $cardContainer.empty();
+            for (let report in result) {
+                let stats = result[report];
+                $cardContainer.append(
+                    '<a class="ui card" href="/result_listing/' + stats.report_name + '">' +
+                    '  <div class="content">' +
+                    '    <h1>' + report + '</h1>\n' +
+                    '    <div class="meta">\n' +
+                    '      <span class="date">Last ran ' + stats.time_diff + ' ago</span>\n' +
+                    '    </div>' +
+                    '    <div class="ui statistic center aligned">\n' +
+                    '      <div class="value">\n' +
+                    stats.count +
+                    '     </div>\n' +
+                    '      <div class="label">\n' +
+                    '        Runs\n' +
+                    '      </div>\n' +
+                    '    </div>' +
+                    '  </div>' +
+                    '  <div class="extra content">' +
+                    '      <span>Original report name: ' + stats.report_name + '</span>\n' +
+                    '  </div>' +
+                    '</a>');
+            }
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -47,109 +40,5 @@ load_data = (limit) => {
 
 
 $(document).ready(() => {
-    let columns = [
-        {
-            title: 'Title',
-            name: 'title',
-            data: 'report_title',
-        },
-        {
-            title: 'Report Template Name',
-            name: 'report_name',
-            data: 'report_name',
-        },
-        {
-            title: 'Status',
-            name: 'status',
-            data: 'status',
-        },
-        {
-            title: 'Start Time',
-            name: 'job_start_time',
-            data: 'job_start_time',
-            render: (dt) => {
-                const d = new Date(dt);
-                return d.toISOString().replace('T', ' ').slice(0, 19);
-            },
-        },
-        {
-            title: 'Completion Time',
-            name: 'job_finish_time',
-            data: 'job_finish_time',
-            render: (dt) => {
-                if (dt) {
-                    const d = new Date(dt);
-                    return d.toISOString().replace('T', ' ').slice(0, 19);
-                }
-                return '';
-            },
-        },
-        {
-            title: 'Results',
-            name: 'result_url',
-            data: 'result_url',
-            render: (url) => `<button onclick="location.href='${url}'" type="button" `
-                + 'class="ui button blue">Result</button>',
-        },
-        {
-            title: 'PDF',
-            name: 'pdf_url',
-            data: 'pdf_url',
-            render: (url, type, row) => {
-                if (row.generate_pdf_output) {
-                    return `<button onclick="location.href='${url}'" type="button" `
-                    + 'class="ui button green"><i class="download icon"></i></button>';
-                }
-                return '';
-            },
-        }]
-    var usingScheduler = undefined;
-    $.ajax({
-        async: false,
-        url: '/scheduler/health',
-        success: () => {
-            usingScheduler = true;
-        },
-        error: () => {
-            usingScheduler = false;
-        },
-    });
-    if (usingScheduler === true) {
-        columns = columns.concat([
-            {
-                title: 'Scheduler Job',
-                name: 'scheduler_job_id',
-                data: 'scheduler_job_id',
-                render: (url, type, row) => {
-                    if (row.scheduler_job_id) {
-                        return `<button onclick="location.href='/scheduler?id=${row.scheduler_job_id}'" class="ui button blue">Scheduler</button>`;
-                    } else {
-                        return '';
-                    }
-                }
-            }
-        ])
-    }
-    columns = columns.concat([
-        {
-            title: 'Rerun',
-            name: 'rerun_url',
-            data: 'rerun_url',
-            render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
-                       + 'type="button" class="ui yellow button rerunButton">'
-                    + '<i class="redo alternate icon"></i>Rerun</button>',
-        },
-        {
-            title: 'Delete',
-            name: 'result_url',
-            data: 'result_url',
-            render: (url, type, row) => `${'<button type="button" class="ui button red deletebutton" '
-                    + 'id="delete_'}${row.job_id}"> <i class="trash icon"></i>`,
-        },
-    ])
-    $('#resultsTable').DataTable({
-        columns: columns,
-        order: [[3, 'desc']],
-    });
     load_data(50);
 });

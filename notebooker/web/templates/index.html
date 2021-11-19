@@ -14,6 +14,25 @@
         Either we haven't run any reports yet, or you don't have permission to view any on this Notebooker
         instance. Please check with the instance admin.
     </span>
+    <div class="ui centered grid" id="cardGrid">
+        <div class="twelve wide column">
+            <div class="ui cards" id="cardContainer">
+                <div class="ui loading card">
+                    <div class="content">
+                        <h1>Loading...</h1>
+                        <div class="ui statistic center aligned">
+                            <div class="value">
+                                1,234
+                            </div>
+                            <div class="label">
+                                Runs
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="ui centered grid" style="display:none" id="indexTableContainer">
         <div class="twelve wide column">
             <table id="resultsTable" class="ui sortable selectable padded table">

@@ -1,0 +1,38 @@
+{% import "header.html" as header %}
+
+{{ header.ocnHeader() }}
+
+<html>
+<head>
+    <script type="application/javascript">
+        var REPORT_NAME = "{{ report_name }}";
+    </script>
+    <script type="application/javascript" src="{{ url_for('static', filename='notebooker/result_listing.js') }}"></script>
+</head>
+<body>
+
+    {{ header.sidebar(all_reports) }}
+    <span id="failedLoad" style="display: none;">
+        <h2>Couldn't load any reports!</h2>
+        Either we haven't run any reports yet, or you don't have permission to view any on this Notebooker
+        instance. Please check with the instance admin.
+    </span>
+    <h1>{{ titleised_report_name }} ({{ report_name }})</h1>
+    <div class="ui centered grid" style="display:none" id="indexTableContainer">
+        <div class="fifteen wide column">
+            <table id="resultsTable" class="ui sortable selectable padded table">
+            </table>
+        </div>
+    </div>
+        <div class="ui modal" id="deleteModal">
+          <div class="header">Delete report</div>
+          <div class="content">
+            <p>Are you sure you wish to delete this report?</p>
+          </div>
+          <div class="actions">
+            <div class="ui approve button red">Delete</div>
+            <div class="ui cancel button">Cancel</div>
+          </div>
+        </div>
+</body>
+</html>

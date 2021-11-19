@@ -71,6 +71,8 @@ setup(
         "retrying",
         "gitpython",
         "cachelib",
+        "inflection",
+        "babel",
     ],
     extras_require={
         "prometheus": ["prometheus_client"],

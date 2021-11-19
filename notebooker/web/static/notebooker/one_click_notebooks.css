@@ -27,7 +27,7 @@ code {
 .ui.sidebar {
     overflow: visible !important;
 }
-
+.scrolledTable{ overflow-y: auto; clear:both; }
 .ui.inverted.dropdown .item {
     color: white;
 }
