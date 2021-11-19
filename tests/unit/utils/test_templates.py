@@ -21,7 +21,9 @@ def test_get_directory_structure():
             "depth/3.ipynb",
             ".hidden/4.ipynb",
             ".hidden/visible/5.ipynb",
-            ".hidden/.more-hidden/6.ipynb"
+            ".hidden/.more-hidden/6.ipynb",
+            "./visible/7.ipynb",
+            "this/is/../is/8.ipynb"
         ]
         for path in paths:
             abspath = os.path.join(temp_dir, path)
@@ -33,8 +35,9 @@ def test_get_directory_structure():
             "hello": None,
             "goodbye": None,
             "depth": {"depth/1": None, "depth/2": None, "depth/3": None},
-            "this": {"this/report": None, "is": {"this/is/deep": None, "very": {"this/is/very/deep": None}}},
+            "this": {"this/report": None, "is": {"this/is/8": None, "this/is/deep": None, "very": {"this/is/very/deep": None}}},
             "hello_again": None,
+            "visible": {"visible/7": None},
         }
 
         assert get_directory_structure(temp_dir) == expected_structure
