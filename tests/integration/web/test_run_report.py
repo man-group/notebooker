@@ -2,6 +2,7 @@ import json
 import urllib
 
 import mock
+from flask import jsonify
 
 
 def test_run_report_json_parameters(flask_app, setup_workspace):
@@ -26,7 +27,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
             rv = client.post(
                 f"/run_report_json/{report_name}?{urllib.parse.urlencode(payload)}"
             )
-            assert rv.data == b'{"id":"fake_job_id"}\n'
+            assert rv.data == jsonify({"id": "fake_job_id"}).data
             assert rv.status_code == 202, rv.data
             rr.assert_called_with(
                 report_name,
