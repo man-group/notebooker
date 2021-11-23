@@ -311,7 +311,11 @@ class MongoResultSerializer(ABC):
 
     def get_count_and_latest_time_per_report(self):
         reports = list(
-            self._get_raw_results(base_filter={}, projection={"report_name": 1, "job_start_time": 1, "_id": 0}, limit=0)
+            self._get_raw_results(
+                base_filter={},
+                projection={"report_name": 1, "job_start_time": 1, "scheduler_job_id": 1, "_id": 0},
+                limit=0,
+            )
         )
         jobs_by_name = defaultdict(list)
         for r in reports:
@@ -319,7 +323,8 @@ class MongoResultSerializer(ABC):
         output = {}
         for report, all_runs in jobs_by_name.items():
             latest_start_time = max(r["job_start_time"] for r in all_runs)
-            output[report] = {"count": len(all_runs), "latest_run": latest_start_time}
+            scheduled_runs = len([x for x in all_runs if x.get("scheduler_job_id")])
+            output[report] = {"count": len(all_runs), "latest_run": latest_start_time, "scheduler_runs": scheduled_runs}
         return output
 
     def get_all_results(

@@ -40,6 +40,7 @@ def test_insert_fake_results(flask_app, setup_workspace):
             raw_html_resources={},
             status=JobStatus.DONE,
             overrides={"param1": "big"},
+            scheduler_job_id="ohboy_it's_a_schedule",
         ),
         NotebookResultError(
             job_id="job2",
@@ -69,6 +70,7 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
             raw_html_resources={},
             status=JobStatus.DONE,
             overrides={"param1": "big"},
+            scheduler_job_id="ohboy_it's_a_schedule",
         ),
         NotebookResultError(
             job_id="job2",
@@ -90,6 +92,7 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
                 assert data == {
                     "Report Name": {
                         "count": 2,
+                        "scheduler_runs": 1,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
                         "time_diff": "1 month",
@@ -118,6 +121,7 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
             raw_html_resources={},
             status=JobStatus.DONE,
             overrides={"param1": "big"},
+            scheduler_job_id="ohboy_it's_a_schedule",
         ),
         NotebookResultError(
             job_id="job2",
@@ -146,12 +150,14 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
                 assert data == {
                     "Bad Report": {
                         "count": 1,
+                        "scheduler_runs": 0,
                         "report_name": "BadReport",
                         "latest_run": "Thu, 02 Jan 2014 00:00:00 GMT",
                         "time_diff": "7 years",
                     },
                     "Report Name": {
                         "count": 2,
+                        "scheduler_runs": 1,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
                         "time_diff": "1 month",
@@ -169,6 +175,7 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
                 assert data == {
                     "Report Name": {
                         "count": 1,
+                        "scheduler_runs": 0,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
                         "time_diff": "1 month",

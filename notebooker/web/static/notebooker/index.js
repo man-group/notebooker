@@ -25,6 +25,14 @@ load_data = (limit) => {
                     '        Runs\n' +
                     '      </div>\n' +
                     '    </div>' +
+                    '    <div class="ui statistic center aligned">\n' +
+                    '      <div class="value">\n' +
+                    stats.scheduler_runs +
+                    '     </div>\n' +
+                    '      <div class="label">\n' +
+                    '        Scheduler Runs\n' +
+                    '      </div>\n' +
+                    '    </div>' +
                     '  </div>' +
                     '  <div class="extra content">' +
                     '      <span>Original report name: ' + stats.report_name + '</span>\n' +
