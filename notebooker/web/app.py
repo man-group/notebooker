@@ -121,7 +121,10 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
     logging.basicConfig(level=logging.getLevelName(web_config.LOGGING_LEVEL))
     flask_app.config.from_object(web_config)
     flask_app.config.update(
-        TEMPLATES_AUTO_RELOAD=web_config.DEBUG, EXPLAIN_TEMPLATE_LOADING=True, DEBUG=web_config.DEBUG
+        TEMPLATES_AUTO_RELOAD=web_config.DEBUG,
+        EXPLAIN_TEMPLATE_LOADING=True,
+        DEBUG=web_config.DEBUG,
+        TESTING=web_config.DEBUG,
     )
     flask_app = setup_scheduler(flask_app, web_config)
     return flask_app

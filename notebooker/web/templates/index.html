@@ -15,7 +15,7 @@
         instance. Please check with the instance admin.
     </span>
     <div class="ui centered grid" id="cardGrid">
-        <div class="twelve wide column">
+        <div class="fifteen wide centered column">
             <div class="ui cards" id="cardContainer">
                 <div class="ui loading card">
                     <div class="content">
@@ -31,27 +31,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="ui centered grid" style="display:none" id="indexTableContainer">
-        <div class="twelve wide column">
-            <table id="resultsTable" class="ui sortable selectable padded table">
-            </table>
-            <div>
-                <button class="ui button black" onclick="load_data(0)">
-                    Load all {{ n_results_available }} results
-                </button>
-            </div>
-        </div>
-        <div class="ui modal" id="deleteModal">
-          <div class="header">Delete report</div>
-          <div class="content">
-            <p>Are you sure you wish to delete this report?</p>
-          </div>
-          <div class="actions">
-            <div class="ui approve button red">Delete</div>
-            <div class="ui cancel button">Cancel</div>
-          </div>
         </div>
     </div>
 </body>

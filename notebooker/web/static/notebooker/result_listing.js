@@ -177,5 +177,5 @@ load_data = (limit, report_name) => {
 
 
 $(document).ready(() => {
-    load_data(0, REPORT_NAME);
+    load_data(LIMIT, REPORT_NAME);
 });

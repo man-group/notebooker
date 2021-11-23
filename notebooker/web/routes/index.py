@@ -2,7 +2,7 @@ import traceback
 
 import inflection
 from flask import Blueprint, current_app, request, render_template, url_for, jsonify
-from notebooker.constants import JobStatus
+from notebooker.constants import JobStatus, DEFAULT_RESULT_LIMIT
 from notebooker.utils.results import get_all_result_keys
 from notebooker.web.utils import get_serializer, get_all_possible_templates
 
@@ -34,15 +34,17 @@ def result_listing(report_name):
     only users with correct privileges.
     """
     username = request.headers.get("X-Auth-Username")
+    result_limit = int(request.args.get("limit") or DEFAULT_RESULT_LIMIT)
     all_reports = get_all_possible_templates()
     with current_app.app_context():
         result = render_template(
             "result_listing.html",
             all_reports=all_reports,
-            n_results_available=get_serializer().n_all_results_for_report_name(report_name),
             donevalue=JobStatus.DONE,  # needed so we can check if a result is available
             username=username,
             report_name=report_name,
+            result_limit=result_limit,
+            n_results_available=get_serializer().n_all_results_for_report_name(report_name),
             titleised_report_name=inflection.titleize(report_name)
         )
         return result
@@ -60,7 +62,7 @@ def delete_report(job_id):
     """
     try:
         get_serializer().delete_result(job_id)
-        get_all_result_keys(get_serializer(), limit=50, force_reload=True)
+        get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
         result = {"status": "ok"}
     except Exception:
         error_info = traceback.format_exc()

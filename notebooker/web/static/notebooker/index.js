@@ -1,7 +1,4 @@
-
-
-
-load_data = (limit) => {
+load_data = () => {
     $.ajax({
         url: `/core/get_all_templates_with_results`,
         dataType: 'json',
@@ -48,5 +45,5 @@ load_data = (limit) => {
 
 
 $(document).ready(() => {
-    load_data(50);
+    load_data();
 });
