@@ -27,11 +27,13 @@
             </table>
         </div>
         {% if n_results_available != result_limit and n_results_available > result_limit %}
+        <div class="three wide column">
             <div>
-                <a class="ui button black" href="?limit={{ n_results_available }}">
+                <a class="ui button black" id="moreResultsButton" href="?limit={{ n_results_available }}">
                     Load all {{ n_results_available }} results
                 </a>
             </div>
+        </div>
         {% endif %}
     </div>
         <div class="ui modal" id="deleteModal">

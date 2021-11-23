@@ -14,22 +14,15 @@ load_data = () => {
                     '    <div class="meta">\n' +
                     '      <span class="date">Last ran ' + stats.time_diff + ' ago</span>\n' +
                     '    </div>' +
-                    '    <div class="ui statistic center aligned">\n' +
-                    '      <div class="value">\n' +
+                    '    <span>\n' +
                     stats.count +
-                    '     </div>\n' +
-                    '      <div class="label">\n' +
                     '        Runs\n' +
-                    '      </div>\n' +
-                    '    </div>' +
-                    '    <div class="ui statistic center aligned">\n' +
-                    '      <div class="value">\n' +
+                    '    </span>' +
+                    '<br/>' +
+                    '    <span>\n' +
                     stats.scheduler_runs +
-                    '     </div>\n' +
-                    '      <div class="label">\n' +
                     '        Scheduler Runs\n' +
-                    '      </div>\n' +
-                    '    </div>' +
+                    '    </span>' +
                     '  </div>' +
                     '  <div class="extra content">' +
                     '      <span>Original report name: ' + stats.report_name + '</span>\n' +
