@@ -103,7 +103,20 @@ def run_report_http(report_name):
     report_name = convert_report_name_url_to_path(report_name)
     json_params = request.args.get("json_params")
     initial_python_parameters = json_to_python(json_params) or ""
-    nb = get_report_as_nb(report_name)
+    try:
+        nb = get_report_as_nb(report_name)
+    except FileNotFoundError:
+        logger.exception("Report was not found.")
+        return render_template(
+            "run_report.html",
+            report_found=False,
+            parameters_as_html="REPORT NOT FOUND",
+            has_prefix=False,
+            has_suffix=False,
+            report_name=report_name,
+            all_reports=get_all_possible_templates(),
+            initialPythonParameters={},
+        )
     metadata_idx = _get_parameters_cell_idx(nb)
     has_prefix = has_suffix = False
     if metadata_idx is not None:
@@ -111,6 +124,7 @@ def run_report_http(report_name):
     return render_template(
         "run_report.html",
         parameters_as_html=get_report_parameters_html(report_name),
+        report_found=True,
         has_prefix=has_prefix,
         has_suffix=has_suffix,
         report_name=report_name,

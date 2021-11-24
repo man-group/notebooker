@@ -135,8 +135,8 @@ create_datatable = (result) => {
             name: 'rerun_url',
             data: 'rerun_url',
             render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
-                       + 'type="button" class="ui yellow button rerunButton">'
-                    + '<i class="redo alternate icon"></i>Rerun</button>',
+                       + 'type="button" class="ui yellow centred button rerunButton">'
+                    + '<i class="redo alternate icon"></i></button>',
         },
         {
             title: 'Delete',
