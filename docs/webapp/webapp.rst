@@ -2,22 +2,29 @@ The Notebooker webapp
 =====================
 
 Notebooker's primary interface is a simple webapp written to allow users to view and
-run Notebooker reports. It displays all results in a handy grid, and allows for rerunning
+run Notebooker reports. It first displays all unique template names which have ever run, and a drill-down
+view lists all results for that notebook template in a handy grid, allowing for rerunning
 and parameter tweaking.
 The entrypoint used to run Notebooks via the webapp is the
-same as the external API, so as long as you are using the same environment (e.g. within
+same as the external API; as long as you are using the same environment (e.g. within
 a docker image) you will get consistent results.
 
 
 Report dashboard
 ----------------
 The home page of the Notebooker webapp displays an overview of all reports which have recently run.
+
+.. image:: /images/nbkr_homepage.png
+   :width: 400
+   :alt: Screenshot of Notebooker webapp homepage
+
+Clicking on one of these elements will bring up an overview of all reports which have recently run.
 It is possible to view each full report by clicking "Result". It's also possible to rerun, delete, and
 copy parameters of each report in the grid.
 
-.. image:: /images/notebooker_homepage.png
+.. image:: /images/nbkr_results_listing.png
    :width: 400
-   :alt: Screenshot of Notebooker webapp homepage
+   :alt: Screenshot of Notebooker results listing
 
 
 Running a report
@@ -40,7 +47,7 @@ Running a report
 .. warning::
     In order to prevent users having to write JSON, the Override parameters box actually takes raw python statements
     and converts them into JSON. Therefore, it is strongly recommended that you run Notebooker in an environment
-    where you either completely trust all of the user base,  or within a docker container
+    where you either completely trust all of the user base, or within a docker container
     where executing variable assignments will not have any negative side-effects.
 
 Customisable elements:
@@ -49,6 +56,7 @@ Customisable elements:
 * Override parameters - the values which will override the parameters in the report (in python). Can be left blank.
 * Email to - upon completion of the report, who should it be emailed to? Can be left blank.
 * Generate PDF output - whether to generate PDFs or not. Requires xelatex to be installed - see :ref:`export to pdf`
+* Hide code from email and PDF output - whether to display the notebook code when producing output emails and PDFs.
 
 Viewing results
 ---------------
@@ -67,6 +75,7 @@ If the job fails, the stack trace will be presented to allow for easier debuggin
 
 
 | If the job succeeds, the .ipynb will have been converted into HTML for viewing on this page.
+| **Please note** for user convenience, all notebook code is hidden by default.
 | You can also get to this view by clicking the blue "Result" button on the homepage.
 | If you are using a framework such as seaborn or matplotlib, the images will be available and served by the webapp.
 | If you are using plotly, you can use offline mode to store the required javascript within the HTML render,
