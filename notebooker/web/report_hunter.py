@@ -39,6 +39,7 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
                 JobStatus.SUBMITTED: now - datetime.timedelta(minutes=SUBMISSION_TIMEOUT),
                 JobStatus.PENDING: now - datetime.timedelta(minutes=RUNNING_TIMEOUT),
             }
+            cutoff.update({k.value: v for (k, v) in cutoff.items()})  # Add value to dict for backwards compat
             for result in all_pending:
                 this_cutoff = cutoff.get(result.status)
                 if result.job_start_time <= this_cutoff:

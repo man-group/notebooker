@@ -1,7 +1,11 @@
+import datetime
+from collections import defaultdict
 from datetime import datetime as dt
 from logging import getLogger
 from typing import Callable, Dict, Iterator, List, Mapping, Optional, Tuple
 
+import babel.dates
+import inflection
 from flask import url_for
 
 from notebooker import constants
@@ -106,9 +110,10 @@ def get_all_result_keys(
     return all_keys
 
 
-def get_all_available_results_json(serializer: MongoResultSerializer, limit: int) -> List[constants.NotebookResultBase]:
+def get_all_available_results_json(serializer: MongoResultSerializer, limit: int, report_name: str = None) -> List[constants.NotebookResultBase]:
     json_output = []
-    for result in serializer.get_all_results(limit=limit, load_payload=False):
+    mongo_filter = {"report_name": report_name} if report_name is not None else {}
+    for result in serializer.get_all_results(mongo_filter=mongo_filter, limit=limit, load_payload=False):
         output = result.saveable_output()
         output["result_url"] = url_for(
             "serve_results_bp.task_results", job_id=output["job_id"], report_name=output["report_name"]
@@ -124,6 +129,16 @@ def get_all_available_results_json(serializer: MongoResultSerializer, limit: int
         )
         json_output.append(output)
     return json_output
+
+
+def get_count_and_latest_time_per_report(serializer: MongoResultSerializer):
+    reports = serializer.get_count_and_latest_time_per_report()
+    output = {}
+    for report_name, metadata in sorted(reports.items(), key=lambda x: x[1]["latest_run"], reverse=True):
+        metadata["report_name"] = report_name
+        metadata["time_diff"] = babel.dates.format_timedelta(datetime.datetime.utcnow() - metadata["latest_run"])
+        output[inflection.titleize(report_name)] = metadata
+    return output
 
 
 def get_latest_successful_job_results_all_params(

@@ -28,6 +28,28 @@ code {
     overflow: visible !important;
 }
 
+.scrolledTable{
+    overflow-y: auto;
+    clear:both;
+}
+
+.ui.centered.grid {
+    padding: 1em;
+}
+
+.moreResultsButton {
+    margin-bottom: 1em;
+    width: 100%;
+}
+
+.ui.card {
+    color: #222222;
+}
+
+.ui.table {
+    width: 99.5%;  /* Because a border with overflow-y:auto causes a tiny scrollbar */
+}
+
 .ui.inverted.dropdown .item {
     color: white;
 }

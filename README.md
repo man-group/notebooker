@@ -16,7 +16,10 @@ Productionise and schedule your Jupyter Notebooks, just as interactively as you 
 ![Screenshot of some notebook results](https://raw.githubusercontent.com/man-group/notebooker/master/docs/images/nbkr_results.png)
 
 ## All results are accessible from the home page
-![Screenshot of Executing a notebook](https://raw.githubusercontent.com/man-group/notebooker/master/docs/images/nbkr_homepage.png)
+![Screenshot of the Notebooker homepage](https://raw.githubusercontent.com/man-group/notebooker/master/docs/images/nbkr_homepage.png)
+
+## Drill down into each template's results
+![Screenshot of result listings](https://raw.githubusercontent.com/man-group/notebooker/master/docs/images/nbkr_results_listing.png)
 
 
 ## Getting started

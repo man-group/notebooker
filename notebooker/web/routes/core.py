@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 
 import notebooker.version
-from notebooker.utils.results import get_all_available_results_json
+from notebooker.constants import DEFAULT_RESULT_LIMIT
+from notebooker.utils.results import get_all_available_results_json, get_count_and_latest_time_per_report
 from notebooker.web.utils import get_serializer, get_all_possible_templates, all_templates_flattened
 
 core_bp = Blueprint("core_bp", __name__)
@@ -24,13 +25,24 @@ def user_profile():
 def all_available_results():
     """
     Core function for the homepage/index page which returns all available results.
-    Defaults to the top 50 results.
+    Defaults to the top DEFAULT_RESULT_LIMIT results.
 
     :returns: A JSON containing a list of results. The actual payload data is substituted with URLs that would \
     kick off a download, if requested.
     """
-    limit = int(request.args.get("limit", 50))
-    return jsonify(get_all_available_results_json(get_serializer(), limit))
+    limit = int(request.args.get("limit") or DEFAULT_RESULT_LIMIT)
+    report_name = request.args.get("report_name")
+    return jsonify(get_all_available_results_json(get_serializer(), limit, report_name=report_name))
+
+
+@core_bp.route("/core/get_all_templates_with_results")
+def all_available_templates_with_results():
+    """
+    Core function for the index.html view which shows the templates which have results available.
+
+    :returns: A JSON containing a list of template names with a count of how many results are in each.
+    """
+    return jsonify(get_count_and_latest_time_per_report(get_serializer()))
 
 
 @core_bp.route("/core/all_possible_templates")
