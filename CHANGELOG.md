@@ -1,3 +1,8 @@
+0.4.0 (2021-12-17)
+------------------
+
+* Improvement: The index page has been overhauled to be a lot more user-friendly, divided up by notebook template name.
+
 0.3.2 (2021-11-10)
 ------------------
 
