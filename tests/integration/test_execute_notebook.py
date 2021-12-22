@@ -57,21 +57,24 @@ def test_main(mongo_host):
         assert result.pdf == pdf_contents
 
 @pytest.mark.parametrize(
-    ('cli_args', 'expected_mailto'),
+    ('cli_args', 'expected_mailto', 'expected_from',),
     [
         (
-            ['--report-name', 'crashyreport', '--mailto', 'happy@email'],
+            ['--report-name', 'crashyreport', '--mailto', 'happy@email', '--mailfrom', 'notebooker@example.com'],
             'happy@email',
+            'notebooker@example.com',
         ), (
-            ['--report-name', 'crashyreport', '--mailto', 'happy@email', '--error-mailto', 'sad@email'],
+            ['--report-name', 'crashyreport', '--mailto', 'happy@email', '--error-mailto', 'sad@email', '--mailfrom', 'notebooker@example.com'],
             'sad@email',
+            'notebooker@example.com',
         ), (
-            ['--report-name', 'crashyreport', '--error-mailto', 'sad@email'],
+            ['--report-name', 'crashyreport', '--error-mailto', 'sad@email', '--mailfrom', 'notebooker@example.com'],
             'sad@email',
+            'notebooker@example.com',
         )
     ]
 )
-def test_main(mongo_host, cli_args, expected_mailto):
+def test_main(mongo_host, cli_args, expected_mailto, expected_from):
     with mock.patch("notebooker.execute_notebook.pm.execute_notebook") as exec_nb, mock.patch(
         "notebooker.utils.conversion.jupytext.read"
     ) as read_nb, mock.patch("notebooker.execute_notebook.send_result_email") as send_email:
@@ -97,4 +100,7 @@ def test_main(mongo_host, cli_args, expected_mailto):
         )
 
         mailto = send_email.call_args_list[0][0][0].mailto
+        mailfrom = send_email.call_args_list[0][0][0].mailfrom
         assert mailto == expected_mailto
+        assert mailfrom == expected_from
+

@@ -24,7 +24,11 @@ def scheduler_is_up():
 
 @scheduling_bp.route("/scheduler")
 def scheduler_ui():
-    return render_template("scheduler.html", all_reports=get_all_possible_templates())
+    return render_template(
+        "scheduler.html",
+        all_reports=get_all_possible_templates(),
+        default_mailfrom=current_app.config["DEFAULT_MAILFROM"],
+    )
 
 
 @scheduling_bp.route("/scheduler/jobs")
@@ -68,6 +72,7 @@ def update_schedule(report_name):
         "overrides": overrides_dict,
         "report_title": params.report_title,
         "mailto": params.mailto,
+        "mailfrom": params.mailfrom,
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
         "scheduler_job_id": job_id,
@@ -98,6 +103,7 @@ def create_schedule(report_name):
         "overrides": overrides_dict,
         "report_title": params.report_title,
         "mailto": params.mailto,
+        "mailfrom": params.mailfrom,
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
         "scheduler_job_id": job_id,

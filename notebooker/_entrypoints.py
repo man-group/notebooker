@@ -5,7 +5,7 @@ import click
 
 from notebooker import notebook_templates_example
 from notebooker.version import __version__
-from notebooker.constants import DEFAULT_SERIALIZER
+from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
 from notebooker.settings import BaseConfig, WebappConfig
@@ -64,6 +64,11 @@ def filesystem_default_value(dirname):
     help="If selected, notebooker will not try to pull the latest version of python templates from git.",
 )
 @click.option(
+    "--default-mailfrom",
+    default=DEFAULT_MAILFROM_ADDRESS,
+    help="Set a new value for the default mailfrom setting."
+)
+@click.option(
     "--serializer-cls",
     default=DEFAULT_SERIALIZER,
     help="The serializer class through which we will save the notebook result.",
@@ -77,6 +82,7 @@ def base_notebooker(
     py_template_base_dir,
     py_template_subdir,
     notebooker_disable_git,
+    default_mailfrom,
     serializer_cls,
     **serializer_args,
 ):
@@ -89,6 +95,7 @@ def base_notebooker(
         PY_TEMPLATE_BASE_DIR=py_template_base_dir,
         PY_TEMPLATE_SUBDIR=py_template_subdir,
         NOTEBOOKER_DISABLE_GIT=notebooker_disable_git,
+        DEFAULT_MAILFROM=default_mailfrom,
     )
     ctx.obj = config
 
@@ -187,6 +194,11 @@ def start_webapp(
     default=None,
     help="If available, it stores the id of the scheduler job which triggered this execution as part of the report.",
 )
+@click.option(
+    "--mailfrom",
+    default=None,
+    help="Use this email in the From header of any sent email. If not passed, --default-mailfrom will be used",
+)
 @pass_config
 def execute_notebook(
     config: BaseConfig,
@@ -203,6 +215,7 @@ def execute_notebook(
     hide_code,
     prepare_notebook_only,
     scheduler_job_id,
+    mailfrom,
 ):
     if report_name is None:
         raise ValueError("Error! Please provide a --report-name.")
@@ -221,6 +234,7 @@ def execute_notebook(
         hide_code,
         prepare_notebook_only,
         scheduler_job_id,
+        mailfrom,
     )
 
 

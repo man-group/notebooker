@@ -139,6 +139,7 @@ function modifySchedulerModal(row) {
             hide_code: row.params.hide_code,
             generate_pdf: row.params.generate_pdf,
             mailto: row.params.mailto,
+            mailfrom: row.params.mailfrom,
             cronSchedule: row.cron_schedule,
         }
     );
@@ -164,6 +165,7 @@ function handleAddButtonClick() {
             hide_code: "",
             generate_pdf: "",
             mailto: "",
+            mailfrom: "",
             cronSchedule: "",
         }
     );
@@ -264,6 +266,7 @@ $(document).ready(() => {
                     overrides: formObj.overrides,
                     cron_schedule: formObj.cronSchedule,
                     mailto: formObj.mailto,
+                    mailfrom: formObj.mailfrom,
                     generate_pdf: formObj.generate_pdf,
                     hide_code: formObj.hide_code,
                 },

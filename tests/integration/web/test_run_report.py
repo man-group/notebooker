@@ -11,6 +11,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
         overrides = {"a": 1}
         report_title = "title"
         mailto = "abc@email.asdkj"
+        mailfrom = "test@example.com"
         generate_pdf = True
         hide_code = True
         scheduler_job_id = "abc/123"
@@ -21,6 +22,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
             "generate_pdf": generate_pdf,
             "hide_code": hide_code,
             "scheduler_job_id": scheduler_job_id,
+            "mailfrom": mailfrom,
         }
         with mock.patch("notebooker.web.routes.run_report.run_report") as rr:
             rr.return_value = "fake_job_id"
@@ -37,4 +39,5 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
                 generate_pdf_output=generate_pdf,
                 hide_code=hide_code,
                 scheduler_job_id=scheduler_job_id,
+                mailfrom=mailfrom,
             )

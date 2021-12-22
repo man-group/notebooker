@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 import urllib
 
 import requests
@@ -17,6 +18,8 @@ def run_report(
     generate_pdf: bool,
     hide_code: bool,
     scheduler_job_id: str,
+    # new parameters should be added below and be optional to avoid migrations
+    mailfrom: Optional[str] = None,
 ):
     """
     This is the entrypoint of the scheduler; APScheduler has to
@@ -34,6 +37,12 @@ def run_report(
         "hide_code": hide_code,
         "scheduler_job_id": scheduler_job_id,
     }
+    # This means that, if the default mailfrom changes, all already scheduled
+    # jobs will use the new default in subsequent runs. Another approach could
+    # be to fix the mailfrom to the current default, but that seems a bit less
+    # natural.
+    if mailfrom:
+        payload["mailfrom"] = mailfrom
     logger.info(f"Running report at {url}, payload = {payload}")
     result = requests.post(url, params=urllib.parse.urlencode(payload))
     logger.info(result.content)
