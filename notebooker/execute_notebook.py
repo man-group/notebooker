@@ -46,6 +46,7 @@ def _run_checks(
     py_template_base_dir: str = "",
     py_template_subdir: str = "",
     scheduler_job_id: Optional[str] = None,
+    mailfrom: Optional[str] = None,
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -75,6 +76,8 @@ def _run_checks(
         Internal usage. Whether we want to do everything apart from executing the notebook.
     scheduler_job_id : `Optional[str]`
         If available, it will be part of the Error or Completed run report.
+    mailfrom : `Optional[str]`
+        If available, this will be the email used in the From header.
 
 
     Returns
@@ -126,6 +129,7 @@ def _run_checks(
         report_title=report_title,
         overrides=overrides,
         scheduler_job_id=scheduler_job_id,
+        mailfrom=mailfrom,
     )
     return notebook_result
 
@@ -150,6 +154,7 @@ def run_report(
     py_template_base_dir="",
     py_template_subdir="",
     scheduler_job_id=None,
+    mailfrom=None,
 ):
 
     job_id = job_id or str(uuid.uuid4())
@@ -185,6 +190,7 @@ def run_report(
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
+            mailfrom=mailfrom,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -202,6 +208,7 @@ def run_report(
             mailto=error_mailto or mailto,
             generate_pdf_output=generate_pdf_output,
             scheduler_job_id=scheduler_job_id,
+            mailfrom=mailfrom,
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
@@ -232,6 +239,7 @@ def run_report(
                 py_template_base_dir=py_template_base_dir,
                 py_template_subdir=py_template_subdir,
                 scheduler_job_id=scheduler_job_id,
+                mailfrom=mailfrom,
             )
         else:
             logger.info("Abandoning attempt to run report. It failed too many times.")
@@ -319,6 +327,7 @@ def execute_notebook_entrypoint(
     hide_code: bool,
     prepare_notebook_only: bool,
     scheduler_job_id: Optional[str],
+    mailfrom: Optional[str],
 ):
     report_title = report_title or report_name
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
@@ -340,6 +349,7 @@ def execute_notebook_entrypoint(
     logger.info("mailto = %s", mailto)
     logger.info("error_mailto = %s", error_mailto)
     logger.info("email_subject = %s", email_subject)
+    logger.info("mailfrom = %s" % mailfrom)
     logger.info("pdf_output = %s", pdf_output)
     logger.info("hide_code = %s", hide_code)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
@@ -374,9 +384,10 @@ def execute_notebook_entrypoint(
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
+            mailfrom=mailfrom,
         )
         if result.mailto:
-            send_result_email(result)
+            send_result_email(result, config.DEFAULT_MAILFROM)
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
             logger.warning(repr(result))

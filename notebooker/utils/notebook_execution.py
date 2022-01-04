@@ -15,8 +15,11 @@ def _output_dir(output_base_dir, report_name, job_id):
     return os.path.join(output_base_dir, report_name, job_id)
 
 
-def send_result_email(result: Union[NotebookResultComplete, NotebookResultError]) -> None:
-    from_email = "notebooker@notebooker.io"
+def send_result_email(result: Union[NotebookResultComplete, NotebookResultError], default_mailfrom: str) -> None:
+    if result.mailfrom:
+        mailfrom = result.mailfrom
+    else:
+        mailfrom = default_mailfrom
     to_email = result.mailto
     report_title = (
         result.report_title.decode("utf-8") if isinstance(result.report_title, bytes) else result.report_title
@@ -54,7 +57,7 @@ def send_result_email(result: Union[NotebookResultComplete, NotebookResultError]
         msg = ["Please either activate HTML emails, or see the PDF attachment.", body]
 
         logger.info("Sending email to %s with %d attachments", to_email, len(attachments))
-        mail(from_email, to_email, subject, msg, attachments=attachments)
+        mail(mailfrom, to_email, subject, msg, attachments=attachments)
     finally:
         if tmp_dir:
             logger.info("Cleaning up temporary email attachment directory %s", tmp_dir)

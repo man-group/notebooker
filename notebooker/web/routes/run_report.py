@@ -130,6 +130,7 @@ def run_report_http(report_name):
         report_name=report_name,
         all_reports=get_all_possible_templates(),
         initialPythonParameters=initial_python_parameters,
+        default_mailfrom=current_app.config["DEFAULT_MAILFROM"],
     )
 
 
@@ -157,6 +158,7 @@ def run_report(
     prepare_only=False,
     scheduler_job_id=None,
     run_synchronously=False,
+    mailfrom=None,
 ) -> str:
     """
     Actually run the report in earnest.
@@ -169,6 +171,7 @@ def run_report(
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
+    :param mailfrom: `str` if passed, then this string will be used in the from field
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -198,6 +201,8 @@ def run_report(
             app_config["PY_TEMPLATE_BASE_DIR"],
             "--py-template-subdir",
             app_config["PY_TEMPLATE_SUBDIR"],
+            "--default-mailfrom",
+            app_config["DEFAULT_MAILFROM"],
         ]
         + (["--notebooker-disable-git"] if app_config["NOTEBOOKER_DISABLE_GIT"] else [])
         + ["--serializer-cls", result_serializer.__class__.__name__]
@@ -219,6 +224,7 @@ def run_report(
         ]
         + (["--prepare-notebook-only"] if prepare_only else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
+        + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
     )
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     time.sleep(5)
@@ -240,6 +246,7 @@ def run_report(
 class RunReportParams(NamedTuple):
     report_title: AnyStr
     mailto: AnyStr
+    mailfrom: AnyStr
     generate_pdf_output: bool
     hide_code: bool
     scheduler_job_id: Optional[str]
@@ -251,6 +258,7 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
     report_title = validate_title(params.get("report_title"), issues)
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
+    mailfrom = validate_mailto(params.get("mailfrom"), issues)
     # "on" comes from HTML, "True" comes from urlencoded JSON params
     generate_pdf_output = params.get("generate_pdf") in ("on", "True")
     hide_code = params.get("hide_code") in ("on", "True")
@@ -258,6 +266,7 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
     out = RunReportParams(
         report_title=report_title,
         mailto=mailto,
+        mailfrom=mailfrom,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=params.get("scheduler_job_id"),
@@ -279,7 +288,8 @@ def _handle_run_report(
                 f"overrides_dict={overrides_dict} "
                 f"generate_pdf_output={params.generate_pdf_output} "
                 f"hide_code={params.hide_code} "
-                f"scheduler_job_id={params.scheduler_job_id}")
+                f"scheduler_job_id={params.scheduler_job_id}"
+                f"mailfrom={params.mailfrom}")
     try:
         job_id = run_report(
             report_name,
@@ -289,6 +299,7 @@ def _handle_run_report(
             generate_pdf_output=params.generate_pdf_output,
             hide_code=params.hide_code,
             scheduler_job_id=params.scheduler_job_id,
+            mailfrom=params.mailfrom,
         )
         return (
             jsonify({"id": job_id}),

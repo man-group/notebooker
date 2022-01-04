@@ -2,7 +2,7 @@ from typing import Dict
 
 from dataclasses import dataclass, asdict
 
-from notebooker.constants import DEFAULT_SERIALIZER
+from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS
 
 
 @dataclass
@@ -29,6 +29,9 @@ class BaseConfig:
     SERIALIZER_CLS: DEFAULT_SERIALIZER = None
     # The dictionary of parameters which are used to initialize the serializer class above
     SERIALIZER_CONFIG: Dict = None
+
+    # Value used in the from header of emails sent by notebooker if the user doesn't pass one when running a notebook
+    DEFAULT_MAILFROM: str = DEFAULT_MAILFROM_ADDRESS
 
     @classmethod
     def copy_existing(cls, existing: "BaseConfig"):

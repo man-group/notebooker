@@ -22,6 +22,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "mailto": "",
                 "generate_pdf": True,
                 "cron_schedule": "* * * * *",
+                "mailfrom": "test@example.com",
             },
         )
         assert rv.status_code == 201
@@ -39,6 +40,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "report_name": report_name,
                 "report_title": "test2",
                 "scheduler_job_id": f"{report_name}_test2",
+                "mailfrom": "test@example.com",
             },
             "trigger": {
                 "fields": {

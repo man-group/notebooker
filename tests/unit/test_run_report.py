@@ -45,6 +45,7 @@ def test_validate_run_params():
                     ("generate_pdf", "True"),
                     ("hide_code", "True"),
                     ("scheduler_job_id", "plot_random_asdas"),
+                    ("mailfrom", "test@example.com"),
                 ]
             ),
             ImmutableMultiDict([]),
@@ -57,6 +58,7 @@ def test_validate_run_params():
         generate_pdf_output=True,
         hide_code=True,
         scheduler_job_id="plot_random_asdas",
+        mailfrom="test@example.com",
     )
     actual_output = validate_run_params(input_params, issues)
     assert issues == []

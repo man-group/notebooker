@@ -31,6 +31,7 @@ from notebooker.utils import notebook_execution
 )
 def test_send_result_email(test_name, job_id, report_name, report_title, expected_title):
     to_email = "∫åññîsté®@test-email.com"
+    mailfrom = "test@example.com"
     body_in = "<body><h1>hello  😆 😉 😊 😋 😎</h1></body>"
     result = NotebookResultComplete(
         job_id=job_id,
@@ -44,9 +45,10 @@ def test_send_result_email(test_name, job_id, report_name, report_title, expecte
         pdf="",
         report_name=report_name,
         report_title=report_title,
+        mailfrom=mailfrom,
     )
     with mock.patch("notebooker.utils.notebook_execution.mail") as mail:
-        notebook_execution.send_result_email(result)
+        notebook_execution.send_result_email(result, "notebooker@localhost")
     email_sent = mail.mock_calls[0][1]
     assert len(email_sent) == 4, "mail() was not called with the correct number of args"
     from_address = email_sent[0]
@@ -54,7 +56,7 @@ def test_send_result_email(test_name, job_id, report_name, report_title, expecte
     title = email_sent[2]
     body = email_sent[3]
 
-    assert from_address == "notebooker@notebooker.io"
+    assert from_address == mailfrom
     assert to_address == to_email
     assert title == expected_title
     assert body == ["Please either activate HTML emails, or see the PDF attachment.", body_in]
@@ -76,7 +78,7 @@ def test_send_result_email_fallback_to_raw_html():
         report_title="fallback",
     )
     with mock.patch("notebooker.utils.notebook_execution.mail") as mail:
-        notebook_execution.send_result_email(result)
+        notebook_execution.send_result_email(result, "notebooker@localhost")
     email_sent = mail.mock_calls[0][1]
     assert len(email_sent) == 4, "mail() was not called with the correct number of args"
     from_address = email_sent[0]
@@ -84,7 +86,7 @@ def test_send_result_email_fallback_to_raw_html():
     title = email_sent[2]
     body = email_sent[3]
 
-    assert from_address == "notebooker@notebooker.io"
+    assert from_address == "notebooker@localhost"
     assert to_address == to_email
     assert title == "Notebooker: fallback report completed with status: Checks done!"
     assert body == ["Please either activate HTML emails, or see the PDF attachment.", body_in]
@@ -101,6 +103,7 @@ def test_send_result_email_fallback_to_raw_html():
 def test_send_result_email_subject(subject, expected):
     body_in = "<body><h1>hello  😆 😉 😊 😋 😎</h1></body>"
     to_email = "∫åññîsté®@ahl.com"
+    mailfrom = "test@example.com"
     result = NotebookResultComplete(
         job_id="subjecttest",
         job_start_time=datetime.datetime.now(),
@@ -113,9 +116,10 @@ def test_send_result_email_subject(subject, expected):
         pdf="",
         report_name="subjecttest",
         report_title="subjecttest",
+        mailfrom=mailfrom,
     )
     with mock.patch("notebooker.utils.notebook_execution.mail") as mail:
-        notebook_execution.send_result_email(result)
+        notebook_execution.send_result_email(result, "notebooker@localhost")
     email_sent = mail.mock_calls[0][1]
     assert len(email_sent) == 4, "mail() was not called with the correct number of args"
     from_address = email_sent[0]
@@ -123,7 +127,7 @@ def test_send_result_email_subject(subject, expected):
     title = email_sent[2]
     body = email_sent[3]
 
-    assert from_address == "notebooker@notebooker.io"
+    assert from_address == mailfrom
     assert to_address == to_email
     assert title == expected
     assert body == ["Please either activate HTML emails, or see the PDF attachment.", body_in]

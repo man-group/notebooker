@@ -19,6 +19,11 @@ DEFAULT_DATABASE_NAME = "notebooker"
 DEFAULT_RESULT_COLLECTION_NAME = "NOTEBOOK_OUTPUT"
 DEFAULT_MONGO_HOST = "localhost"
 
+# Another candidate would be notebooker@example.com. However, using localhost means that, worst case scenario,
+# the user will end up trying to send a reply to themselves, whereas with example.com it could end up in IANA's
+# mailbox if they ever set up an SMTP server for example.com
+DEFAULT_MAILFROM_ADDRESS = "notebooker@localhost"
+
 
 def kernel_spec():
     return {
@@ -79,6 +84,7 @@ class NotebookResultBase(object):
     hide_code = attr.ib(default=False)
     stdout = attr.ib(default=attr.Factory(list))
     scheduler_job_id = attr.ib(default=None)
+    mailfrom = attr.ib(default=None)
 
     def saveable_output(self):
         out = attr.asdict(self)
@@ -96,6 +102,7 @@ class NotebookResultPending(NotebookResultBase):
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
     scheduler_job_id = attr.ib(default=None)
+    mailfrom = attr.ib(default=None)
 
 
 @attr.s()
@@ -109,6 +116,7 @@ class NotebookResultError(NotebookResultBase):
     generate_pdf_output = attr.ib(default=True)
     hide_code = attr.ib(default=False)
     scheduler_job_id = attr.ib(default=None)
+    mailfrom = attr.ib(default=None)
 
     @property
     def email_subject(self):
@@ -149,6 +157,7 @@ class NotebookResultComplete(NotebookResultBase):
     hide_code = attr.ib(default=False)
     stdout = attr.ib(default=attr.Factory(list))
     scheduler_job_id = attr.ib(default=None)
+    mailfrom = attr.ib(default=None)
 
     def html_resources(self):
         """We have to save the raw images using Mongo GridFS - figure out where they will go here"""
@@ -179,13 +188,14 @@ class NotebookResultComplete(NotebookResultBase):
             "update_time": self.update_time,
             "scheduler_job_id": self.scheduler_job_id,
             "raw_html": "",  # backwards compatibility for versions<0.3.1
+            "mailfrom": self.mailfrom,
         }
 
     def __repr__(self):
         return (
             "NotebookResultComplete(job_id={job_id}, status={status}, report_name={report_name}, "
             "job_start_time={job_start_time}, job_finish_time={job_finish_time}, update_time={update_time}, "
-            "report_title={report_title}, overrides={overrides}, mailto={mailto}, "
+            "report_title={report_title}, overrides={overrides}, mailto={mailto}, mailfrom={mailfrom}"
             "email_subject={email_subject}, generate_pdf_output={generate_pdf_output}, hide_code={hide_code}, "
             "scheduler_job_id={scheduler_job_id})".format(
                 job_id=self.job_id,
@@ -197,6 +207,7 @@ class NotebookResultComplete(NotebookResultBase):
                 report_title=self.report_title,
                 overrides=self.overrides,
                 mailto=self.mailto,
+                mailfrom=self.mailfrom,
                 email_subject=self.email_subject,
                 generate_pdf_output=self.generate_pdf_output,
                 hide_code=self.hide_code,
