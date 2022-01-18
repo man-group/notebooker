@@ -1,3 +1,9 @@
+0.4.1 (2022-01-??)
+------------------
+
+* Improvement: The email "from" address is now fully configurable.
+* Bugfix: The default "from" email address domain is no longer non-existent.
+
 0.4.0 (2021-12-17)
 ------------------
 
