@@ -3,7 +3,7 @@ import os
 import time
 from logging import getLogger
 
-from notebooker.constants import RUNNING_TIMEOUT, SUBMISSION_TIMEOUT, JobStatus
+from notebooker.constants import SUBMISSION_TIMEOUT, JobStatus
 from notebooker.serialization.serialization import initialize_serializer_from_config
 from notebooker.utils.caching import get_report_cache, set_report_cache
 from notebooker.settings import WebappConfig
@@ -37,7 +37,7 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             now = datetime.datetime.now()
             cutoff = {
                 JobStatus.SUBMITTED: now - datetime.timedelta(minutes=SUBMISSION_TIMEOUT),
-                JobStatus.PENDING: now - datetime.timedelta(minutes=RUNNING_TIMEOUT),
+                JobStatus.PENDING: now - datetime.timedelta(minutes=webapp_config.RUNNING_TIMEOUT),
             }
             cutoff.update({k.value: v for (k, v) in cutoff.items()})  # Add value to dict for backwards compat
             for result in all_pending:

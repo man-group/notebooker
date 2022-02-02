@@ -2,7 +2,7 @@ from typing import Dict
 
 from dataclasses import dataclass, asdict
 
-from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS
+from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS, DEFAULT_RUNNING_TIMEOUT
 
 
 @dataclass
@@ -32,6 +32,8 @@ class BaseConfig:
 
     # Value used in the from header of emails sent by notebooker if the user doesn't pass one when running a notebook
     DEFAULT_MAILFROM: str = DEFAULT_MAILFROM_ADDRESS
+
+    RUNNING_TIMEOUT: int = DEFAULT_RUNNING_TIMEOUT
 
     @classmethod
     def copy_existing(cls, existing: "BaseConfig"):
