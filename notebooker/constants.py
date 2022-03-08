@@ -7,7 +7,7 @@ from typing import AnyStr, Optional
 import attr
 
 SUBMISSION_TIMEOUT = 3
-RUNNING_TIMEOUT = 60
+DEFAULT_RUNNING_TIMEOUT = 60
 DEFAULT_RESULT_LIMIT = 100
 CANCEL_MESSAGE = "The webapp shut down while this job was running. Please resubmit with the same parameters."
 TEMPLATE_DIR_SEPARATOR = "^"

@@ -1,8 +1,9 @@
-0.4.1 (2022-01-??)
+0.4.1 (2022-02-??)
 ------------------
 
 * Improvement: The email "from" address is now fully configurable.
 * Bugfix: The default "from" email address domain is no longer non-existent.
+* Improvement: --running-timeout parameter allows customization of max allowed notebook runtime
 
 0.4.0 (2021-12-17)
 ------------------

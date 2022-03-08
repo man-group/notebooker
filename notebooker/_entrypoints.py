@@ -5,7 +5,7 @@ import click
 
 from notebooker import notebook_templates_example
 from notebooker.version import __version__
-from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS
+from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS, DEFAULT_RUNNING_TIMEOUT
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
 from notebooker.settings import BaseConfig, WebappConfig
@@ -69,6 +69,12 @@ def filesystem_default_value(dirname):
     help="Set a new value for the default mailfrom setting."
 )
 @click.option(
+    "--running-timeout",
+    default=DEFAULT_RUNNING_TIMEOUT,
+    help="Timeout in minutes for report execution",
+    type=int
+)
+@click.option(
     "--serializer-cls",
     default=DEFAULT_SERIALIZER,
     help="The serializer class through which we will save the notebook result.",
@@ -83,6 +89,7 @@ def base_notebooker(
     py_template_subdir,
     notebooker_disable_git,
     default_mailfrom,
+    running_timeout,
     serializer_cls,
     **serializer_args,
 ):
@@ -96,6 +103,7 @@ def base_notebooker(
         PY_TEMPLATE_SUBDIR=py_template_subdir,
         NOTEBOOKER_DISABLE_GIT=notebooker_disable_git,
         DEFAULT_MAILFROM=default_mailfrom,
+        RUNNING_TIMEOUT=running_timeout,
     )
     ctx.obj = config
 
