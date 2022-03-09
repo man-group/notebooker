@@ -1,4 +1,4 @@
-0.4.1 (2022-02-??)
+0.4.1 (2022-03-09)
 ------------------
 
 * Improvement: The email "from" address is now fully configurable.
