@@ -22,7 +22,17 @@ services:
       PY_TEMPLATE_BASE_DIR: /var/run/template_repo
     volumes:
       - git-repo:/var/run/template_repo
-    command: ["notebooker_webapp"]
+    command: [
+        "notebooker-cli",
+        "--py-template-base-dir", "$PY_TEMPLATE_BASE_DIR",
+        "--mongo-host", "$MONGO_HOST",
+        "--mongo-user", "$MONGO_USER",
+        "--mongo-password", "$MONGO_PASSWORD",
+        "--database-name", "$DATABASE_NAME",
+        "--result-collection-name", "$RESULT_COLLECTION_NAME",
+        "start-webapp",
+        "--port", "$PORT"
+    ]
     ports:
       - 8080:11828
     depends_on:

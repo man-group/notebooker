@@ -2,6 +2,7 @@ import datetime
 import json
 
 import freezegun
+import os
 
 import notebooker.version
 from notebooker.constants import NotebookResultError, NotebookResultComplete, JobStatus
@@ -61,10 +62,11 @@ def test_insert_fake_results(flask_app, setup_workspace):
 
 
 def test_get_all_templates_with_results(flask_app, setup_workspace):
+    report_name = os.sep.join(["report_name", "with", "slashes"])
     results = [
         NotebookResultComplete(
             job_id="job1",
-            report_name="report_name",
+            report_name=report_name,
             job_start_time=datetime.datetime(2020, 1, 1),
             job_finish_time=datetime.datetime(2020, 1, 1, 1),
             raw_html_resources={},
@@ -74,7 +76,7 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
         ),
         NotebookResultError(
             job_id="job2",
-            report_name="report_name",
+            report_name=report_name,
             job_start_time=datetime.datetime(2021, 1, 2),
             status=JobStatus.ERROR,
             overrides={"param1": "small"},
@@ -90,10 +92,58 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
                 assert rv.status_code == 200, rv.data
                 data = json.loads(rv.data)
                 assert data == {
-                    "Report Name": {
+                    "Report Name/With/Slashes": {
                         "count": 2,
                         "scheduler_runs": 1,
-                        "report_name": "report_name",
+                        "report_name": report_name,
+                        "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
+                        "time_diff": "1 month",
+                    }
+                }
+
+
+def test_get_all_templates_with_specific_report_name(flask_app, setup_workspace):
+    report_name = os.sep.join(["report_name", "with", "slashes"])
+    results = [
+        NotebookResultComplete(
+            job_id="job1",
+            report_name=report_name,
+            job_start_time=datetime.datetime(2020, 1, 1),
+            job_finish_time=datetime.datetime(2020, 1, 1, 1),
+            raw_html_resources={},
+            status=JobStatus.DONE,
+            overrides={"param1": "big"},
+            scheduler_job_id="ohboy_it's_a_schedule",
+        ),
+        NotebookResultError(
+            job_id="job2",
+            report_name=report_name,
+            job_start_time=datetime.datetime(2021, 1, 2),
+            status=JobStatus.ERROR,
+            overrides={"param1": "small"},
+        ),
+        NotebookResultError(
+            job_id="job2",
+            report_name="report_name_no_slash",
+            job_start_time=datetime.datetime(2021, 1, 2),
+            status=JobStatus.ERROR,
+            overrides={"param1": "small"},
+        ),
+    ]
+    insert_fake_results(flask_app, results)
+    with freezegun.freeze_time(datetime.datetime(2021, 2, 2)):
+        with flask_app.test_client() as client:
+            with flask_app.app_context():
+                rv = client.get(
+                    f"/core/get_all_templates_with_results?report_name=report_name/with/slashes",
+                )
+                assert rv.status_code == 200, rv.data
+                data = json.loads(rv.data)
+                assert data == {
+                    os.sep.join(["Report Name", "With", "Slashes"]): {
+                        "count": 2,
+                        "scheduler_runs": 1,
+                        "report_name": report_name,
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
                         "time_diff": "1 month",
                     }

@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 import notebooker.version
 from notebooker.constants import DEFAULT_RESULT_LIMIT
 from notebooker.utils.results import get_all_available_results_json, get_count_and_latest_time_per_report
+from notebooker.utils.web import convert_report_name_url_to_path
 from notebooker.web.utils import get_serializer, get_all_possible_templates, all_templates_flattened
 
 core_bp = Blueprint("core_bp", __name__)
@@ -32,6 +33,7 @@ def all_available_results():
     """
     limit = int(request.args.get("limit") or DEFAULT_RESULT_LIMIT)
     report_name = request.args.get("report_name")
+    report_name = convert_report_name_url_to_path(report_name)
     return jsonify(get_all_available_results_json(get_serializer(), limit, report_name=report_name))
 
 

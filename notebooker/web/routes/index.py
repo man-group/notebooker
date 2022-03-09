@@ -4,6 +4,7 @@ import inflection
 from flask import Blueprint, current_app, request, render_template, url_for, jsonify
 from notebooker.constants import JobStatus, DEFAULT_RESULT_LIMIT
 from notebooker.utils.results import get_all_result_keys
+from notebooker.utils.web import convert_report_name_url_to_path
 from notebooker.web.utils import get_serializer, get_all_possible_templates
 
 index_bp = Blueprint("index_bp", __name__)
@@ -36,6 +37,7 @@ def result_listing(report_name):
     username = request.headers.get("X-Auth-Username")
     result_limit = int(request.args.get("limit") or DEFAULT_RESULT_LIMIT)
     all_reports = get_all_possible_templates()
+    report_name = convert_report_name_url_to_path(report_name)
     with current_app.app_context():
         result = render_template(
             "result_listing.html",
