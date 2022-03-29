@@ -127,6 +127,7 @@ def get_all_available_results_json(serializer: MongoResultSerializer, limit: int
         output["rerun_url"] = url_for(
             "run_report_bp.rerun_report", job_id=output["job_id"], report_name=output["report_name"]
         )
+
         json_output.append(output)
     return json_output
 

@@ -79,3 +79,40 @@ function rerunReport(jobId, rerunUrl) {
 function cloneReport(cloneUrl) {
     window.location.href = cloneUrl;
 }
+
+function viewStdout(stdoutUrl) {
+    stdoutBlock = document.getElementById("stdoutBlock")
+    stdoutButton = document.getElementById("stdoutButton")
+    results = document.getElementById("resultsIframe")
+
+    if (!stdoutBlock.text) {
+        $.ajax({
+            type: 'GET',
+            url: stdoutUrl,
+            dataType: 'json',
+            success(data, status, request) {
+                $('#stdoutBlock').text(data);
+            },
+            error(xhr, textStatus, errorThrown) {
+                $('#errorMsg').text(`${xhr.status} ${textStatus} ${errorThrown}`);
+                $('#errorPopup').show();
+            },
+        });
+    }
+
+    if (stdoutBlock.style.display == "block") {
+        stdoutBlock.style.display = "none"
+        results.style.display = "block"
+
+        stdoutButton.innerHTML = "<i class='eye icon'></i> View Stdout"
+        stdoutButton.classList.remove("red")
+        stdoutButton.classList.add("green")
+    } else {
+        stdoutBlock.style.display = "block"
+        results.style.display = "none"
+
+        stdoutButton.innerHTML = "<i class='eye slash icon'></i> Hide Stdout"
+        stdoutButton.classList.remove("green")
+        stdoutButton.classList.add("red")
+    }
+}
