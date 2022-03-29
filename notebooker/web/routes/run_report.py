@@ -141,6 +141,7 @@ def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
     while True:
         line = process.stderr.readline().decode("utf-8")
         if line == "" and process.poll() is not None:
+            result_serializer.update_stdout(job_id, stderr, replace=True)
             break
         stderr.append(line)
         logger.info(line)  # So that we have it in the log, not just in memory.
@@ -232,6 +233,7 @@ def run_report(
     if p.returncode:
         error_msg = "".join([chr(n) for n in p.stderr.read()])
         raise RuntimeError(f"The process failed with the message: {error_msg}")
+
     stderr_thread = threading.Thread(
         target=_monitor_stderr,
         args=(p, job_id, current_app.config["SERIALIZER_CLS"], current_app.config["SERIALIZER_CONFIG"]),
@@ -240,6 +242,7 @@ def run_report(
     stderr_thread.start()
     if run_synchronously:
         stderr_thread.join(120)  # 2 minutes should be enough
+
     return job_id
 
 
