@@ -73,7 +73,11 @@ setup(
         "python-dateutil",
         "requests",
         "retrying",
-        "stashy",
+        "gitpython",
+        "cachelib",
+        "inflection",
+        "babel",
+        "ipython_genutils"
     ],
     extras_require={
         "prometheus": ["prometheus_client"],
