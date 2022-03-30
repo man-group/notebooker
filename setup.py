@@ -73,6 +73,7 @@ setup(
         "cachelib",
         "inflection",
         "babel",
+        "ipython_genutils"
     ],
     extras_require={
         "prometheus": ["prometheus_client"],
