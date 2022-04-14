@@ -148,7 +148,7 @@ class NotebookResultComplete(NotebookResultBase):
     raw_html = attr.ib(default="")
     email_html = attr.ib(default="")
     update_time = attr.ib(default=datetime.datetime.now())
-    pdf = attr.ib(default="")
+    pdf = attr.ib(default=b"")
     report_title = attr.ib(default="")
     overrides = attr.ib(default=attr.Factory(dict))
     mailto = attr.ib(default="")

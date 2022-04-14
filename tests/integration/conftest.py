@@ -117,6 +117,7 @@ DUMMY_REPORT_IPYNB = """
 }
 """
 
+
 @pytest.fixture
 def setup_workspace(workspace):
     (workspace.workspace + "/templates").mkdir()
