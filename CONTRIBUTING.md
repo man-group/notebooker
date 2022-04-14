@@ -1,7 +1,7 @@
 # Dev environment setup
 
 Dev environment setup is largely the same as setup in the tutorial, but instead of pip installing the version
-in pypi, you can set up using `python setup.py develop`.
+in pypi, you can set up using `pip install --editable .`.
 
 
 # Contributing

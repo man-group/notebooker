@@ -110,7 +110,7 @@ def _run_checks(
 
     logger.info("Saving output notebook as HTML from {}".format(ipynb_executed_path))
     html, resources = ipython_to_html(ipynb_executed_path, job_id)
-    email_html, resources = ipython_to_html(ipynb_executed_path, job_id, hide_code=hide_code)
+    email_html, _ = ipython_to_html(ipynb_executed_path, job_id, hide_code=hide_code)
     pdf = ipython_to_pdf(raw_executed_ipynb, report_title, hide_code=hide_code) if generate_pdf_output else ""
 
     notebook_result = NotebookResultComplete(

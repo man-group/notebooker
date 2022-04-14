@@ -164,7 +164,7 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
             update_time=datetime.datetime(2018, 1, 12, 2, 37),
             job_start_time=datetime.datetime(2018, 1, 12, 2, 30),
             job_finish_time=datetime.datetime(2018, 1, 12, 2, 37),
-            pdf="abc",
+            pdf=b"abc",
             raw_html="rawstuff",
             email_html="emailstuff",
             raw_html_resources={"outputs": {}, "inlining": []},

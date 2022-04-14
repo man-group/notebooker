@@ -81,7 +81,7 @@ defaults: &defaults
          virtualenv ci
          . ci/bin/activate
          pip install six lxml flake8 tox pytest black .[test]
-         python setup.py develop
+         pip install --editable .
     # Save dependency cache
     - save_cache:
         key: v1-dep-{{ .Branch }}-{{ epoch }}

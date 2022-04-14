@@ -32,10 +32,7 @@ def _check_report_output(job_id, serialiser, **kwargs):
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
@@ -66,6 +63,7 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, overrides)
         assert job_id == serialiser.get_latest_successful_job_id_for_name_and_params(report_name, None)
 
+
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
     with flask_app.app_context():
@@ -91,13 +89,12 @@ def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooke
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
+def test_run_report_and_rerun(
+    bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
+):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
@@ -140,13 +137,12 @@ def test_run_report_and_rerun(bson_library, flask_app, setup_and_cleanup_noteboo
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report_hide_code(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
+def test_run_report_hide_code(
+    bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
+):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}

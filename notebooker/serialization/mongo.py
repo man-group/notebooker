@@ -204,16 +204,26 @@ class MongoResultSerializer(ABC):
         if cls is None:
             return None
 
-        def read_file(path, is_json=False):
-            try:
-                r = self.result_data_store.get_last_version(path).read()
+        def ignore_missing_files(f):
+            def _ignore_missing_files(path, *args, **kwargs):
                 try:
-                    return "" if not r else json.loads(r) if is_json else r.decode("utf8")
-                except UnicodeDecodeError:
-                    return r
-            except NoFile:
-                logger.error("Could not find file %s in %s", path, self.result_data_store)
-                return ""
+                    return f(path, *args, **kwargs)
+                except NoFile:
+                    logger.error("Could not find file %s in %s", path, self.result_data_store)
+                    return ""
+            return _ignore_missing_files
+
+        @ignore_missing_files
+        def read_file(path, is_json=False):
+            r = self.result_data_store.get_last_version(path).read()
+            try:
+                return "" if not r else json.loads(r) if is_json else r.decode("utf8")
+            except UnicodeDecodeError:
+                return r
+
+        @ignore_missing_files
+        def read_bytes_file(path):
+            return self.result_data_store.get_last_version(path).read()
 
         if not load_payload:
             result.pop("stdout", None)
@@ -224,7 +234,7 @@ class MongoResultSerializer(ABC):
                 result["raw_html_resources"]["outputs"] = outputs
                 if result.get("generate_pdf_output"):
                     pdf_filename = _pdf_filename(result["job_id"])
-                    result["pdf"] = read_file(pdf_filename)
+                    result["pdf"] = read_bytes_file(pdf_filename)
                 if not result.get("raw_ipynb_json"):
                     result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]), is_json=True)
                 if not result.get("raw_html"):
