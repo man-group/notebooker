@@ -33,6 +33,7 @@ def ipython_to_html(ipynb_path: str, job_id: str, hide_code: bool = False) -> (n
         nb = nbformat.reads(nb_file.read(), as_version=nbformat.v4.nbformat)
     resources_dir = get_resources_dir(job_id)
     html, resources = html_exporter_with_figs.from_notebook_node(nb, resources={"output_files_dir": resources_dir})
+    resources = {k: v for (k, v) in resources.items() if not callable(v)}
     return html, resources
 
 
