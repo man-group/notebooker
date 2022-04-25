@@ -39,7 +39,6 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     hide_code: Optional[bool] = False,
     mailto: Optional[str] = "",
-    error_mailto: Optional[str] = "",
     email_subject: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,

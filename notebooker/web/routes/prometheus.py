@@ -18,6 +18,18 @@ REQUEST_COUNT = Counter(
     registry=REGISTRY,
     labelnames=["env", "method", "path", "http_status", "hostname"],
 )
+N_SUCCESSFUL_REPORTS = Counter(
+    "notebooker_n_successful_reports",
+    "Number of successful runs in the current session for the report",
+    registry=REGISTRY,
+    labelnames=["report_name", "report_title"],
+)
+N_FAILED_REPORTS = Counter(
+    "notebooker_n_failed_reports",
+    "Number of failed runs in the current session for the report",
+    registry=REGISTRY,
+    labelnames=["report_name", "report_title"],
+)
 
 prometheus_bp = Blueprint("prometheus", __name__)
 
@@ -37,6 +49,14 @@ def record_request_data(response):
     env = get_cache("env")
     REQUEST_COUNT.labels(env, request.method, request.path, response.status_code, socket.gethostname()).inc()
     return response
+
+
+def record_successful_report(report_name, report_title):
+    N_SUCCESSFUL_REPORTS.labels(report_name, report_title).inc()
+
+
+def record_failed_report(report_name, report_title):
+    N_FAILED_REPORTS.labels(report_name, report_title).inc()
 
 
 def setup_metrics(app):

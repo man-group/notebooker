@@ -3,7 +3,7 @@ import re
 import shutil
 import tempfile
 from logging import getLogger
-from typing import AnyStr, Union
+from typing import Union
 
 from notebooker.constants import TEMPLATE_DIR_SEPARATOR, NotebookResultComplete, NotebookResultError
 from notebooker.utils.mail import mail
