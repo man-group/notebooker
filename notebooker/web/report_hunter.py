@@ -11,7 +11,23 @@ from notebooker.settings import WebappConfig
 logger = getLogger(__name__)
 
 
-def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout: int = 5):
+def try_register_success_prometheus(report_name: str, report_title: str):
+    try:
+        from notebooker.web.routes.prometheus import record_successful_report
+        record_successful_report(report_name, report_title)
+    except ImportError as e:
+        logger.info(f"Attempted to log success to prometheus but failed with ImportError({e}).")
+
+
+def try_register_fail_prometheus(report_name: str, report_title: str):
+    try:
+        from notebooker.web.routes.prometheus import record_failed_report
+        record_failed_report(report_name, report_title)
+    except ImportError as e:
+        logger.info(f"Attempted to log failure to prometheus but failed with ImportError({e}).")
+
+
+def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout: int = 120):
     """
     This is a function designed to run in a thread alongside the webapp. It updates the cache which the
     web app reads from and performs some admin on pending/running jobs. The function terminates either when
@@ -21,12 +37,13 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
     :param run_once:
         Whether to infinitely run this function or not.
     :param timeout:
-        The time in seconds that we cache results.
+        The time in seconds that we cache results. Defaults to 120s.
     :param serializer_kwargs:
         Any kwargs which are required for a Serializer to be initialised successfully.
     """
     serializer = initialize_serializer_from_config(webapp_config)
     last_query = None
+    refresh_period_seconds = 10
     while not os.getenv("NOTEBOOKER_APP_STOPPING"):
         try:
             ct = 0
@@ -51,8 +68,8 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
                         "Please try again! Timed out after {:.0f} minutes "
                         "{:.0f} seconds.".format(delta_seconds / 60, delta_seconds % 60),
                     )
-            # Finally, check we have the latest updates
-            _last_query = datetime.datetime.now() - datetime.timedelta(minutes=1)
+            # Finally, check we have the latest updates with a small buffer
+            _last_query = datetime.datetime.now() - datetime.timedelta(seconds=refresh_period_seconds)
             query_results = serializer.get_all_results(since=last_query)
             for result in query_results:
                 ct += 1
@@ -61,6 +78,10 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
                     set_report_cache(
                         result.report_name, result.job_id, result, timeout=timeout, cache_dir=webapp_config.CACHE_DIR
                     )
+                    if result.status == JobStatus.DONE:
+                        try_register_success_prometheus(result.report_name, result.report_title)
+                    if result.status == JobStatus.ERROR:
+                        try_register_fail_prometheus(result.report_name, result.report_title)
                     logger.info(
                         "Report-hunter found a change for {} (status: {}->{})".format(
                             result.job_id, existing.status if existing else None, result.status
@@ -74,5 +95,5 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             logger.exception(str(e))
         if run_once:
             break
-        time.sleep(10)
+        time.sleep(refresh_period_seconds)
     logger.info("Report-hunting thread successfully killed.")

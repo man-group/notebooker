@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 import freezegun
+import mock.mock
 import pytest
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
@@ -173,3 +174,56 @@ def test_report_hunter_pending_to_done(bson_library, webapp_config):
         serializer.save_check_result(expected)
         _report_hunter(webapp_config=webapp_config, run_once=True)
         assert get_report_cache(report_name, job_id, cache_dir=webapp_config.CACHE_DIR) == expected
+
+
+@mock.patch("notebooker.web.routes.prometheus.record_failed_report")
+def test_prometheus_logging_in_report_hunter_no_prometheus_fail(record_failed_report, bson_library, webapp_config):
+    job_id = str(uuid.uuid4())
+    report_name = str(uuid.uuid4())
+    serializer = initialize_serializer_from_config(webapp_config)
+    record_failed_report.side_effect = ImportError("wah")
+
+    with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 37)):
+        expected = NotebookResultError(
+            job_id=job_id,
+            report_name=report_name,
+            report_title=report_name,
+            status=JobStatus.ERROR,
+            update_time=datetime.datetime(2018, 1, 12, 2, 37),
+            job_start_time=datetime.datetime(2018, 1, 12, 2, 30),
+            error_info="This was cancelled!",
+        )
+        serializer.save_check_result(expected)
+        _report_hunter(webapp_config=webapp_config, run_once=True)
+        assert get_report_cache(report_name, job_id, cache_dir=webapp_config.CACHE_DIR) == expected
+        record_failed_report.assert_called_once_with(report_name, report_name)
+
+
+@mock.patch("notebooker.web.routes.prometheus.record_successful_report")
+def test_prometheus_logging_in_report_hunter_no_prometheus_success(
+    record_successful_report, bson_library, webapp_config
+):
+    job_id = str(uuid.uuid4())
+    report_name = str(uuid.uuid4())
+    serializer = initialize_serializer_from_config(webapp_config)
+    record_successful_report.side_effect = ImportError("wah")
+
+    with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 37)):
+        expected = NotebookResultComplete(
+            job_id=job_id,
+            report_name=report_name,
+            report_title=report_name,
+            status=JobStatus.DONE,
+            update_time=datetime.datetime(2018, 1, 12, 2, 37),
+            job_start_time=datetime.datetime(2018, 1, 12, 2, 30),
+            job_finish_time=datetime.datetime(2018, 1, 12, 2, 37),
+            pdf=b"abc",
+            raw_html="rawstuff",
+            email_html="emailstuff",
+            raw_html_resources={"outputs": {}, "inlining": []},
+            raw_ipynb_json="[]",
+        )
+        serializer.save_check_result(expected)
+        _report_hunter(webapp_config=webapp_config, run_once=True)
+        assert get_report_cache(report_name, job_id, cache_dir=webapp_config.CACHE_DIR) == expected
+        record_successful_report.assert_called_once_with(report_name, report_name)

@@ -1,3 +1,10 @@
+0.4.2 (2022-04-27)
+------------------
+
+* Improvement: Prometheus metrics now record number of successes/failures which have been captured by the webapp.
+* Improvement: Unpinned nbconvert and added ipython_genutils dependency
+
+
 0.4.1 (2022-03-09)
 ------------------
 
