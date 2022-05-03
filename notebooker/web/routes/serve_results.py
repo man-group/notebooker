@@ -309,6 +309,6 @@ def view_stdout(job_id, report_name):
     result = _get_job_results(job_id, report_name, get_serializer(), ignore_cache=True)
 
     if isinstance(result, NotebookResultComplete):
-        return jsonify("\n".join(result.stdout))
+        return jsonify(result.stdout)
     else:
         abort(404)

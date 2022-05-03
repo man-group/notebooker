@@ -81,17 +81,15 @@ function cloneReport(cloneUrl) {
 }
 
 function viewStdout(stdoutUrl) {
-    stdoutBlock = document.getElementById("stdoutBlock")
-    stdoutButton = document.getElementById("stdoutButton")
-    results = document.getElementById("resultsIframe")
+    stdoutContent = document.getElementById('stdoutContent')
 
-    if (!stdoutBlock.text) {
+    if (!stdoutContent.textContent) {
         $.ajax({
             type: 'GET',
             url: stdoutUrl,
             dataType: 'json',
             success(data, status, request) {
-                $('#stdoutBlock').text(data);
+                stdoutContent.textContent = data.join("")
             },
             error(xhr, textStatus, errorThrown) {
                 $('#errorMsg').text(`${xhr.status} ${textStatus} ${errorThrown}`);
@@ -100,19 +98,5 @@ function viewStdout(stdoutUrl) {
         });
     }
 
-    if (stdoutBlock.style.display == "block") {
-        stdoutBlock.style.display = "none"
-        results.style.display = "block"
-
-        stdoutButton.innerHTML = "<i class='eye icon'></i> View Stdout"
-        stdoutButton.classList.remove("red")
-        stdoutButton.classList.add("green")
-    } else {
-        stdoutBlock.style.display = "block"
-        results.style.display = "none"
-
-        stdoutButton.innerHTML = "<i class='eye slash icon'></i> Hide Stdout"
-        stdoutButton.classList.remove("green")
-        stdoutButton.classList.add("red")
-    }
+    $('#stdoutModal').modal('show');
 }
