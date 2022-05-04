@@ -14,6 +14,7 @@ logger = getLogger(__name__)
 def try_register_success_prometheus(report_name: str, report_title: str):
     try:
         from notebooker.web.routes.prometheus import record_successful_report
+
         record_successful_report(report_name, report_title)
     except ImportError as e:
         logger.info(f"Attempted to log success to prometheus but failed with ImportError({e}).")
@@ -22,9 +23,42 @@ def try_register_success_prometheus(report_name: str, report_title: str):
 def try_register_fail_prometheus(report_name: str, report_title: str):
     try:
         from notebooker.web.routes.prometheus import record_failed_report
+
         record_failed_report(report_name, report_title)
     except ImportError as e:
         logger.info(f"Attempted to log failure to prometheus but failed with ImportError({e}).")
+
+
+class LRUSet(object):
+    """
+    A simple implementation of a least-recently-used cache, but with O(1) lookup.
+    """
+
+    def __init__(self, max_size: int):
+        self.max_size = max_size
+        self._linked_list_members = []
+        self._hashed_members = set()
+
+    def add(self, item):
+        self._hashed_members.add(item)
+        self._linked_list_members.append(item)
+        if len(self._linked_list_members) > self.max_size:
+            removed = self._linked_list_members.pop(0)
+            self._hashed_members.remove(removed)
+
+    def remove(self, item):
+        if item in self._hashed_members:
+            self._hashed_members.remove(item)
+            self._linked_list_members.remove(item)
+
+    def __contains__(self, item):
+        return self._hashed_members.__contains__(item)
+
+    def __iter__(self):
+        yield from iter(self._linked_list_members)
+
+    def __len__(self):
+        return len(self._linked_list_members)
 
 
 def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout: int = 120):
@@ -44,6 +78,9 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
     serializer = initialize_serializer_from_config(webapp_config)
     last_query = None
     refresh_period_seconds = 10
+    recent_failed_job_ids = LRUSet(1000)
+    recent_successful_job_ids = LRUSet(1000)
+
     while not os.getenv("NOTEBOOKER_APP_STOPPING"):
         try:
             ct = 0
@@ -73,15 +110,21 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             query_results = serializer.get_all_results(since=last_query)
             for result in query_results:
                 ct += 1
+
+                # Prometheus logging
+                if result.status == JobStatus.DONE and result.job_id not in recent_successful_job_ids:
+                    try_register_success_prometheus(result.report_name, result.report_title)
+                    recent_successful_job_ids.add(result.job_id)
+                if result.status == JobStatus.ERROR and result.job_id not in recent_failed_job_ids:
+                    try_register_fail_prometheus(result.report_name, result.report_title)
+                    recent_failed_job_ids.add(result.job_id)
+
+                # Cache population
                 existing = get_report_cache(result.report_name, result.job_id, cache_dir=webapp_config.CACHE_DIR)
                 if not existing or result.status != existing.status:  # Only update the cache when the status changes
                     set_report_cache(
                         result.report_name, result.job_id, result, timeout=timeout, cache_dir=webapp_config.CACHE_DIR
                     )
-                    if result.status == JobStatus.DONE:
-                        try_register_success_prometheus(result.report_name, result.report_title)
-                    if result.status == JobStatus.ERROR:
-                        try_register_fail_prometheus(result.report_name, result.report_title)
                     logger.info(
                         "Report-hunter found a change for {} (status: {}->{})".format(
                             result.job_id, existing.status if existing else None, result.status
