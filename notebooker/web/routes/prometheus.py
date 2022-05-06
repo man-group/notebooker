@@ -53,10 +53,17 @@ def record_request_data(response):
 
 def record_successful_report(report_name, report_title):
     N_SUCCESSFUL_REPORTS.labels(report_name, report_title).inc()
+    # Increment by zero because this will make using increase() in Prometheus possible.
+    N_FAILED_REPORTS.labels(report_name, report_title).inc(0)
 
 
 def record_failed_report(report_name, report_title):
     N_FAILED_REPORTS.labels(report_name, report_title).inc()
+    # Increment by zero because this will make using increase() in Prometheus possible.
+    # This means that we can easily detect reports that have failed,
+    # as long as they have either succeeded once or failed more than once.
+    # https://github.com/prometheus/prometheus/issues/1673
+    N_SUCCESSFUL_REPORTS.labels(report_name, report_title).inc(0)
 
 
 def setup_metrics(app):
