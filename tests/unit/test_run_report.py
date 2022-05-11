@@ -30,6 +30,7 @@ This is going to stderr a bit later
         [
             mock.call("abc123", new_lines=["This is going to stderr\n"]),
             mock.call("abc123", new_lines=["This is going to stderr a bit later\n"]),
+            mock.call("abc123", ['This is going to stderr\n', 'This is going to stderr a bit later\n'], replace=True)
         ]
     )
 

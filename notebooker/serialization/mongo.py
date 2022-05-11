@@ -65,6 +65,7 @@ class MongoResultSerializer(ABC):
     def _save_raw_to_db(self, out_data):
         out_data["update_time"] = datetime.datetime.now()
         existing = self.library.find_one({"job_id": out_data["job_id"]})
+
         if existing:
             self.library.replace_one({"_id": existing["_id"]}, out_data)
         else:
@@ -79,8 +80,12 @@ class MongoResultSerializer(ABC):
         out_data = notebook_result.saveable_output()
         self._save_raw_to_db(out_data)
 
-    def update_stdout(self, job_id, new_lines):
-        result = self.library.find_one_and_update({"job_id": job_id}, {"$push": {"stdout": {"$each": new_lines}}})
+    def update_stdout(self, job_id, new_lines, replace=False):
+        if replace:
+            result = self.library.find_one_and_update({"job_id": job_id}, {"$set": {"stdout": new_lines}})
+        else:
+            result = self.library.find_one_and_update({"job_id": job_id}, {"$push": {"stdout": {"$each": new_lines}}})
+
         return result
 
     def update_check_status(self, job_id: str, status: JobStatus, **extra):

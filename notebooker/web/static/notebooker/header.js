@@ -79,3 +79,32 @@ function rerunReport(jobId, rerunUrl) {
 function cloneReport(cloneUrl) {
     window.location.href = cloneUrl;
 }
+
+function viewStdout(stdoutUrl) {
+    stdoutContent = document.getElementById('stdoutContent')
+
+    if (!stdoutContent.textContent) {
+        $.ajax({
+            type: 'GET',
+            url: stdoutUrl,
+            dataType: 'json',
+            success(data, status, request) {
+                stdoutContent.textContent = data.join("")
+            },
+            error(xhr, textStatus, errorThrown) {
+                $('#errorMsg').text(`${xhr.status} ${textStatus} ${errorThrown}`);
+                $('#errorPopup').show();
+            },
+        });
+    }
+
+    $('#stdoutModal').modal({
+        onDeny() {
+            return true;
+        },
+        onApprove() {
+            navigator.clipboard.writeText(stdoutContent.textContent);
+            return false;
+        },
+    }).modal('show');
+}

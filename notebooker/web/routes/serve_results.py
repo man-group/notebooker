@@ -3,7 +3,7 @@ import os
 from logging import getLogger
 from typing import Any, Union
 
-from flask import Blueprint, Response, abort, render_template, request, url_for
+from flask import Blueprint, Response, abort, render_template, request, url_for, jsonify
 
 from notebooker.constants import (
     JobStatus,
@@ -33,6 +33,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
         url_for("serve_results_bp.download_ipynb_result", report_name=report_name, job_id=job_id) if job_id else ""
     )
     pdf_url = url_for("serve_results_bp.download_pdf_result", report_name=report_name, job_id=job_id) if job_id else ""
+    stdout_url = url_for("serve_results_bp.view_stdout", report_name=report_name, job_id=job_id) if job_id else ""
     rerun_url = url_for("run_report_bp.rerun_report", report_name=report_name, job_id=job_id) if job_id else ""
     clone_url = url_for("run_report_bp.run_report_http", report_name=report_name)
     if result and result.overrides:
@@ -46,6 +47,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
         html_render=result_url,
         ipynb_url=ipynb_url,
         pdf_url=pdf_url,
+        stdout_url=stdout_url,
         rerun_url=rerun_url,
         clone_url=clone_url,
         all_reports=get_all_possible_templates(),
@@ -290,5 +292,23 @@ def download_pdf_result(job_id, report_name):
             mimetype="application/pdf",
             headers={"Content-Disposition": "attachment;filename={}".format(_pdf_filename(job_id))},
         )
+    else:
+        abort(404)
+
+
+@serve_results_bp.route("/result_view_stdout/<path:report_name>/<job_id>")
+def view_stdout(job_id, report_name):
+    """
+    Gets the stdout for the completed job.
+
+    :param report_name: The name of the report.
+    :param job_id: The UUID of the report.
+
+    :return: The stdout for the job. 404s if not found.
+    """
+    result = _get_job_results(job_id, report_name, get_serializer(), ignore_cache=True)
+
+    if isinstance(result, NotebookResultComplete):
+        return jsonify(result.stdout)
     else:
         abort(404)

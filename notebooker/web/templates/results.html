@@ -21,6 +21,16 @@
                         class="iframeToLoad"
                         scrolling="no">
                 </iframe>
+                <div class="ui modal" style="width: 50%; height: 70%;" id="stdoutModal">
+                  <div class="header">Stdout</div>
+                  <div class="content" style="width: 100%; height: 100%; overflow: scroll">
+                    <code id="stdoutContent"></code>
+                  </div>
+                  <div class="actions">
+                    <div class="ui ok button blue">Copy</div>
+                    <div class="ui cancel button red">Close</div>
+                  </div>
+                </div>
             </div>
             <div class="three wide column">
                 {% if result.status == donevalue %}
@@ -31,7 +41,11 @@
                     {% if result.pdf %}
                         <button onclick="location.href='{{ pdf_url }}'"
                                     type="button" class="ui green button"><i class="download icon"></i>as .pdf</button>
+                        <br/>
+                        <br/>
                     {% endif %}
+                    <button id="stdoutButton" onclick="viewStdout('{{ stdout_url }}')"
+                            type="button" class="ui green button"><i class="eye icon"></i>View Stdout</button>
                 {% endif %}
                 <h4>Report was submitted at:</h4> {{result.job_start_time}}
                 {% if result.job_finish_time %}

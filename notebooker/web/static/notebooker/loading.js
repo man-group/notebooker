@@ -10,7 +10,6 @@ $(document).ready(() => {
             url: loc, // We get this from loading.html, which comes from flask
             dataType: 'json',
             success(data, status, request) {
-                console.log(data);
                 results_url = data.results_url;
                 $('#loadingStatus').text(data.status);
                 $('#run_output').text(data.run_output);
