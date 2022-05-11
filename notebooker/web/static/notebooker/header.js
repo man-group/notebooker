@@ -98,5 +98,13 @@ function viewStdout(stdoutUrl) {
         });
     }
 
-    $('#stdoutModal').modal('show');
+    $('#stdoutModal').modal({
+        onDeny() {
+            return true;
+        },
+        onApprove() {
+            navigator.clipboard.writeText(stdoutContent.textContent);
+            return false;
+        },
+    }).modal('show');
 }
