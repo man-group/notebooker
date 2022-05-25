@@ -3,7 +3,7 @@
   "version": "0.4.2",
   "description": "Notebooker - Turn notebooks into reports",
   "dependencies": {
-    "bootstrap-table": "1.15.3",
+    "bootstrap-table": "1.20.2",
     "browserify": "^17.0.0",
     "cron-expression-validator": "^1.0.18",
     "cron-parser": "^3.5.0",
