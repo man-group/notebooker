@@ -492,9 +492,10 @@ bn.js@^5.0.0, bn.js@^5.1.1:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-5.2.0.tgz#358860674396c6997771a9d051fcc1b57d4ae002"
 
-bootstrap-table@1.15.3:
-  version "1.15.3"
-  resolved "https://registry.npmjs.org/bootstrap-table/-/bootstrap-table-1.15.3.tgz#8b53d0e855865bc4a7716735e0f65be04278684b"
+bootstrap-table@1.20.2:
+  version "1.20.2"
+  resolved "https://registry.yarnpkg.com/bootstrap-table/-/bootstrap-table-1.20.2.tgz#187fcd1812fa3422f964e3b32e3fc3d266108a83"
+  integrity sha512-6j9zfjjK6VZyJj8KsH+LnGczqglmMvMctGAoEAKDvrQ92ExQbA3mHGYPQr9iPrzoyeGL8+6Dyx6LqJbWmWmBoA==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
