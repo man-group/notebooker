@@ -103,8 +103,29 @@ function viewStdout(stdoutUrl) {
             return true;
         },
         onApprove() {
-            navigator.clipboard.writeText(stdoutContent.textContent);
+            copy(stdoutContent.textContent)
             return false;
         },
     }).modal('show');
+}
+
+function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        // workaround for Chrome without https - create a hidden text area and copy from that
+        textArea = document.createElement("textarea");
+        textArea.value = text;
+
+        textArea.style.position = "absolute";
+        textArea.style.opacity = 0
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        new Promise((res, rej) => {
+            document.execCommand('copy') ? res() : rej();
+            textArea.remove();
+        });
+    }
 }
