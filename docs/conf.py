@@ -23,7 +23,7 @@ copyright = "2020, Man Group Quant Tech"
 author = "Man Group Quant Tech"
 
 # The full version, including alpha/beta/rc tags
-release = "0.4.2"
+release = "0.4.3"
 
 
 # -- General configuration ---------------------------------------------------

@@ -86,7 +86,8 @@ If the job fails, the stack trace will be presented to allow for easier debuggin
    :alt: Screenshot of a successful report
 
 It is also possible to either rerun a report from this view, or to clone its parameters. If it was saved as a PDF,
-you can download using the button on the sidebar, or you can download as raw .ipynb.
+you can download using the button on the sidebar, or you can download as raw .ipynb. You can view and copy
+the stdout from the run via a modal by clicking the "View Stdout" button on this view.
 
 
 Scheduling a report
