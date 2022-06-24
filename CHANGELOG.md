@@ -1,3 +1,9 @@
+0.4.3 (2022-06-24)
+------------------
+
+* Feature: The results page now includes a "View Stdout" button to view and copy stdout from the notebook run
+* Improvement: Prometheus improvement to allow increase() metric to be used in alerting
+
 0.4.2 (2022-04-27)
 ------------------
 
