@@ -160,6 +160,9 @@ create_datatable = (result) => {
     table.draw();
     $('#indexTableContainer').fadeIn();
     add_delete_callback();
+    table.on("draw", function () {
+        add_delete_callback();
+    });
 }
 
 load_data = (limit, report_name) => {

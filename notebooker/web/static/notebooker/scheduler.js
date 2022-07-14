@@ -288,7 +288,8 @@ $(document).ready(() => {
     the_form.submit(function() {
         return false;
     });
-    $('#schedulerTable').DataTable({
+    const schedulerTable = $('#schedulerTable');
+    const schedulerDataTable = schedulerTable.DataTable({
         columns: [
             {
                 title: 'Report Unique ID',
@@ -328,6 +329,9 @@ $(document).ready(() => {
             },
         ],
         order: [[0, 'asc']],
+    });
+    schedulerDataTable.on("draw", function() {
+        addCallbacks();
     });
     // We can only call the showSelection function after both load_data and load_all_templates are loaded. Even though
     // the two requests can be initiated simultaneously, we are serializing them in order to simplify the flow.
