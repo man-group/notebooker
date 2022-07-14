@@ -36,6 +36,9 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
     stdout_url = url_for("serve_results_bp.view_stdout", report_name=report_name, job_id=job_id) if job_id else ""
     rerun_url = url_for("run_report_bp.rerun_report", report_name=report_name, job_id=job_id) if job_id else ""
     clone_url = url_for("run_report_bp.run_report_http", report_name=report_name)
+    fullscreen_url = (
+        url_for("serve_results_bp.task_results_html", report_name=report_name, job_id=job_id) if job_id else ""
+    )
     if result and result.overrides:
         clone_url = clone_url + "?json_params={}".format(json.dumps(result.overrides))
     return render_template(
@@ -50,6 +53,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
         stdout_url=stdout_url,
         rerun_url=rerun_url,
         clone_url=clone_url,
+        fullscreen_url=fullscreen_url,
         all_reports=get_all_possible_templates(),
     )
 

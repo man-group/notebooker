@@ -33,6 +33,10 @@
                 </div>
             </div>
             <div class="three wide column">
+                <button onclick="viewFullscreen('{{ fullscreen_url }}')"
+                            type="button" class="ui green button"><i class="expand alternate icon"></i>Fullscreen Results</button>
+                <br/>
+                <br/>
                 {% if result.status == donevalue %}
                     <button onclick="location.href='{{ ipynb_url }}'"
                                 type="button" class="ui green button"><i class="download icon"></i>as .ipynb</button>
@@ -72,6 +76,8 @@
                 <br/>
                 <button onclick="cloneReport('{{ clone_url }}')"
                             type="button" class="ui blue button cloneButton"><i class="copy outline icon"></i>Clone Parameters</button>
+                <br/>
+                <br/>
 
             </div>
         <br/>
