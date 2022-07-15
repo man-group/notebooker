@@ -129,3 +129,7 @@ function copy(text) {
         });
     }
 }
+
+function viewFullscreen(fullscreenUrl) {
+    window.location.href = fullscreenUrl;
+}
