@@ -15,6 +15,10 @@
   background-color: #9555af;
 }
 
+.container {
+  width: 97%;
+}
+
 </style>
 
 <!--[if mso]>
