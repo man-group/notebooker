@@ -1,5 +1,7 @@
 const iframeLoaded = function (iframe) {
-    $('#resultsIframe').contents().find('.container').css('width', '97%')
+    let iframeContents = $('#resultsIframe').contents();
+    iframeContents.find('.container').css('width', '97%');
+    iframeContents.find('.code_cell').css('padding', '0px');
     setInterval(() => {
         iframe.style.height = `${iframe.contentWindow.document.body.scrollHeight}px`;
     }, 1000);
