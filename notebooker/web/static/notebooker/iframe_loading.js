@@ -1,7 +1,9 @@
 const iframeLoaded = function (iframe) {
-    $('.iframeToLoad').show();
+    $('#resultsIframe').contents().find('.container').css('width', '97%')
     setInterval(() => {
         iframe.style.height = `${iframe.contentWindow.document.body.scrollHeight}px`;
-    }, 1);
+    }, 1000);
+    $('.iframeToLoad').show();
     $('.iframeLoadingDimmer').removeClass('active').addClass('disabled');
+
 };

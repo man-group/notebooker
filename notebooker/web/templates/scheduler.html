@@ -9,18 +9,17 @@
 <body>
 
     {{ header.sidebar(all_reports) }}
-    <div class="ui centered grid" style="display:none" id="schedulerTableContainer">
-        <div class="two wide column">
-            <div class="ui animated blue button" id="showSchedulerButton">
-                <div class="visible content">Add a schedule</div>
-                <div class="hidden content"><i class="plus icon"></i></div>
-            </div>
-        </div>
-        <div class="twelve wide column">
-            <table id="schedulerTable" class="ui sortable selectable padded table">
-            </table>
+    <div class="ui centered grid">
+        <div class="ui animated blue button" id="showSchedulerButton">
+            <div class="visible content">Add a schedule</div>
+            <div class="hidden content"><i class="plus icon"></i></div>
         </div>
     </div>
+    <div class="ui centered grid" style="display:none" id="schedulerTableContainer">
+        <table id="schedulerTable" class="ui sortable selectable padded table">
+        </table>
+    </div>
+    <br/>
     <div class="ui modal" id="schedulerModal">
         <div class="header"><span id="scheduleAction">Add</span> a schedule</div>
         <div class="content">

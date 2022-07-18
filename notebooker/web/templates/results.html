@@ -5,34 +5,33 @@
 <html>
 <body>
     {{ header.sidebar(all_reports) }}
-    <div class="ui container">
-        <h1>Notebook Results</h1>
-        <h2>{{ result.report_title }}</h2>
-        <div class="ui grid">
-            <div class="thirteen wide column">
-                <div class="ui active inverted dimmer iframeLoadingDimmer">
-                    <div class="ui text loader">Loading</div>
+
+    <!-- Right sidebar  -->
+    <div class="resultsHomepage">
+
+        <div class="ui fluid container leftResult">
+                <h1 class="ui header resultHeader">Results: {{ result.report_title }}</h1>
+                <div class="ui container" id="resultsContainer">
+                    <div class="">
+                        <div class="ui active inverted dimmer iframeLoadingDimmer">
+                            <div class="ui text loader">Loading</div>
+                        </div>
+                        <iframe
+                                id="resultsIframe"
+                                src="{{ html_render }}"
+                                style="width:100%; border:none;"
+                                onload="iframeLoaded(this)"
+                                class="iframeToLoad"
+                                scrolling="no">
+                        </iframe>
+                    </div>
                 </div>
-                <iframe
-                        id="resultsIframe"
-                        src="{{ html_render }}"
-                        style="width:100%; border:none;"
-                        onload="iframeLoaded(this)"
-                        class="iframeToLoad"
-                        scrolling="no">
-                </iframe>
-                <div class="ui modal" style="width: 50%; height: 70%;" id="stdoutModal">
-                  <div class="header">Stdout</div>
-                  <div class="content" style="width: 100%; height: 100%; overflow: scroll">
-                    <code id="stdoutContent"></code>
-                  </div>
-                  <div class="actions">
-                    <div class="ui ok button blue">Copy</div>
-                    <div class="ui cancel button red">Close</div>
-                  </div>
-                </div>
+
+                <br/>
+                <br/>
+                <br/>
             </div>
-            <div class="three wide column">
+            <div class="metadataSidebar rightResult">
                 <button onclick="viewFullscreen('{{ fullscreen_url }}')"
                             type="button" class="ui green button"><i class="expand alternate icon"></i>Fullscreen Results</button>
                 <br/>
@@ -80,9 +79,22 @@
                 <br/>
 
             </div>
-        <br/>
-        <br/>
-        <br/>
-    </div>
+
+
+
+
+        <!-- Stdout modal -->
+                <div class="ui modal" style="width: 50%; height: 70%;" id="stdoutModal">
+                  <div class="header">Stdout</div>
+                  <div class="content" style="width: 100%; height: 100%; overflow: scroll">
+                    <code id="stdoutContent"></code>
+                  </div>
+                  <div class="actions">
+                    <div class="ui ok button blue">Copy</div>
+                    <div class="ui cancel button red">Close</div>
+                  </div>
+                </div>
+            </div>
+
 </body>
 </html>

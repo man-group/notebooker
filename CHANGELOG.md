@@ -1,7 +1,8 @@
-0.4.4 (2022-07-14)
+0.4.4 (2022-07-18)
 ------------------
 
-* Bugfix: The delete button will now work on non-first pages for the scheduler and result listings.
+* Improvement: The results screen has been widened to show as much content as possible (#79).
+* Bugfix: The delete button will now work on non-first pages for the scheduler and result listings (#90).
 * Feature: "View fullscreen" button added to all result pages
 
 0.4.3 (2022-06-24)

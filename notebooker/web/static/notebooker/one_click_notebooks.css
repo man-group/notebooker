@@ -70,3 +70,28 @@ td button i {
     width: 3em;
     display: none;
 }
+
+#resultsContainer {
+    width: 100%;
+}
+
+.resultsHomepage {
+    display: flex;
+    width: 100%;
+}
+
+.leftResult {
+    flex: 80;
+}
+
+.rightResult {
+    flex: 20;
+    text-align: right;
+    margin-right: 1em;
+    margin-left: 3px;
+    max-width: 280px;  /* Enough to show full job id */
+}
+
+.resultHeader {
+    margin-left: 1em !important;
+}
