@@ -91,7 +91,7 @@ NB: mongo should be running as above for these steps to work!
     python setup.py develop
 
 
-3. npm install
+3. Run npm install & yarn bundle
 
 .. code:: bash
 
