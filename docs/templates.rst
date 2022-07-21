@@ -27,7 +27,7 @@ To use a git repository as a notebook templates repository, you simply need to c
 :code:`notebook_requirements.txt`, containing extra package requirements to be
 installed, should be added to that folder.
 
-For Notebooker to use a your checked-out repository, set two command-line parameters:
+For Notebooker to use your checked-out repository, set two command-line parameters:
 
 * Set :code:`--py-template-base-dir` to the checked-out repository
 * Set :code:`--py-template-subdir` to the subdirectory within your git repo which contains the templates
