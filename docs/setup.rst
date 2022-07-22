@@ -15,6 +15,7 @@ Prerequisites
 * python 3.6+
 * `mongodb <https://www.mongodb.com/download-center/community?jmp=docs>`_ >= 2.4.x
 * npm
+* yarn
 
 
 I've only just installed mongodb
@@ -90,12 +91,13 @@ NB: mongo should be running as above for these steps to work!
     python setup.py develop
 
 
-3. npm install
+3. Run npm install & yarn bundle
 
 .. code:: bash
 
     cd ./notebooker/web/static/
     npm install
+    yarn bundle
     cd ../../../
 
 
