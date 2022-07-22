@@ -19,6 +19,14 @@ REMOVE_PAYLOAD_FIELDS_PROJECTION = {"raw_html_resources": 0, "stdout": 0}
 REMOVE_PAYLOAD_FIELDS_AND_ID_PROJECTION = dict(REMOVE_PAYLOAD_FIELDS_PROJECTION, **REMOVE_ID_PROJECTION)
 
 
+def _add_deleted_status_to_filter(base_filter):
+    if "status" in base_filter:
+        base_filter["status"].update({"$ne": JobStatus.DELETED.value})
+    else:
+        base_filter["status"] = {"$ne": JobStatus.DELETED.value}
+    return base_filter
+
+
 class MongoResultSerializer(ABC):
     # This class is the interface between Mongo and the rest of the application
 
@@ -318,11 +326,16 @@ class MongoResultSerializer(ABC):
         return self._convert_result(result)
 
     def _get_raw_results(self, base_filter, projection, limit):
-        if "status" in base_filter:
-            base_filter["status"].update({"$ne": JobStatus.DELETED.value})
-        else:
-            base_filter["status"] = {"$ne": JobStatus.DELETED.value}
+        base_filter = _add_deleted_status_to_filter(base_filter)
         return self.library.find(base_filter, projection).sort("update_time", -1).limit(limit)
+
+    def _get_result_count(self, base_filter):
+        base_filter = _add_deleted_status_to_filter(base_filter)
+        try:
+            return self.library.count_documents(base_filter)
+        except (TypeError, AttributeError):
+            # pymongo<3.7 compat
+            return self.library.count(base_filter)
 
     def get_count_and_latest_time_per_report(self):
         reports = list(
@@ -447,7 +460,7 @@ class MongoResultSerializer(ABC):
         return [result["job_id"] for result in results]
 
     def n_all_results_for_report_name(self, report_name: str) -> int:
-        return self._get_raw_results({"report_name": report_name}, {}, 0).count()
+        return self._get_result_count({"report_name": report_name})
 
     def delete_result(self, job_id: AnyStr) -> None:
         self.update_check_status(job_id, JobStatus.DELETED)
