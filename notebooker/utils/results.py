@@ -137,7 +137,7 @@ def get_count_and_latest_time_per_report(serializer: MongoResultSerializer):
     output = {}
     for report_name, metadata in sorted(reports.items(), key=lambda x: x[1]["latest_run"], reverse=True):
         metadata["report_name"] = report_name
-        metadata["time_diff"] = babel.dates.format_timedelta(datetime.datetime.utcnow() - metadata["latest_run"])
+        metadata["time_diff"] = babel.dates.format_timedelta(datetime.datetime.now() - metadata["latest_run"])
         output[inflection.titleize(report_name)] = metadata
     return output
 
