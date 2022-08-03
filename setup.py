@@ -55,7 +55,7 @@ setup(
         "babel",
         "cachelib",
         "click>7.1.0",
-        "dataclasses",
+        'dataclasses; python_version < "3.8"',
         "flask",
         "gevent",
         "gitpython",
@@ -74,6 +74,7 @@ setup(
         "requests",
         "retrying",
         "stashy",
+        "Werkzeug<2.2",
     ],
     extras_require={
         "prometheus": ["prometheus_client"],

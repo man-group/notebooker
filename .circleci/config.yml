@@ -230,3 +230,14 @@ workflows:
             branches:
               only:
                 - master
+  nightly:
+    triggers:
+      - schedule:
+          cron: "41 22 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build_3_6
+      - build_3_7
