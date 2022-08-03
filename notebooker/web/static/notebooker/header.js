@@ -1,4 +1,34 @@
 $(document).ready(() => {
+    $('#showUploadNotebookButton').click(() =>
+        $('#uploadNotebookModal').modal({
+            closable: true,
+            onHidden: function() {
+                $('#notebook').val('');
+            },
+            onApprove: function() {
+                let notebook = $('#notebook').prop('files')[0];
+                let reader = new FileReader();
+                reader.addEventListener('load', (e) => {
+                    $.ajax({
+                        url: '/core/notebook/upload',
+                        cache: false,
+                        type: 'POST',
+                        data: {
+                            name: notebook.name,
+                            notebook: e.target.result
+                        },
+                        success: () => {
+                            $('body').toast({class: 'info', message: 'Upload successful! Refresh the page in order to see it.'});
+                        },
+                        error: (result) => {
+                            $('body').toast({class: 'error', message: `Error uploading notebook: ${result.responseJSON.status} (${result.status})`});
+                        },
+                    });
+                });
+                reader.readAsText(notebook);
+            }
+        }).modal('show')
+    );
     $.ajax({
         url: '/core/version',
         success: (result) => {
