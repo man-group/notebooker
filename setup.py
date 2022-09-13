@@ -21,21 +21,7 @@ def get_long_description():
     return desc
 
 
-# Note: pytest >= 4.1.0 is not compatible with pytest-cov < 2.6.1.
-test_requirements = [
-    "openpyxl",
-    "pytest",
-    "mock",
-    "pytest-cov",
-    "pytest-timeout",
-    "pytest-xdist",
-    "pytest-server-fixtures",
-    "freezegun",
-    "hypothesis>=3.83.2",
-]
-
 setup(
-    name="notebooker",
     version=get_version(),
     author="Man Quant Technology",
     author_email="ManAlphaTech@man.com",
@@ -46,48 +32,9 @@ setup(
     url="https://github.com/man-group/notebooker",
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
     namespace_packages=["notebooker"],
-    setup_requires=["six", "numpy"],
     python_requires=">=3.5",
     zip_safe=False,
     include_package_data=True,
-    install_requires=[
-        "apscheduler",
-        "babel",
-        "cachelib",
-        "click>7.1.0",
-        'dataclasses; python_version < "3.8"',
-        "flask",
-        "gevent",
-        "gitpython",
-        "inflection",
-        "ipykernel",
-        "ipython",
-        "ipython_genutils",
-        "jupytext>=1.2.0",
-        "matplotlib",
-        "nbconvert",
-        "nbformat",
-        "pandas",
-        "papermill",
-        "pymongo",
-        "python-dateutil",
-        "requests",
-        "retrying",
-        "stashy",
-        "Werkzeug<2.2",
-    ],
-    extras_require={
-        "prometheus": ["prometheus_client"],
-        "test": test_requirements,
-        "docs": [
-            "docutils<0.18",
-            "sphinx<3.0.0",
-            "numpydoc",
-            "sphinxcontrib-httpdomain",
-            "sphinx-click"
-        ],  # Sphinx v3 doesn't play nicely with Flask, yet.
-    },
-    tests_require=test_requirements,
     entry_points={
         "console_scripts": [
             "notebooker-cli = notebooker._entrypoints:base_notebooker",
