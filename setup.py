@@ -1,6 +1,6 @@
 import os
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 
 def get_version():
@@ -23,39 +23,5 @@ def get_long_description():
 
 setup(
     version=get_version(),
-    author="Man Quant Technology",
-    author_email="ManAlphaTech@man.com",
-    description="Tool for parametrizing, executing, and displaying Jupyter Notebooks as reports.",
     long_description=get_long_description(),
-    long_description_content_type="text/markdown",
-    license="AGPLv3",
-    url="https://github.com/man-group/notebooker",
-    packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
-    namespace_packages=["notebooker"],
-    python_requires=">=3.5",
-    zip_safe=False,
-    include_package_data=True,
-    entry_points={
-        "console_scripts": [
-            "notebooker-cli = notebooker._entrypoints:base_notebooker",
-            "notebooker_execute = notebooker.execute_notebook:docker_compose_entrypoint",
-            "notebooker_template_sanity_check = notebooker.utils.template_testing:sanity_check",
-            "notebooker_template_regression_test = notebooker.utils.template_testing:regression_test",
-            "convert_ipynb_to_py = notebooker.convert_to_py:main",
-        ]
-    },
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-        "Framework :: Flask",
-        "Framework :: IPython",
-        "Framework :: Jupyter",
-        "Programming Language :: Python :: 3.6",
-        "Operating System :: POSIX",
-        "Operating System :: MacOS :: MacOS X",
-        "Operating System :: Microsoft :: Windows :: Windows 10",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-        "Topic :: Software Development :: Libraries",
-    ],
 )
