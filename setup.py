@@ -24,4 +24,6 @@ def get_long_description():
 setup(
     version=get_version(),
     long_description=get_long_description(),
+    zip_safe=False,
+    include_package_data=True,
 )
