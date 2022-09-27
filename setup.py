@@ -1,6 +1,6 @@
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def get_version():
@@ -21,9 +21,71 @@ def get_long_description():
     return desc
 
 
+test_requirements = [
+    "openpyxl",
+    "pytest",
+    "mock",
+    "pytest-cov",
+    "pytest-timeout",
+    "pytest-xdist",
+    "pytest-server-fixtures",
+    "freezegun",
+    "hypothesis>=3.83.2",
+]
+
 setup(
     version=get_version(),
-    long_description=get_long_description(),
+    packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
+    namespace_packages=["notebooker"],
+    setup_requires=["six", "numpy"],
+    python_requires=">=3.5",
     zip_safe=False,
     include_package_data=True,
+    install_requires=[
+        "apscheduler",
+        "babel",
+        "cachelib",
+        "click>7.1.0",
+        'dataclasses; python_version < "3.8"',
+        "flask",
+        "gevent",
+        "gitpython",
+        "inflection",
+        "ipykernel",
+        "ipython",
+        "ipython_genutils",
+        "jupytext>=1.2.0",
+        "matplotlib",
+        "nbconvert",
+        "nbformat",
+        "pandas",
+        "papermill",
+        "pymongo",
+        "python-dateutil",
+        "requests",
+        "retrying",
+        "stashy",
+        "Werkzeug<2.2",
+    ],
+    extras_require={
+        "prometheus": ["prometheus_client"],
+        "test": test_requirements,
+        "docs": [
+            "docutils<0.18",
+            "sphinx<3.0.0",
+            "numpydoc",
+            "sphinxcontrib-httpdomain",
+            "sphinx-click"
+        ],  # Sphinx v3 doesn't play nicely with Flask, yet.
+    },
+    tests_require=test_requirements,
+    entry_points={
+        "console_scripts": [
+            "notebooker-cli = notebooker._entrypoints:base_notebooker",
+            "notebooker_execute = notebooker.execute_notebook:docker_compose_entrypoint",
+            "notebooker_template_sanity_check = notebooker.utils.template_testing:sanity_check",
+            "notebooker_template_regression_test = notebooker.utils.template_testing:regression_test",
+            "convert_ipynb_to_py = notebooker.convert_to_py:main",
+        ]
+    },
 )
