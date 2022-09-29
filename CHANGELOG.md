@@ -1,7 +1,13 @@
-0.4.5 (2022-09-28)
+0.4.5 (2022-09-29)
 ------------------
 
-* Bugfix: The scheduler now follows UNIX conventions for day-of-week specifications.
+* Bugfix: The frontend should now show the correct "time since" for non-UTC timezones
+* Bugfix: The scheduler now follows UNIX conventions for day-of-week specifications. (#72)
+* Bugfix: Use Collection.count_documents() for mongo compat
+* Improvement: The raw_results will now also display in full screen
+* Improvement: Improve setup.cfg for better wheel building
+* Improvement: Pin Werkzeug<2.2 since it causes RuntimeErrors
+* Improvement: Fix docs regarding setup + yarn bundling
 
 0.4.4 (2022-07-18)
 ------------------
