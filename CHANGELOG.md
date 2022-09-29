@@ -1,3 +1,8 @@
+0.4.5 (2022-09-28)
+------------------
+
+* Bugfix: The scheduler now follows UNIX conventions for day-of-week specifications.
+
 0.4.4 (2022-07-18)
 ------------------
 
