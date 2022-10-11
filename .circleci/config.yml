@@ -159,9 +159,19 @@ defaults: &defaults
           fi
     - store_test_results:
         path: test-results
-    # Save artifacts
+    # Save artifacts. This is silly but wildcards aren't supported.
     - store_artifacts:
-        path: /tmp/circleci-artifacts
+        path: "/tmp/circleci-artifacts/3_6/dist/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_6/build/sphinx/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_7/dist/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_7/build/sphinx/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_8/dist/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_8/build/sphinx/"
     - store_artifacts:
         path: test-results
     - persist_to_workspace:
@@ -197,6 +207,18 @@ jobs:
     docker:
     - image: cimg/python:3.7-node
     <<: *defaults
+  build_3_8:
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_8
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_8
+      VERSION: 0.4.5
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
+    working_directory: ~/notebooker_3_8
+    docker:
+    - image: cimg/python:3.8-node
+    <<: *defaults
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
@@ -222,10 +244,12 @@ workflows:
     jobs:
       - build_3_6
       - build_3_7
+      - build_3_8
       - publish-github-release:
           requires:
             - build_3_6
             - build_3_7
+            - build_3_8
           filters:
             branches:
               only:
@@ -241,3 +265,4 @@ workflows:
     jobs:
       - build_3_6
       - build_3_7
+      - build_3_8
