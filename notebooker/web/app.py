@@ -67,16 +67,20 @@ def start_app(webapp_config: WebappConfig):
 def create_app(webapp_config=None):
     import pkg_resources
 
-    flask_app = Flask(__name__, template_folder=f"{pkg_resources.resource_filename(__name__, 'templates')}")
+    flask_app = Flask(
+        __name__,
+        template_folder=f"{pkg_resources.resource_filename(__name__, 'templates')}",
+        static_url_path=webapp_config.URL_PREFIX
+    )
 
     flask_app.url_map.converters["date"] = DateConverter
-    flask_app.register_blueprint(index_bp)
-    flask_app.register_blueprint(run_report_bp)
-    flask_app.register_blueprint(core_bp)
-    flask_app.register_blueprint(serve_results_bp)
-    flask_app.register_blueprint(pending_results_bp)
+    flask_app.register_blueprint(index_bp, url_prefix=webapp_config.URL_PREFIX)
+    flask_app.register_blueprint(run_report_bp, url_prefix=webapp_config.URL_PREFIX)
+    flask_app.register_blueprint(core_bp, url_prefix=webapp_config.URL_PREFIX)
+    flask_app.register_blueprint(serve_results_bp, url_prefix=webapp_config.URL_PREFIX)
+    flask_app.register_blueprint(pending_results_bp, url_prefix=webapp_config.URL_PREFIX)
     if webapp_config and not webapp_config.DISABLE_SCHEDULER:
-        flask_app.register_blueprint(scheduling_bp)
+        flask_app.register_blueprint(scheduling_bp, url_prefix=webapp_config.URL_PREFIX)
     try:
         import prometheus_client
     except ImportError:
@@ -87,7 +91,7 @@ def create_app(webapp_config=None):
     else:
         from notebooker.web.routes.prometheus import setup_metrics, prometheus_bp
 
-        flask_app.register_blueprint(prometheus_bp)
+        flask_app.register_blueprint(prometheus_bp, url_prefix=webapp_config.URL_PREFIX)
         setup_metrics(flask_app)
     return flask_app
 

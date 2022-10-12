@@ -1,6 +1,7 @@
 {% macro justHeader() %}
 <html xmlns="http://www.w3.org/1999/html">
         <head>
+            <script type="application/javascript">const URL_ROOT = '{{ url_for("index_bp.index") }}';</script>
             <title>Notebooker</title>
             <link rel="shortcut icon" href="{{ url_for('static', filename='notebooker/notebooker-icon-dark.png') }}">
             <link rel="stylesheet" href="{{ url_for('static', filename='node_modules/fomantic-ui/dist/semantic.css') }}">
@@ -32,15 +33,15 @@
         <body>
         <div class="ui top attached menu inverted" id="ocnMenu">
           <div class="header item white">
-            <a href="/"><h1>Notebooker</h1></a>
+            <a href="{{ url_for("index_bp.index") }}"><h1>Notebooker</h1></a>
           </div>
-          <a class="item" href="/">
+          <a class="item" href="{{ url_for("index_bp.index") }}">
               Main Menu
           </a>
           <a class="item" id="runReport">
               Execute a Notebook
           </a>
-          <a class="item" id="schedulerButton" href="/scheduler">
+          <a class="item" id="schedulerButton" href="{{ url_for("index_bp.index") }}scheduler">
               Scheduler
           </a>
           <div class="right menu">
@@ -51,10 +52,10 @@
               <div class="ui item loggedIn" style="display: none">
                   Logged in as: <span id="usernameInfo"></span>
               </div>
-              <a class="ui item loggedIn" style="display: none" href="/oauth/logout?redirect=/">
+              <a class="ui item loggedIn" style="display: none" href="{{ url_for("index_bp.index") }}oauth/logout?redirect=/">
                   Logout
               </a>
-              <a class="ui item loggedOut" style="display: none" href="/oauth/authorize">
+              <a class="ui item loggedOut" style="display: none" href="{{ url_for("index_bp.index") }}oauth/authorize">
                 Log in
               </a>
           </div>
@@ -76,7 +77,7 @@
             {% for report, subreports in all_reports|dictsort() recursive %}
                 {% if subreports is none %}
                     <!-- At each leaf, create a link to run the report !-->
-                    <a class="item" href="/run_report/{{report}}">{{ report }}</a>
+                    <a class="item" href="{{ url_for("index_bp.index") }}run_report/{{report}}">{{ report }}</a>
                 {% else %}
                     <!-- Create a new dropdown list for this level !-->
                     <div class="ui inverted dropdown item">

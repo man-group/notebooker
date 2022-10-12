@@ -1,6 +1,6 @@
 load_data = () => {
     $.ajax({
-        url: `/core/get_all_templates_with_results`,
+        url: `${URL_ROOT}core/get_all_templates_with_results`,
         dataType: 'json',
         success: (result) => {
             let $cardContainer = $('#cardContainer');
@@ -8,7 +8,7 @@ load_data = () => {
             for (let report in result) {
                 let stats = result[report];
                 $cardContainer.append(
-                    '<a class="ui card" href="/result_listing/' + stats.report_name + '">' +
+                    `<a class="ui card" href="${URL_ROOT}result_listing/` + stats.report_name + '">' +
                     '  <div class="content">' +
                     '    <h1>' + report + '</h1>\n' +
                     '    <div class="meta">\n' +

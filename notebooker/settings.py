@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from dataclasses import dataclass, asdict
 
@@ -53,3 +53,5 @@ class WebappConfig(BaseConfig):
     SCHEDULER_MONGO_DATABASE: str = ""
     SCHEDULER_MONGO_COLLECTION: str = ""
     DISABLE_SCHEDULER: bool = False
+
+    URL_PREFIX: Optional[str] = None

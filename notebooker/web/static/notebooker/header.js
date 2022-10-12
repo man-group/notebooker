@@ -1,6 +1,6 @@
 $(document).ready(() => {
     $.ajax({
-        url: '/core/version',
+        url: URL_ROOT+'core/version',
         success: (result) => {
             $('#versionTitle').text("v" + result.version);
             $('#versionTitle').show();
@@ -11,11 +11,11 @@ $(document).ready(() => {
     });
     // Check auth is enabled on our host
     $.ajax({
-        url: '/oauth/health',
+        url: URL_ROOT+'oauth/health',
         success: () => {
             // If enabled, then fetch our login status
             $.ajax({
-                url: '/core/user_profile',
+                url: URL_ROOT+'core/user_profile',
                 dataType: 'json',
                 success: (result) => {
                     console.log(result);
@@ -37,7 +37,7 @@ $(document).ready(() => {
         },
     });
     $.ajax({
-        url: '/scheduler/health',
+        url: URL_ROOT+'scheduler/health',
         success: () => {
             // Show the status at some point
         },

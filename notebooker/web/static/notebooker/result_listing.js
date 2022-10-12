@@ -9,7 +9,7 @@ add_delete_callback = () => {
             onApprove() {
                 $.ajax({
                     type: 'POST',
-                    url: `/delete_report/${to_delete}`, // We get this from loading.html, which comes from flask
+                    url: `${URL_ROOT}delete_report/${to_delete}`, // We get this from loading.html, which comes from flask
                     dataType: 'json',
                     success(data, status, request) {
                         if (data.status === 'error') {
@@ -105,7 +105,7 @@ create_datatable = (result) => {
     var usingScheduler = undefined;
     $.ajax({
         async: false,
-        url: '/scheduler/health',
+        url: `${URL_ROOT}scheduler/health`,
         success: () => {
             usingScheduler = true;
         },
@@ -167,7 +167,7 @@ create_datatable = (result) => {
 
 load_data = (limit, report_name) => {
     $.ajax({
-        url: `/core/get_all_available_results?limit=${limit}&report_name=${report_name}`,
+        url: `${URL_ROOT}core/get_all_available_results?limit=${limit}&report_name=${report_name}`,
         dataType: 'json',
         success: (result) => {
             create_datatable(result);

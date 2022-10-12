@@ -37,7 +37,7 @@
             </div>
             {% endif %}
             <div class="three wide column">
-                <a class="ui button green" id="runReportButton" href="/run_report/{{ report_name }}">
+                <a class="ui button green" id="runReportButton" href="{{ url_for("index_bp.index") }}run_report/{{ report_name }}">
                     Manually run this report
                 </a>
             </div>

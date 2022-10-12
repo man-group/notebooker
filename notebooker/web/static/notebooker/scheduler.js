@@ -34,7 +34,7 @@ addCallbacks = () => {
 
 load_data = (callback) => {
     $.ajax({
-        url: `/scheduler/jobs`,
+        url: `${URL_ROOT}scheduler/jobs`,
         dataType: 'json',
         success: (result) => {
             const table = $('#schedulerTable').DataTable();
@@ -54,7 +54,7 @@ load_data = (callback) => {
 
 function loadTemplateParameters(templateName) {
     $.ajax({
-        url: '/get_report_parameters/' + templateName,
+        url: `${URL_ROOT}get_report_parameters/` + templateName,
         dataType: 'json',
         success: (result) => {
             $('#notebookParameters').text(result.result);
@@ -77,7 +77,7 @@ function setScheduleModalMode(mode) {
 
 load_all_templates = (callback) => {
     $.ajax({
-        url: '/core/all_possible_templates_flattened',
+        url: `${URL_ROOT}core/all_possible_templates_flattened`,
         dataType: 'json',
         success: (result) => {
             let templates = Array();
@@ -259,7 +259,7 @@ $(document).ready(() => {
             let urlAction = schedulerModalState === "Add" ? "create" : "update";
             $.ajax({
                 type: 'POST',
-                url: `/scheduler/${urlAction}/${formObj.templateToExecute}`,
+                url: `${URL_ROOT}scheduler/${urlAction}/${formObj.templateToExecute}`,
                 data: {
                     report_title: formObj.jobTitle,
                     report_name: formObj.templateToExecute,

@@ -143,6 +143,11 @@ def base_notebooker(
     help="The name of the mongo collection within the scheduler-mongo-database which is used for "
     "the scheduling back-end. Defaults to the same as the serializer's mongo collection + '_scheduler'.",
 )
+@click.option(
+    "--url-prefix",
+    default=None,
+    help="A URL prefix for all Notebooker endpoints."
+)
 @pass_config
 def start_webapp(
     config: BaseConfig,
@@ -153,6 +158,7 @@ def start_webapp(
     disable_scheduler,
     scheduler_mongo_database,
     scheduler_mongo_collection,
+    url_prefix,
 ):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
@@ -162,6 +168,7 @@ def start_webapp(
     web_config.DISABLE_SCHEDULER = disable_scheduler
     web_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
     web_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
+    web_config.URL_PREFIX = url_prefix
     return main(web_config)
 
 

@@ -7,7 +7,7 @@ $(document).ready(() => {
         const reportName = $('input[name="report_name"]').val();
         $.ajax({
             type: 'POST',
-            url: `/run_report/${reportName}`,
+            url: `${URL_ROOT}run_report/${reportName}`,
             data: form.serialize(),
             success(data, status, request) {
                 if (data.status === 'Failed') {
@@ -16,7 +16,7 @@ $(document).ready(() => {
                     $('#runReportButton').removeClass('disabled').addClass('active');
                     $('#parametersDimmer').hide();
                 } else {
-                    window.location.href = `/results/${reportName}/${data.id}`;
+                    window.location.href = `${URL_ROOT}results/${reportName}/${data.id}`;
                 }
             },
             error(jqXHR, textStatus, errorThrown) {
