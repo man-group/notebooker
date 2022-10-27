@@ -27,6 +27,66 @@ def _add_deleted_status_to_filter(base_filter):
     return base_filter
 
 
+def ignore_missing_files(f):
+    def _ignore_missing_files(path, *args, **kwargs):
+        try:
+            return f(path, *args, **kwargs)
+        except NoFile:
+            logger.error("Could not find file %s", path)
+            return ""
+
+    return _ignore_missing_files
+
+
+@ignore_missing_files
+def read_file(result_data_store, path, is_json=False):
+    r = result_data_store.get_last_version(path).read()
+    try:
+        return "" if not r else json.loads(r) if is_json else r.decode("utf8")
+    except UnicodeDecodeError:
+        return r
+
+
+@ignore_missing_files
+def read_bytes_file(result_data_store, path):
+    return result_data_store.get_last_version(path).read()
+
+
+def load_files_from_gridfs(result_data_store: gridfs.GridFS, result: Dict, do_read=True) -> List[str]:
+
+    gridfs_filenames = []
+    all_html_output_paths = result.get("raw_html_resources", {}).get("outputs", [])
+    gridfs_filenames.extend(all_html_output_paths)
+    if do_read:
+        outputs = {path: read_file(result_data_store, path) for path in all_html_output_paths}
+        result["raw_html_resources"]["outputs"] = outputs
+    if result.get("generate_pdf_output"):
+        pdf_filename = _pdf_filename(result["job_id"])
+        if do_read:
+            result["pdf"] = read_bytes_file(result_data_store, pdf_filename)
+        gridfs_filenames.append(pdf_filename)
+    if not result.get("raw_ipynb_json"):
+        json_filename = _raw_json_filename(result["job_id"])
+        if do_read:
+            result["raw_ipynb_json"] = read_file(result_data_store, json_filename, is_json=True)
+        gridfs_filenames.append(json_filename)
+    if not result.get("raw_html"):
+        html_filename = _raw_html_filename(result["job_id"])
+        if do_read:
+            result["raw_html"] = read_file(result_data_store, html_filename)
+        gridfs_filenames.append(html_filename)
+    if not result.get("email_html"):
+        email_filename = _raw_email_html_filename(result["job_id"])
+        result["email_html"] = read_file(result_data_store, email_filename)
+        gridfs_filenames.append(email_filename)
+    if result.get("raw_html_resources") and not result.get("raw_html_resources", {}).get("inlining"):
+        css_inlining_filename = _css_inlining_filename(result["job_id"])
+        if do_read:
+            result["raw_html_resources"]["inlining"] = read_file(result_data_store, css_inlining_filename, is_json=True)
+        gridfs_filenames.append(css_inlining_filename)
+    return gridfs_filenames
+
+
 class MongoResultSerializer(ABC):
     # This class is the interface between Mongo and the rest of the application
 
@@ -212,47 +272,12 @@ class MongoResultSerializer(ABC):
         if cls is None:
             return None
 
-        def ignore_missing_files(f):
-            def _ignore_missing_files(path, *args, **kwargs):
-                try:
-                    return f(path, *args, **kwargs)
-                except NoFile:
-                    logger.error("Could not find file %s in %s", path, self.result_data_store)
-                    return ""
-            return _ignore_missing_files
-
-        @ignore_missing_files
-        def read_file(path, is_json=False):
-            r = self.result_data_store.get_last_version(path).read()
-            try:
-                return "" if not r else json.loads(r) if is_json else r.decode("utf8")
-            except UnicodeDecodeError:
-                return r
-
-        @ignore_missing_files
-        def read_bytes_file(path):
-            return self.result_data_store.get_last_version(path).read()
-
         if not load_payload:
             result.pop("stdout", None)
 
         if cls == NotebookResultComplete:
             if load_payload:
-                outputs = {path: read_file(path) for path in result.get("raw_html_resources", {}).get("outputs", [])}
-                result["raw_html_resources"]["outputs"] = outputs
-                if result.get("generate_pdf_output"):
-                    pdf_filename = _pdf_filename(result["job_id"])
-                    result["pdf"] = read_bytes_file(pdf_filename)
-                if not result.get("raw_ipynb_json"):
-                    result["raw_ipynb_json"] = read_file(_raw_json_filename(result["job_id"]), is_json=True)
-                if not result.get("raw_html"):
-                    result["raw_html"] = read_file(_raw_html_filename(result["job_id"]))
-                if not result.get("email_html"):
-                    result["email_html"] = read_file(_raw_email_html_filename(result["job_id"]))
-                if result.get("raw_html_resources") and not result.get("raw_html_resources", {}).get("inlining"):
-                    result["raw_html_resources"]["inlining"] = read_file(
-                        _css_inlining_filename(result["job_id"]), is_json=True
-                    )
+                load_files_from_gridfs(self.result_data_store, result, do_read=True)
             else:
                 result.pop("raw_html", None)
                 result.pop("raw_ipynb_json", None)
@@ -298,7 +323,7 @@ class MongoResultSerializer(ABC):
         elif cls == NotebookResultError:
             if load_payload:
                 if not result.get("error_info"):
-                    result["error_info"] = read_file(_error_info_filename(result["job_id"]))
+                    result["error_info"] = read_file(self.result_data_store, _error_info_filename(result["job_id"]))
             else:
                 result.pop("error_info", None)
             return NotebookResultError(
@@ -319,11 +344,14 @@ class MongoResultSerializer(ABC):
         else:
             raise ValueError("Could not deserialise {} into result object.".format(result))
 
+    def _get_raw_check_result(self, job_id: str):
+        return self.library.find_one({"job_id": job_id}, {"_id": 0})
+
     def get_check_result(
-        self, job_id: AnyStr
+        self, job_id: AnyStr, load_payload: bool = True
     ) -> Optional[Union[NotebookResultError, NotebookResultComplete, NotebookResultPending]]:
-        result = self.library.find_one({"job_id": job_id}, {"_id": 0})
-        return self._convert_result(result)
+        result = self._get_raw_check_result(job_id)
+        return self._convert_result(result, load_payload=load_payload)
 
     def _get_raw_results(self, base_filter, projection, limit):
         base_filter = _add_deleted_status_to_filter(base_filter)
@@ -462,8 +490,19 @@ class MongoResultSerializer(ABC):
     def n_all_results_for_report_name(self, report_name: str) -> int:
         return self._get_result_count({"report_name": report_name})
 
-    def delete_result(self, job_id: AnyStr) -> None:
+    def delete_result(self, job_id: AnyStr) -> Dict[str, Any]:
+        result = self._get_raw_check_result(job_id)
+        status = JobStatus.from_string(result["status"])
+        gridfs_filenames = []
+        if status == JobStatus.DONE:
+            gridfs_filenames = load_files_from_gridfs(self.result_data_store, result, do_read=False)
+        elif status in (JobStatus.ERROR, JobStatus.TIMEOUT, JobStatus.CANCELLED):
+            gridfs_filenames = [_error_info_filename(job_id)]
         self.update_check_status(job_id, JobStatus.DELETED)
+        for filename in gridfs_filenames:
+            logger.info(f"Deleting {filename}")
+            self.result_data_store.delete(filename)
+        return {"deleted_result_document": result, "gridfs_filenames": gridfs_filenames}
 
 
 def _pdf_filename(job_id: str) -> str:
