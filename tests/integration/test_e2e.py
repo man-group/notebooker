@@ -72,15 +72,18 @@ def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooke
         report_name = "fake/report_failing"
         report_title = "my report title"
         mailto = ""
-        job_id = run_report(
-            report_name,
-            report_title,
-            mailto,
-            overrides,
-            generate_pdf_output=False,
-            prepare_only=False,
-            run_synchronously=True,
-        )
+        with pytest.raises(RuntimeError, match=".*The report execution failed with exit code .*"):
+            run_report(
+                report_name,
+                report_title,
+                mailto,
+                overrides,
+                generate_pdf_output=False,
+                prepare_only=False,
+                run_synchronously=True,
+                n_retries=0,
+            )
+        job_id = bson_library.find_one()["job_id"]
         result = _get_report_output(job_id, serialiser)
         assert result.status == JobStatus.ERROR
         assert result.error_info
