@@ -2,6 +2,7 @@
 ------------------
 
 * Bugfix: Small bugfix for synchronous report execution
+* Improvement: Delete functionality in mongo now also deletes files from GridFS
 
 
 0.4.5 (2022-09-29)
