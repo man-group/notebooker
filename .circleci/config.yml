@@ -42,6 +42,11 @@ defaults: &defaults
 
             cat /etc/os-release
             set -x
+            # ------ (2022-10-28) install libssl1.1 since mongo doesn't support Ubuntu 22.04 which has libssl v3 
+            echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+            sudo apt-get update
+            sudo apt-get install libssl1.1
+            # -------
             wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
             sudo apt-get install gnupg
             wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -

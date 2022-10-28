@@ -160,6 +160,7 @@ def run_report(
     scheduler_job_id=None,
     run_synchronously=False,
     mailfrom=None,
+    n_retries=3,
 ) -> str:
     """
     Actually run the report in earnest.
@@ -173,6 +174,7 @@ def run_report(
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :param mailfrom: `str` if passed, then this string will be used in the from field
+    :param n_retries: The number of retries to attempt.
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -222,17 +224,13 @@ def run_report(
             json.dumps(overrides),
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
             "--hide-code" if hide_code else "--show-code",
+            "--n-retries", str(n_retries),
         ]
         + (["--prepare-notebook-only"] if prepare_only else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
         + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
     )
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    time.sleep(5)
-    p.poll()
-    if p.returncode:
-        error_msg = "".join([chr(n) for n in p.stderr.read()])
-        raise RuntimeError(f"The process failed with the message: {error_msg}")
 
     stderr_thread = threading.Thread(
         target=_monitor_stderr,
@@ -241,7 +239,12 @@ def run_report(
     stderr_thread.daemon = True
     stderr_thread.start()
     if run_synchronously:
-        stderr_thread.join(120)  # 2 minutes should be enough
+        p.wait()
+    else:
+        time.sleep(1)
+        p.poll()
+    if p.returncode:
+        raise RuntimeError(f"The report execution failed with exit code {p.returncode}")
 
     return job_id
 

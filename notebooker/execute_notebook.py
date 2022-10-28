@@ -387,6 +387,7 @@ def execute_notebook_entrypoint(
         )
         if result.mailto:
             send_result_email(result, config.DEFAULT_MAILFROM)
+        logger.info(f"Here is the result!{result}")
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
             logger.warning(repr(result))

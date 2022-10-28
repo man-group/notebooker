@@ -1,3 +1,9 @@
+0.4.6 (2022-??-??)
+------------------
+
+* Bugfix: Small bugfix for synchronous report execution
+
+
 0.4.5 (2022-09-29)
 ------------------
 
