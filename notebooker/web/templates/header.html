@@ -88,11 +88,30 @@
                     </div>
                 {% endif %}
             {% endfor %}
-            <a class="item bottom" href="https://notebooker.readthedocs.io/en/latest/templates.html#creating-a-notebook-template">
+            <a id="showUploadNotebookButton" class="item bottom" href="#">
                 <i class="plus icon"></i>
                 <i>Add a new notebook</i>
             </a>
         </div>
+        <div class="ui modal" id="uploadNotebookModal">
+            <div class="header">Upload notebook</div>
+            <div class="content">
+                <p>
+                    Notebooks uploaded via this interface will be stored in the <code>web</code> folder.
+                    They will be automatically uploaded to git. Look at the
+                    <a href="https://notebooker.readthedocs.io/en/latest/templates.html#creating-a-notebook-template">documentation</a>
+                    for adding notebooks in different folders and making new packages available.
+                </p>
+                <form class="ui form" id="uploadNotebookForm">
+                    <input type="file" id="notebook" name="notebook" class="ui">
+                </form>
+                <div class="actions">
+                    <div class="ui approve button">Submit</div>
+                    <div class="ui cancel button">Cancel</div>
+                </div>
+            </div>
+        </div>
+
         </body>
         <footer></footer>
     </html>
