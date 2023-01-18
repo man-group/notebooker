@@ -1,14 +1,13 @@
 import datetime
 import json
-from collections import Counter, defaultdict
-
-from abc import ABC
+from collections import defaultdict
 from logging import getLogger
 from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union, Iterator
 
 import click
 import gridfs
 import pymongo
+from abc import ABC
 from gridfs import NoFile
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
@@ -53,7 +52,6 @@ def read_bytes_file(result_data_store, path):
 
 
 def load_files_from_gridfs(result_data_store: gridfs.GridFS, result: Dict, do_read=True) -> List[str]:
-
     gridfs_filenames = []
     all_html_output_paths = result.get("raw_html_resources", {}).get("outputs", [])
     gridfs_filenames.extend(all_html_output_paths)
@@ -89,7 +87,6 @@ def load_files_from_gridfs(result_data_store: gridfs.GridFS, result: Dict, do_re
 
 class MongoResultSerializer(ABC):
     # This class is the interface between Mongo and the rest of the application
-
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
         self.database_name = database_name
         self.mongo_host = mongo_host
@@ -193,6 +190,7 @@ class MongoResultSerializer(ABC):
         generate_pdf_output: bool = True,
         hide_code: bool = False,
         scheduler_job_id: Optional[str] = None,
+        is_slideshow: bool = False,
     ) -> None:
         """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
@@ -208,6 +206,7 @@ class MongoResultSerializer(ABC):
             overrides=overrides or {},
             hide_code=hide_code,
             scheduler_job_id=scheduler_job_id,
+            is_slideshow=is_slideshow,
         )
         self._save_to_db(pending_result)
 
@@ -303,6 +302,7 @@ class MongoResultSerializer(ABC):
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", None),
+                is_slideshow=result.get("is_slideshow", False),
             )
         elif cls == NotebookResultPending:
             return NotebookResultPending(
@@ -318,6 +318,7 @@ class MongoResultSerializer(ABC):
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", None),
+                is_slideshow=result.get("is_slideshow", False),
             )
 
         elif cls == NotebookResultError:
@@ -340,6 +341,7 @@ class MongoResultSerializer(ABC):
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", False),
+                is_slideshow=result.get("is_slideshow", False),
             )
         else:
             raise ValueError("Could not deserialise {} into result object.".format(result))

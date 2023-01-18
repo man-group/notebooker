@@ -64,15 +64,10 @@ def filesystem_default_value(dirname):
     help="If selected, notebooker will not try to pull the latest version of python templates from git.",
 )
 @click.option(
-    "--default-mailfrom",
-    default=DEFAULT_MAILFROM_ADDRESS,
-    help="Set a new value for the default mailfrom setting."
+    "--default-mailfrom", default=DEFAULT_MAILFROM_ADDRESS, help="Set a new value for the default mailfrom setting."
 )
 @click.option(
-    "--running-timeout",
-    default=DEFAULT_RUNNING_TIMEOUT,
-    help="Timeout in minutes for report execution",
-    type=int
+    "--running-timeout", default=DEFAULT_RUNNING_TIMEOUT, help="Timeout in minutes for report execution", type=int
 )
 @click.option(
     "--serializer-cls",
@@ -207,6 +202,12 @@ def start_webapp(
     default=None,
     help="Use this email in the From header of any sent email. If not passed, --default-mailfrom will be used",
 )
+@click.option(
+    "--is-slideshow",
+    default=False,
+    is_flag=True,
+    help="If specified, the notebook template's output will be treated as a Reveal.js slideshow.",
+)
 @pass_config
 def execute_notebook(
     config: BaseConfig,
@@ -224,6 +225,7 @@ def execute_notebook(
     prepare_notebook_only,
     scheduler_job_id,
     mailfrom,
+    is_slideshow,
 ):
     if report_name is None:
         raise ValueError("Error! Please provide a --report-name.")
@@ -243,6 +245,7 @@ def execute_notebook(
         prepare_notebook_only,
         scheduler_job_id,
         mailfrom,
+        is_slideshow=is_slideshow,
     )
 
 

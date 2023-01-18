@@ -46,6 +46,7 @@ def _run_checks(
     py_template_subdir: str = "",
     scheduler_job_id: Optional[str] = None,
     mailfrom: Optional[str] = None,
+    is_slideshow: bool = False,
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -77,7 +78,8 @@ def _run_checks(
         If available, it will be part of the Error or Completed run report.
     mailfrom : `Optional[str]`
         If available, this will be the email used in the From header.
-
+    is_slideshow: bool
+        Whether or not the output of this should use the equivalent of nbconvert --to slides
 
     Returns
     -------
@@ -102,14 +104,18 @@ def _run_checks(
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
     pm.execute_notebook(
-        ipynb_raw_path, ipynb_executed_path, parameters=overrides, log_output=True, prepare_only=prepare_only
+        ipynb_raw_path,
+        ipynb_executed_path,
+        parameters=overrides,
+        log_output=True,
+        prepare_only=prepare_only,
     )
     with open(ipynb_executed_path, "r") as f:
         raw_executed_ipynb = f.read()
 
     logger.info("Saving output notebook as HTML from {}".format(ipynb_executed_path))
-    html, resources = ipython_to_html(ipynb_executed_path, job_id)
-    email_html, _ = ipython_to_html(ipynb_executed_path, job_id, hide_code=hide_code)
+    html, resources = ipython_to_html(ipynb_executed_path, job_id, is_slideshow=is_slideshow)
+    email_html, _ = ipython_to_html(ipynb_executed_path, job_id, hide_code=hide_code, is_slideshow=is_slideshow)
     pdf = ipython_to_pdf(raw_executed_ipynb, report_title, hide_code=hide_code) if generate_pdf_output else ""
 
     notebook_result = NotebookResultComplete(
@@ -129,6 +135,7 @@ def _run_checks(
         overrides=overrides,
         scheduler_job_id=scheduler_job_id,
         mailfrom=mailfrom,
+        is_slideshow=is_slideshow,
     )
     return notebook_result
 
@@ -154,12 +161,17 @@ def run_report(
     py_template_subdir="",
     scheduler_job_id=None,
     mailfrom=None,
+    is_slideshow=False,
 ):
 
     job_id = job_id or str(uuid.uuid4())
     stop_execution = os.getenv("NOTEBOOKER_APP_STOPPING")
     if stop_execution:
-        logger.info("Aborting attempt to run %s, jobid=%s as app is shutting down.", report_name, job_id)
+        logger.info(
+            "Aborting attempt to run %s, jobid=%s as app is shutting down.",
+            report_name,
+            job_id,
+        )
         result_serializer.update_check_status(job_id, JobStatus.CANCELLED, error_info=CANCEL_MESSAGE)
         return
     try:
@@ -170,7 +182,10 @@ def run_report(
             attempts_remaining,
         )
         result_serializer.update_check_status(
-            job_id, report_name=report_name, job_start_time=job_submit_time, status=JobStatus.PENDING
+            job_id,
+            report_name=report_name,
+            job_start_time=job_submit_time,
+            status=JobStatus.PENDING,
         )
         result = _run_checks(
             job_id,
@@ -190,6 +205,7 @@ def run_report(
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
+            is_slideshow=is_slideshow,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -208,6 +224,7 @@ def run_report(
             generate_pdf_output=generate_pdf_output,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
+            is_slideshow=is_slideshow,
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
@@ -239,6 +256,7 @@ def run_report(
                 py_template_subdir=py_template_subdir,
                 scheduler_job_id=scheduler_job_id,
                 mailfrom=mailfrom,
+                is_slideshow=is_slideshow,
             )
         else:
             logger.info("Abandoning attempt to run report. It failed too many times.")
@@ -327,6 +345,7 @@ def execute_notebook_entrypoint(
     prepare_notebook_only: bool,
     scheduler_job_id: Optional[str],
     mailfrom: Optional[str],
+    is_slideshow: bool,
 ):
     report_title = report_title or report_name
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
@@ -351,6 +370,7 @@ def execute_notebook_entrypoint(
     logger.info("mailfrom = %s" % mailfrom)
     logger.info("pdf_output = %s", pdf_output)
     logger.info("hide_code = %s", hide_code)
+    logger.info("is_slideshow = %s", is_slideshow)
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
     logger.info("scheduler job id = %s", scheduler_job_id)
     logger.info("notebooker_disable_git = %s", notebooker_disable_git)
@@ -384,6 +404,7 @@ def execute_notebook_entrypoint(
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
+            is_slideshow=is_slideshow,
         )
         if result.mailto:
             send_result_email(result, config.DEFAULT_MAILFROM)

@@ -141,6 +141,7 @@ function modifySchedulerModal(row) {
             mailto: row.params.mailto,
             mailfrom: row.params.mailfrom,
             cronSchedule: row.cron_schedule,
+            is_slideshow: row.params.is_slideshow,
         }
     );
     setScheduleModalMode("Modify");
@@ -167,6 +168,7 @@ function handleAddButtonClick() {
             mailto: "",
             mailfrom: "",
             cronSchedule: "",
+            is_slideshow: "",
         }
     );
     setScheduleModalMode("Add");
@@ -269,6 +271,7 @@ $(document).ready(() => {
                     mailfrom: formObj.mailfrom,
                     generate_pdf: formObj.generate_pdf,
                     hide_code: formObj.hide_code,
+                    is_slideshow: formObj.is_slideshow,
                 },
                 success(data, status, request) {
                     if (data.status === 'Failed') {

@@ -20,6 +20,7 @@ def run_report(
     scheduler_job_id: str,
     # new parameters should be added below and be optional to avoid migrations
     mailfrom: Optional[str] = None,
+    is_slideshow: bool = False,
 ):
     """
     This is the entrypoint of the scheduler; APScheduler has to
@@ -36,6 +37,7 @@ def run_report(
         "generate_pdf": generate_pdf,
         "hide_code": hide_code,
         "scheduler_job_id": scheduler_job_id,
+        "is_slideshow": is_slideshow,
     }
     # This means that, if the default mailfrom changes, all already scheduled
     # jobs will use the new default in subsequent runs. Another approach could

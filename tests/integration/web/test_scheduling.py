@@ -6,10 +6,7 @@ import pytest
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 def test_create_schedule(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
@@ -21,6 +18,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "overrides": "",
                 "mailto": "",
                 "generate_pdf": True,
+                "is_slideshow": True,
                 "cron_schedule": "* * * * *",
                 "mailfrom": "test@example.com",
             },
@@ -39,6 +37,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "overrides": "",
                 "report_name": report_name,
                 "report_title": "test2",
+                "is_slideshow": True,
                 "scheduler_job_id": f"{report_name}_test2",
                 "mailfrom": "test@example.com",
             },
@@ -59,10 +58,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
@@ -75,6 +71,7 @@ def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_
                 "mailto": "",
                 "generate_pdf": True,
                 "hide_code": True,
+                "is_slideshow": True,
                 "cron_schedule": "* * * * *",
             },
         )
@@ -83,6 +80,7 @@ def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_
         assert data.pop("next_run_time")
         assert data["params"]["generate_pdf"] is True
         assert data["params"]["hide_code"] is True
+        assert data["params"]["is_slideshow"] is True
 
 
 def test_create_schedule_bad_report_name(flask_app, setup_workspace):
@@ -94,6 +92,7 @@ def test_create_schedule_bad_report_name(flask_app, setup_workspace):
                 "report_name": "fake2",
                 "overrides": "",
                 "mailto": "",
+                "is_slideshow": True,
                 "cron_schedule": "* * * * *",
             },
         )
@@ -102,10 +101,7 @@ def test_create_schedule_bad_report_name(flask_app, setup_workspace):
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
@@ -116,6 +112,7 @@ def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
                 "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
+                "is_slideshow": True,
                 "cron_schedule": "* * * * *",
             },
         )
@@ -130,10 +127,7 @@ def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
@@ -144,6 +138,7 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
                 "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
+                "is_slideshow": True,
                 "cron_schedule": "* * * * *",
             },
         )
@@ -163,10 +158,7 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
 
 @pytest.mark.parametrize(
     "report_name",
-    [
-        "fake/py_report",
-        "fake/ipynb_report"
-    ],
+    ["fake/py_report", "fake/ipynb_report"],
 )
 def test_scheduler_runs_notebooks(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
@@ -187,6 +179,7 @@ def test_scheduler_runs_notebooks(flask_app, setup_workspace, report_name):
                     "report_name": report_name,
                     "overrides": "",
                     "mailto": "",
+                    "is_slideshow": True,
                     "cron_schedule": "* * * * *",
                 },
             )

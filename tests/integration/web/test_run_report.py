@@ -14,6 +14,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
         mailfrom = "test@example.com"
         generate_pdf = True
         hide_code = True
+        is_slideshow = True
         scheduler_job_id = "abc/123"
         payload = {
             "overrides": json.dumps(overrides),
@@ -22,13 +23,12 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
             "generate_pdf": generate_pdf,
             "hide_code": hide_code,
             "scheduler_job_id": scheduler_job_id,
+            "is_slideshow": is_slideshow,
             "mailfrom": mailfrom,
         }
         with mock.patch("notebooker.web.routes.run_report.run_report") as rr:
             rr.return_value = "fake_job_id"
-            rv = client.post(
-                f"/run_report_json/{report_name}?{urllib.parse.urlencode(payload)}"
-            )
+            rv = client.post(f"/run_report_json/{report_name}?{urllib.parse.urlencode(payload)}")
             assert rv.data == jsonify({"id": "fake_job_id"}).data
             assert rv.status_code == 202, rv.data
             rr.assert_called_with(
@@ -40,4 +40,5 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
                 hide_code=hide_code,
                 scheduler_job_id=scheduler_job_id,
                 mailfrom=mailfrom,
+                is_slideshow=is_slideshow,
             )

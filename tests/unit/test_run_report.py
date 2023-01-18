@@ -30,7 +30,7 @@ This is going to stderr a bit later
         [
             mock.call("abc123", new_lines=["This is going to stderr\n"]),
             mock.call("abc123", new_lines=["This is going to stderr a bit later\n"]),
-            mock.call("abc123", ['This is going to stderr\n', 'This is going to stderr a bit later\n'], replace=True)
+            mock.call("abc123", ["This is going to stderr\n", "This is going to stderr a bit later\n"], replace=True),
         ]
     )
 
@@ -47,6 +47,7 @@ def test_validate_run_params():
                     ("hide_code", "True"),
                     ("scheduler_job_id", "plot_random_asdas"),
                     ("mailfrom", "test@example.com"),
+                    ("is_slideshow", "on"),
                 ]
             ),
             ImmutableMultiDict([]),
@@ -60,6 +61,7 @@ def test_validate_run_params():
         hide_code=True,
         scheduler_job_id="plot_random_asdas",
         mailfrom="test@example.com",
+        is_slideshow=True,
     )
     actual_output = validate_run_params(input_params, issues)
     assert issues == []
