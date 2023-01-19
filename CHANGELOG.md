@@ -1,9 +1,9 @@
-0.4.6 (2022-??-??)
+0.5.0 (2023-??-??)
 ------------------
 
+* Feature: Added support for [Reveal.js](https://revealjs.com/) notebook outputs
 * Bugfix: Small bugfix for synchronous report execution
 * Improvement: Delete functionality in mongo now also deletes files from GridFS
-
 
 0.4.5 (2022-09-29)
 ------------------

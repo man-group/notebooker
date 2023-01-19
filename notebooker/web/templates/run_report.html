@@ -54,11 +54,19 @@ You can import anything, but ensure that in any x=y statements, y is JSON serial
                     <label>Generate PDF output</label>
                 </div>
             </div>
-            <div class="ui checkbox container">
-                <input type="checkbox"
-                       name="hide_code"
-                       id="hide_code"/>
-                <label for="hide_code">Hide code from email and PDF output</label>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input name="is_slideshow" id="is_slideshow" type="checkbox">
+                    <label>Treat as a <a href="https://revealjs.com/">Reveal.js</a> slideshow?</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input type="checkbox"
+                           name="hide_code"
+                           id="hide_code"/>
+                    <label for="hide_code">Hide code from email and PDF output</label>
+                </div>
             </div>
             <div class="ui">
                 <button class="positive ui button" id="runReportButton">Run Report</button>

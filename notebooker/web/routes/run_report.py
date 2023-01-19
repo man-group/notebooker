@@ -161,6 +161,7 @@ def run_report(
     run_synchronously=False,
     mailfrom=None,
     n_retries=3,
+    is_slideshow=False,
 ) -> str:
     """
     Actually run the report in earnest.
@@ -175,6 +176,7 @@ def run_report(
     :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :param mailfrom: `str` if passed, then this string will be used in the from field
     :param n_retries: The number of retries to attempt.
+    :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
     :return: The unique job_id.
     """
     job_id = str(uuid.uuid4())
@@ -191,6 +193,7 @@ def run_report(
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=scheduler_job_id,
+        is_slideshow=is_slideshow,
     )
     app_config = current_app.config
     command = (
@@ -224,9 +227,11 @@ def run_report(
             json.dumps(overrides),
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
             "--hide-code" if hide_code else "--show-code",
-            "--n-retries", str(n_retries),
+            "--n-retries",
+            str(n_retries),
         ]
         + (["--prepare-notebook-only"] if prepare_only else [])
+        + (["--is-slideshow"] if is_slideshow else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
         + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
     )
@@ -256,6 +261,7 @@ class RunReportParams(NamedTuple):
     generate_pdf_output: bool
     hide_code: bool
     scheduler_job_id: Optional[str]
+    is_slideshow: bool
 
 
 def validate_run_params(params, issues: List[str]) -> RunReportParams:
@@ -268,6 +274,7 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
     # "on" comes from HTML, "True" comes from urlencoded JSON params
     generate_pdf_output = params.get("generate_pdf") in ("on", "True")
     hide_code = params.get("hide_code") in ("on", "True")
+    is_slideshow = params.get("is_slideshow") in ("on", "True")
 
     out = RunReportParams(
         report_title=report_title,
@@ -276,6 +283,7 @@ def validate_run_params(params, issues: List[str]) -> RunReportParams:
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=params.get("scheduler_job_id"),
+        is_slideshow=is_slideshow,
     )
     logger.info(f"Validated params: {out}")
     return out
@@ -288,14 +296,17 @@ def _handle_run_report(
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     report_name = convert_report_name_url_to_path(report_name)
-    logger.info(f"Handling run report with parameters report_name={report_name} "
-                f"report_title={params.report_title}"
-                f"mailto={params.mailto} "
-                f"overrides_dict={overrides_dict} "
-                f"generate_pdf_output={params.generate_pdf_output} "
-                f"hide_code={params.hide_code} "
-                f"scheduler_job_id={params.scheduler_job_id}"
-                f"mailfrom={params.mailfrom}")
+    logger.info(
+        f"Handling run report with parameters report_name={report_name} "
+        f"report_title={params.report_title}"
+        f"mailto={params.mailto} "
+        f"overrides_dict={overrides_dict} "
+        f"generate_pdf_output={params.generate_pdf_output} "
+        f"hide_code={params.hide_code} "
+        f"scheduler_job_id={params.scheduler_job_id} "
+        f"mailfrom={params.mailfrom} "
+        f"is_slideshow={params.is_slideshow} "
+    )
     try:
         job_id = run_report(
             report_name,
@@ -306,6 +317,7 @@ def _handle_run_report(
             hide_code=params.hide_code,
             scheduler_job_id=params.scheduler_job_id,
             mailfrom=params.mailfrom,
+            is_slideshow=params.is_slideshow,
         )
         return (
             jsonify({"id": job_id}),
@@ -313,7 +325,11 @@ def _handle_run_report(
             {"Location": url_for("pending_results_bp.task_status", report_name=report_name, job_id=job_id)},
         )
     except RuntimeError as e:
-        return jsonify({"status": "Failed", "content": f"The job failed to initialise. Error: {str(e)}"}), 500, {}
+        return (
+            jsonify({"status": "Failed", "content": f"The job failed to initialise. Error: {str(e)}"}),
+            500,
+            {},
+        )
 
 
 @run_report_bp.route("/run_report_json/<path:report_name>", methods=["POST"])
@@ -363,6 +379,7 @@ def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
         prepare_only=prepare_only,
         scheduler_job_id=None,  # the scheduler will never call rerun
         run_synchronously=run_synchronously,
+        is_slideshow=result.is_slideshow,
     )
     return new_job_id
 

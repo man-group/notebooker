@@ -95,3 +95,7 @@ td button i {
 .resultHeader {
     margin-left: 1em !important;
 }
+
+#resultsIframe {
+    height: 100%;
+}

@@ -85,6 +85,7 @@ class NotebookResultBase(object):
     stdout = attr.ib(default=attr.Factory(list))
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
+    is_slideshow = attr.ib(default=False)
 
     def saveable_output(self):
         out = attr.asdict(self)
@@ -103,6 +104,7 @@ class NotebookResultPending(NotebookResultBase):
     hide_code = attr.ib(default=False)
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
+    is_slideshow = attr.ib(default=False)
 
 
 @attr.s()
@@ -117,6 +119,7 @@ class NotebookResultError(NotebookResultBase):
     hide_code = attr.ib(default=False)
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
+    is_slideshow = attr.ib(default=False)
 
     @property
     def email_subject(self):
@@ -158,6 +161,7 @@ class NotebookResultComplete(NotebookResultBase):
     stdout = attr.ib(default=attr.Factory(list))
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
+    is_slideshow = attr.ib(default=False)
 
     def html_resources(self):
         """We have to save the raw images using Mongo GridFS - figure out where they will go here"""
@@ -189,6 +193,7 @@ class NotebookResultComplete(NotebookResultBase):
             "scheduler_job_id": self.scheduler_job_id,
             "raw_html": "",  # backwards compatibility for versions<0.3.1
             "mailfrom": self.mailfrom,
+            "is_slideshow": self.is_slideshow,
         }
 
     def __repr__(self):
@@ -197,7 +202,7 @@ class NotebookResultComplete(NotebookResultBase):
             "job_start_time={job_start_time}, job_finish_time={job_finish_time}, update_time={update_time}, "
             "report_title={report_title}, overrides={overrides}, mailto={mailto}, mailfrom={mailfrom}"
             "email_subject={email_subject}, generate_pdf_output={generate_pdf_output}, hide_code={hide_code}, "
-            "scheduler_job_id={scheduler_job_id})".format(
+            "scheduler_job_id={scheduler_job_id}, is_slideshow={is_slideshow})".format(
                 job_id=self.job_id,
                 status=self.status,
                 report_name=self.report_name,
@@ -212,5 +217,6 @@ class NotebookResultComplete(NotebookResultBase):
                 generate_pdf_output=self.generate_pdf_output,
                 hide_code=self.hide_code,
                 scheduler_job_id=self.scheduler_job_id,
+                is_slideshow=self.is_slideshow,
             )
         )

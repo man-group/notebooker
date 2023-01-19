@@ -6,7 +6,7 @@ import git
 import jupytext
 import nbformat
 import pkg_resources
-from nbconvert import HTMLExporter, PDFExporter
+from nbconvert import HTMLExporter, PDFExporter, SlidesExporter
 from nbconvert.exporters.exporter import ResourcesDict
 from traitlets.config import Config
 
@@ -19,20 +19,27 @@ def get_resources_dir(job_id):
     return "{}/resources".format(job_id)
 
 
-def ipython_to_html(ipynb_path: str, job_id: str, hide_code: bool = False) -> (nbformat.NotebookNode, Dict[str, Any]):
-    c = Config()
-    c.HTMLExporter.preprocessors = ["nbconvert.preprocessors.ExtractOutputPreprocessor"]
-    c.HTMLExporter.template_file = pkg_resources.resource_filename(
-        __name__, "../nbtemplates/notebooker_html_output.tpl"
-    )
-    c.HTMLExporter.exclude_input = hide_code
-    c.HTMLExporter.exclude_output_prompt = hide_code
-    html_exporter_with_figs = HTMLExporter(config=c)
-
+def ipython_to_html(
+    ipynb_path: str, job_id: str, hide_code: bool = False, is_slideshow: bool = False
+) -> (nbformat.NotebookNode, Dict[str, Any]):
     with open(ipynb_path, "r") as nb_file:
         nb = nbformat.reads(nb_file.read(), as_version=nbformat.v4.nbformat)
-    resources_dir = get_resources_dir(job_id)
-    html, resources = html_exporter_with_figs.from_notebook_node(nb, resources={"output_files_dir": resources_dir})
+    c = Config()
+    if is_slideshow:
+        c.TagRemovePreprocessor.remove_cell_tags = ("injected-parameters", "parameters")
+        c.SlidesExporter.preprocessors = ["nbconvert.preprocessors.TagRemovePreprocessor"]
+        exporter = SlidesExporter(config=c)
+        html, resources = exporter.from_notebook_node(nb)
+    else:
+        c.HTMLExporter.preprocessors = ["nbconvert.preprocessors.ExtractOutputPreprocessor"]
+        c.HTMLExporter.template_file = pkg_resources.resource_filename(
+            __name__, "../nbtemplates/notebooker_html_output.tpl"
+        )
+        c.HTMLExporter.exclude_input = hide_code
+        c.HTMLExporter.exclude_output_prompt = hide_code
+        html_exporter_with_figs = HTMLExporter(config=c)
+        resources_dir = get_resources_dir(job_id)
+        html, resources = html_exporter_with_figs.from_notebook_node(nb, resources={"output_files_dir": resources_dir})
     resources = {k: v for (k, v) in resources.items() if not callable(v)}
     return html, resources
 
@@ -49,7 +56,8 @@ def ipython_to_pdf(raw_executed_ipynb: str, report_title: str, hide_code: bool =
     resources["metadata"] = ResourcesDict()
     resources["metadata"]["name"] = report_title
     pdf, _ = pdf_exporter.from_notebook_node(
-        nbformat.reads(raw_executed_ipynb, as_version=nbformat.v4.nbformat), resources=resources
+        nbformat.reads(raw_executed_ipynb, as_version=nbformat.v4.nbformat),
+        resources=resources,
     )
     return pdf
 

@@ -75,6 +75,7 @@ def update_schedule(report_name):
         "mailfrom": params.mailfrom,
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
+        "is_slideshow": params.is_slideshow,
         "scheduler_job_id": job_id,
     }
     job.modify(trigger=trigger, kwargs=params)
@@ -107,6 +108,7 @@ def create_schedule(report_name):
         "generate_pdf": params.generate_pdf_output,
         "hide_code": params.hide_code,
         "scheduler_job_id": job_id,
+        "is_slideshow": params.is_slideshow,
     }
     logger.info(f"Creating job with params: {dict_params}")
     try:
