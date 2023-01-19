@@ -1,4 +1,4 @@
-0.5.0 (2023-??-??)
+0.5.0 (2023-01-19)
 ------------------
 
 * Feature: Added support for [Reveal.js](https://revealjs.com/) notebook outputs
