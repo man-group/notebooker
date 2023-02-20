@@ -110,24 +110,31 @@ def get_all_result_keys(
     return all_keys
 
 
-def get_all_available_results_json(serializer: MongoResultSerializer, limit: int, report_name: str = None) -> List[constants.NotebookResultBase]:
+def get_all_available_results_json(
+    serializer: MongoResultSerializer, limit: int, report_name: str = None, readonly_mode: bool = False
+) -> List[constants.NotebookResultBase]:
     json_output = []
     mongo_filter = {"report_name": report_name} if report_name is not None else {}
     for result in serializer.get_all_results(mongo_filter=mongo_filter, limit=limit, load_payload=False):
         output = result.saveable_output()
-        output["result_url"] = url_for(
-            "serve_results_bp.task_results", job_id=output["job_id"], report_name=output["report_name"]
-        )
-        output["ipynb_url"] = url_for(
-            "serve_results_bp.download_ipynb_result", job_id=output["job_id"], report_name=output["report_name"]
-        )
-        output["pdf_url"] = url_for(
-            "serve_results_bp.download_pdf_result", job_id=output["job_id"], report_name=output["report_name"]
-        )
-        output["rerun_url"] = url_for(
-            "run_report_bp.rerun_report", job_id=output["job_id"], report_name=output["report_name"]
-        )
-
+        job_id = output["job_id"]
+        report_name = output["report_name"]
+        urls = {"ipynb_url": "", "pdf_url": "", "result_url": "", "rerun_url": "", "clone_url": "", "delete_url": ""}
+        if job_id:
+            new_urls = {
+                "result_url": url_for("serve_results_bp.task_results", report_name=report_name, job_id=job_id),
+                "ipynb_url": url_for("serve_results_bp.download_ipynb_result", report_name=report_name, job_id=job_id),
+                "pdf_url": url_for("serve_results_bp.download_pdf_result", report_name=report_name, job_id=job_id),
+            }
+            urls.update(new_urls)
+            if not readonly_mode:
+                urls.update(
+                    {
+                        "rerun_url": url_for("run_report_bp.rerun_report", report_name=report_name, job_id=job_id),
+                        "delete_url": url_for("run_report_bp.delete_report", report_name=report_name, job_id=job_id),
+                    }
+                )
+        output.update(urls)
         json_output.append(output)
     return json_output
 

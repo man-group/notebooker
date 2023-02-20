@@ -21,9 +21,10 @@ from notebooker.web.report_hunter import _report_hunter
 from notebooker.web.routes.core import core_bp
 from notebooker.web.routes.index import index_bp
 from notebooker.web.routes.pending_results import pending_results_bp
-from notebooker.web.routes.run_report import run_report_bp
+from notebooker.web.routes.report_execution import run_report_bp
 from notebooker.web.routes.scheduling import scheduling_bp
 from notebooker.web.routes.serve_results import serve_results_bp
+from notebooker.web.routes.templates import templates_bp
 
 logger = logging.getLogger(__name__)
 all_report_refresher: Optional[threading.Thread] = None
@@ -71,8 +72,10 @@ def create_app(webapp_config=None):
 
     flask_app.url_map.converters["date"] = DateConverter
     flask_app.register_blueprint(index_bp)
-    flask_app.register_blueprint(run_report_bp)
+    if webapp_config and not webapp_config.READONLY_MODE:
+        flask_app.register_blueprint(run_report_bp)
     flask_app.register_blueprint(core_bp)
+    flask_app.register_blueprint(templates_bp)
     flask_app.register_blueprint(serve_results_bp)
     flask_app.register_blueprint(pending_results_bp)
     if webapp_config and not webapp_config.DISABLE_SCHEDULER:

@@ -1,3 +1,8 @@
+from __future__ import unicode_literals
+
+import threading
+import time
+
 import copy
 import datetime
 import json
@@ -18,10 +23,10 @@ from notebooker.constants import (
     NotebookResultError,
     python_template_dir,
 )
-from notebooker.serialization.serialization import get_serializer_from_cls
+from notebooker.serialization.serialization import get_serializer_from_cls, initialize_serializer_from_config
 from notebooker.settings import BaseConfig
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
-from notebooker.utils.filesystem import initialise_base_dirs
+from notebooker.utils.filesystem import initialise_base_dirs, get_output_dir, get_template_dir
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
 
 logging.basicConfig(level=logging.INFO)
@@ -104,11 +109,7 @@ def _run_checks(
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
     pm.execute_notebook(
-        ipynb_raw_path,
-        ipynb_executed_path,
-        parameters=overrides,
-        log_output=True,
-        prepare_only=prepare_only,
+        ipynb_raw_path, ipynb_executed_path, parameters=overrides, log_output=True, prepare_only=prepare_only
     )
     with open(ipynb_executed_path, "r") as f:
         raw_executed_ipynb = f.read()
@@ -167,11 +168,7 @@ def run_report(
     job_id = job_id or str(uuid.uuid4())
     stop_execution = os.getenv("NOTEBOOKER_APP_STOPPING")
     if stop_execution:
-        logger.info(
-            "Aborting attempt to run %s, jobid=%s as app is shutting down.",
-            report_name,
-            job_id,
-        )
+        logger.info("Aborting attempt to run %s, jobid=%s as app is shutting down.", report_name, job_id)
         result_serializer.update_check_status(job_id, JobStatus.CANCELLED, error_info=CANCEL_MESSAGE)
         return
     try:
@@ -182,10 +179,7 @@ def run_report(
             attempts_remaining,
         )
         result_serializer.update_check_status(
-            job_id,
-            report_name=report_name,
-            job_start_time=job_submit_time,
-            status=JobStatus.PENDING,
+            job_id, report_name=report_name, job_start_time=job_submit_time, status=JobStatus.PENDING
         )
         result = _run_checks(
             job_id,
@@ -439,3 +433,125 @@ def docker_compose_entrypoint():
     logger.info("Received a request to run a report with the following parameters:")
     logger.info(args_to_execute)
     return subprocess.Popen(args_to_execute).wait()
+
+
+def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
+    stderr = []
+    # Unsure whether flask app contexts are thread-safe; just reinitialise the serializer here.
+    result_serializer = get_serializer_from_cls(serializer_cls, **serializer_args)
+    while True:
+        line = process.stderr.readline().decode("utf-8")
+        if line == "" and process.poll() is not None:
+            result_serializer.update_stdout(job_id, stderr, replace=True)
+            break
+        stderr.append(line)
+        logger.info(line)  # So that we have it in the log, not just in memory.
+        result_serializer.update_stdout(job_id, new_lines=[line])
+    return "".join(stderr)
+
+
+def run_report_in_subprocess(
+    base_config,
+    report_name,
+    report_title,
+    mailto,
+    overrides,
+    *,
+    hide_code=False,
+    generate_pdf_output=False,
+    prepare_only=False,
+    scheduler_job_id=None,
+    run_synchronously=False,
+    mailfrom=None,
+    n_retries=3,
+    is_slideshow=False,
+) -> str:
+    """
+    Execute the Notebooker report in a subprocess.
+    Uses a subprocess to execute the report asynchronously, which is identical to the non-webapp entrypoint.
+    :param base_config: `BaseConfig` A set of configuration options which specify serialisation parameters.
+    :param report_name: `str` The report which we are executing
+    :param report_title: `str` The user-specified title of the report
+    :param mailto: `Optional[str]` Who the results will be emailed to
+    :param overrides: `Optional[Dict[str, Any]]` The parameters to be passed into the report
+    :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
+    :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
+    :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
+    :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
+    :param mailfrom: `str` if passed, then this string will be used in the from field
+    :param n_retries: The number of retries to attempt.
+    :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
+    :return: The unique job_id.
+    """
+    job_id = str(uuid.uuid4())
+    job_start_time = datetime.datetime.now()
+    result_serializer = initialize_serializer_from_config(base_config)
+    result_serializer.save_check_stub(
+        job_id,
+        report_name,
+        report_title=report_title,
+        job_start_time=job_start_time,
+        status=JobStatus.SUBMITTED,
+        overrides=overrides,
+        mailto=mailto,
+        generate_pdf_output=generate_pdf_output,
+        hide_code=hide_code,
+        scheduler_job_id=scheduler_job_id,
+        is_slideshow=is_slideshow,
+    )
+
+    command = (
+        [
+            os.path.join(sys.exec_prefix, "bin", "notebooker-cli"),
+            "--output-base-dir",
+            base_config.OUTPUT_DIR,
+            "--template-base-dir",
+            base_config.TEMPLATE_DIR,
+            "--py-template-base-dir",
+            base_config.PY_TEMPLATE_BASE_DIR,
+            "--py-template-subdir",
+            base_config.PY_TEMPLATE_SUBDIR,
+            "--default-mailfrom",
+            base_config.DEFAULT_MAILFROM,
+        ]
+        + (["--notebooker-disable-git"] if base_config.NOTEBOOKER_DISABLE_GIT else [])
+        + ["--serializer-cls", result_serializer.__class__.__name__]
+        + result_serializer.serializer_args_to_cmdline_args()
+        + [
+            "execute-notebook",
+            "--job-id",
+            job_id,
+            "--report-name",
+            report_name,
+            "--report-title",
+            report_title,
+            "--mailto",
+            mailto,
+            "--overrides-as-json",
+            json.dumps(overrides),
+            "--pdf-output" if generate_pdf_output else "--no-pdf-output",
+            "--hide-code" if hide_code else "--show-code",
+            "--n-retries",
+            str(n_retries),
+        ]
+        + (["--prepare-notebook-only"] if prepare_only else [])
+        + (["--is-slideshow"] if is_slideshow else [])
+        + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
+        + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
+    )
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stderr_thread = threading.Thread(
+        target=_monitor_stderr, args=(p, job_id, base_config.SERIALIZER_CLS, base_config.SERIALIZER_CONFIG)
+    )
+    stderr_thread.daemon = True
+    stderr_thread.start()
+    if run_synchronously:
+        p.wait()
+    else:
+        time.sleep(1)
+        p.poll()
+    if p.returncode:
+        raise RuntimeError(f"The report execution failed with exit code {p.returncode}")
+
+    return job_id

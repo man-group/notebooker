@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, render_template, current_app, request, url
 
 from notebooker.utils.web import json_to_python
 from notebooker.web.handle_overrides import handle_overrides
-from notebooker.web.routes.run_report import validate_run_params
+from notebooker.web.routes.report_execution import validate_run_params
 from notebooker.web.utils import get_all_possible_templates, all_templates_flattened
 from apscheduler.triggers import cron
 
@@ -28,6 +28,8 @@ def scheduler_ui():
         "scheduler.html",
         all_reports=get_all_possible_templates(),
         default_mailfrom=current_app.config["DEFAULT_MAILFROM"],
+        readonly_mode=current_app.config["READONLY_MODE"],
+        scheduler_disabled=current_app.config["DISABLE_SCHEDULER"],
     )
 
 
@@ -56,7 +58,7 @@ def get_job_id(report_name: str, report_title: str) -> str:
 @scheduling_bp.route("/scheduler/update/<path:report_name>", methods=["POST"])
 def update_schedule(report_name):
     issues = []
-    params = validate_run_params(request.values, issues)
+    params = validate_run_params(report_name, request.values, issues)
     job_id = get_job_id(report_name, params.report_title)
     job = current_app.apscheduler.get_job(job_id)
     if job is None or job.kwargs.get("report_name") != report_name:
@@ -94,7 +96,7 @@ def create_schedule(report_name):
         return jsonify({"status": "Not found"}), 404
     issues = []
     trigger = validate_crontab(request.values.get("cron_schedule", ""), issues)
-    params = validate_run_params(request.values, issues)
+    params = validate_run_params(report_name, request.values, issues)
     overrides_dict = handle_overrides(request.values.get("overrides", ""), issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})

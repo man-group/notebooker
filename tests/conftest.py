@@ -5,11 +5,7 @@ from pytest_server_fixtures import CONFIG
 from pytest_server_fixtures.mongo import MongoTestServer
 from pytest_fixture_config import yield_requires_config
 
-from notebooker.constants import (
-    DEFAULT_DATABASE_NAME,
-    DEFAULT_RESULT_COLLECTION_NAME,
-    DEFAULT_SERIALIZER,
-)
+from notebooker.constants import DEFAULT_DATABASE_NAME, DEFAULT_RESULT_COLLECTION_NAME, DEFAULT_SERIALIZER
 from notebooker.settings import WebappConfig
 from notebooker.utils import caching
 from notebooker.utils.filesystem import initialise_base_dirs, _cleanup_dirs
@@ -130,10 +126,25 @@ def webapp_config(mongo_host, test_db_name, test_lib_name, template_dir, cache_d
     )
 
 
+@pytest.fixture()
+def webapp_config_readonly(webapp_config):
+    webapp_config.READONLY_MODE = True
+    return webapp_config
+
+
 @pytest.fixture
 def flask_app(webapp_config):
     flask_app = create_app(webapp_config)
     flask_app = setup_app(flask_app, webapp_config)
+    flask_app.config["DEBUG"] = True
+    flask_app.config["TESTING"] = True
+    return flask_app
+
+
+@pytest.fixture
+def flask_app_readonly(webapp_config_readonly):
+    flask_app = create_app(webapp_config_readonly)
+    flask_app = setup_app(flask_app, webapp_config_readonly)
     flask_app.config["DEBUG"] = True
     flask_app.config["TESTING"] = True
     return flask_app

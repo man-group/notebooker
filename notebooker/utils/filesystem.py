@@ -41,15 +41,18 @@ def mkdir_p(path):
 
 
 def get_cache_dir():
-    return current_app.config["CACHE_DIR"]
+    with current_app.app_context():
+        return current_app.config["CACHE_DIR"]
 
 
 def get_output_dir():
-    return current_app.config["OUTPUT_DIR"]
+    with current_app.app_context():
+        return current_app.config["OUTPUT_DIR"]
 
 
 def get_template_dir():
-    return current_app.config["TEMPLATE_DIR"]
+    with current_app.app_context():
+        return current_app.config["TEMPLATE_DIR"]
 
 
 def _cleanup_dirs(webapp_config):

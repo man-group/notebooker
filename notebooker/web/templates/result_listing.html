@@ -1,12 +1,13 @@
 {% import "header.html" as header %}
 
-{{ header.ocnHeader() }}
+{{ header.notebookerHeader(readonly_mode, scheduler_disabled) }}
 
 <html>
 <head>
     <script type="application/javascript">
         var REPORT_NAME = "{{ report_name }}";
         var LIMIT = "{{ result_limit }}";
+        var READONLY_MODE = "{{ readonly_mode|safe }}";
     </script>
     <script type="application/javascript" src="{{ url_for('static', filename='notebooker/result_listing.js') }}"></script>
 </head>
@@ -36,11 +37,13 @@
                 </div>
             </div>
             {% endif %}
+            {% if not readonly_mode %}
             <div class="three wide column">
                 <a class="ui button green" id="runReportButton" href="/run_report/{{ report_name }}">
                     Manually run this report
                 </a>
             </div>
+            {% endif %}
         </div>
     </div>
         <div class="ui modal" id="deleteModal">

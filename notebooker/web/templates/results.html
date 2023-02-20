@@ -1,6 +1,6 @@
 {% import "header.html" as header %}
 
-{{ header.ocnHeader() }}
+{{ header.notebookerHeader(readonly_mode, scheduler_disabled) }}
 
 <html>
 <body>
@@ -18,7 +18,7 @@
                         </div>
                         <iframe
                                 id="resultsIframe"
-                                src="{{ html_render }}"
+                                src="{{ result_url }}"
                                 style="width:100%; border:none;"
                                 onload="iframeLoaded(this)"
                                 class="iframeToLoad"
@@ -69,14 +69,16 @@
                 {% endif %}
                 <br/>
                 <br/>
-                <button onclick="rerunReport('{{ result.job_id }}', '{{ rerun_url }}')"
-                            type="button" class="ui blue button rerunButton"><i class="redo alternate icon"></i>Rerun</button>
-                <br/>
-                <br/>
-                <button onclick="cloneReport('{{ clone_url }}')"
-                            type="button" class="ui blue button cloneButton"><i class="copy outline icon"></i>Clone Parameters</button>
-                <br/>
-                <br/>
+                {% if not readonly_mode %}
+                    <button onclick="rerunReport('{{ result.job_id }}', '{{ rerun_url }}')"
+                                type="button" class="ui blue button rerunButton"><i class="redo alternate icon"></i>Rerun</button>
+                    <br/>
+                    <br/>
+                    <button onclick="cloneReport('{{ clone_url }}')"
+                                type="button" class="ui blue button cloneButton"><i class="copy outline icon"></i>Clone Parameters</button>
+                    <br/>
+                    <br/>
+                {% endif %}
 
             </div>
 

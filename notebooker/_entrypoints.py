@@ -138,6 +138,13 @@ def base_notebooker(
     help="The name of the mongo collection within the scheduler-mongo-database which is used for "
     "the scheduling back-end. Defaults to the same as the serializer's mongo collection + '_scheduler'.",
 )
+@click.option(
+    "--readonly-mode",
+    default=False,
+    is_flag=True,
+    help="This mode disables the ability to execute notebooks via REST or the webapp front-end. "
+    "Useful if you only want to display results which were e.g. executed by an external application.",
+)
 @pass_config
 def start_webapp(
     config: BaseConfig,
@@ -148,6 +155,7 @@ def start_webapp(
     disable_scheduler,
     scheduler_mongo_database,
     scheduler_mongo_collection,
+    readonly_mode,
 ):
     web_config = WebappConfig.copy_existing(config)
     web_config.PORT = port
@@ -157,6 +165,7 @@ def start_webapp(
     web_config.DISABLE_SCHEDULER = disable_scheduler
     web_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
     web_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
+    web_config.READONLY_MODE = readonly_mode
     return main(web_config)
 
 

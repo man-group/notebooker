@@ -42,3 +42,11 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
                 mailfrom=mailfrom,
                 is_slideshow=is_slideshow,
             )
+
+
+def test_run_report_doesnt_work_in_readonly_mode(flask_app_readonly, setup_workspace):
+    with flask_app_readonly.test_client() as client:
+        with mock.patch("notebooker.web.routes.run_report.run_report") as rr:
+            rr.return_value = "fake_job_id"
+            rv = client.post(f"/run_report_json/fake/report")
+            assert rv.status_code == 404, rv.data
