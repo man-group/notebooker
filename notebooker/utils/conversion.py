@@ -56,8 +56,7 @@ def ipython_to_pdf(raw_executed_ipynb: str, report_title: str, hide_code: bool =
     resources["metadata"] = ResourcesDict()
     resources["metadata"]["name"] = report_title
     pdf, _ = pdf_exporter.from_notebook_node(
-        nbformat.reads(raw_executed_ipynb, as_version=nbformat.v4.nbformat),
-        resources=resources,
+        nbformat.reads(raw_executed_ipynb, as_version=nbformat.v4.nbformat), resources=resources
     )
     return pdf
 
@@ -68,11 +67,11 @@ def _output_ipynb_name(report_name: str) -> str:
 
 def _git_has_changes(repo: git.repo.Repo):
     repo.git.fetch()
-    return repo.commit("origin/master").hexsha != repo.commit("HEAD").hexsha
+    return repo.commit(f"{repo.remotes[0].name}/{repo.active_branch.name}").hexsha != repo.commit("HEAD").hexsha
 
 
 def _git_pull_latest(repo: git.repo.Repo):
-    repo.git.pull("origin", "master")
+    repo.git.pull()
 
 
 def _template(report_path: str, py_template_dir: AnyStr) -> AnyStr:
