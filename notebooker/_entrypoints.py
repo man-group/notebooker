@@ -59,6 +59,7 @@ def filesystem_default_value(dirname):
 )
 @click.option(
     "--notebooker-disable-git",
+    "--disable-git",
     default=False,
     is_flag=True,
     help="If selected, notebooker will not try to pull the latest version of python templates from git.",
