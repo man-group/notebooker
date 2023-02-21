@@ -441,12 +441,13 @@ def _monitor_stderr(process, job_id, serializer_cls, serializer_args):
     result_serializer = get_serializer_from_cls(serializer_cls, **serializer_args)
     while True:
         line = process.stderr.readline().decode("utf-8")
-        if line == "" and process.poll() is not None:
+        if line != "":
+            stderr.append(line)
+            logger.info(line)  # So that we have it in the log, not just in memory.
+            result_serializer.update_stdout(job_id, new_lines=[line])
+        elif process.poll() is not None:
             result_serializer.update_stdout(job_id, stderr, replace=True)
             break
-        stderr.append(line)
-        logger.info(line)  # So that we have it in the log, not just in memory.
-        result_serializer.update_stdout(job_id, new_lines=[line])
     return "".join(stderr)
 
 
