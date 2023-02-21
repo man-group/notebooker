@@ -165,9 +165,9 @@ reports to be executed by a trusted process (e.g. the internal scheduler, or an 
 but you don't want users to be able to directly execute Notebooks. This is suited well to production
 environments or where the reports can reveal sensitive data if misconfigured.
 
-.. image:: /images/finished_schedule_jobs.png
+.. image:: /images/read_only_result_page.png
    :width: 600
-   :alt: Screenshot of the homepage with completed, scheduled jobs.
+   :alt: A Notebooker report in a read-only instance of the Notebooker webapp.
 
 .. note::
     Please note that read-only mode does not change the functionality of the scheduler; users will still be able to
