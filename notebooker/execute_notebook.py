@@ -26,7 +26,7 @@ from notebooker.constants import (
 from notebooker.serialization.serialization import get_serializer_from_cls, initialize_serializer_from_config
 from notebooker.settings import BaseConfig
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
-from notebooker.utils.filesystem import initialise_base_dirs, get_output_dir, get_template_dir
+from notebooker.utils.filesystem import initialise_base_dirs
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
 
 logging.basicConfig(level=logging.INFO)

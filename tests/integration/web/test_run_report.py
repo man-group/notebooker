@@ -3,6 +3,7 @@ import urllib
 
 import mock
 from flask import jsonify
+from mock.mock import ANY
 
 
 def test_run_report_json_parameters(flask_app, setup_workspace):
@@ -26,16 +27,18 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
             "is_slideshow": is_slideshow,
             "mailfrom": mailfrom,
         }
-        with mock.patch("notebooker.web.routes.run_report.run_report") as rr:
+        with mock.patch("notebooker.web.routes.report_execution.run_report_in_subprocess") as rr:
             rr.return_value = "fake_job_id"
             rv = client.post(f"/run_report_json/{report_name}?{urllib.parse.urlencode(payload)}")
             assert rv.data == jsonify({"id": "fake_job_id"}).data
             assert rv.status_code == 202, rv.data
+
             rr.assert_called_with(
-                report_name,
-                report_title,
-                mailto,
-                overrides,
+                base_config=ANY,
+                report_name=report_name,
+                report_title=report_title,
+                mailto=mailto,
+                overrides=overrides,
                 generate_pdf_output=generate_pdf,
                 hide_code=hide_code,
                 scheduler_job_id=scheduler_job_id,
@@ -46,7 +49,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
 
 def test_run_report_doesnt_work_in_readonly_mode(flask_app_readonly, setup_workspace):
     with flask_app_readonly.test_client() as client:
-        with mock.patch("notebooker.web.routes.run_report.run_report") as rr:
+        with mock.patch("notebooker.web.routes.report_execution.run_report_in_subprocess") as rr:
             rr.return_value = "fake_job_id"
             rv = client.post(f"/run_report_json/fake/report")
             assert rv.status_code == 404, rv.data

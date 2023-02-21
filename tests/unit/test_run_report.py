@@ -23,7 +23,7 @@ This is going to stderr a bit later
 """
     p = subprocess.Popen([sys.executable, "-c", dummy_process], stderr=subprocess.PIPE)
 
-    with mock.patch("notebooker.web.routes.run_report.get_serializer_from_cls") as serializer:
+    with mock.patch("notebooker.execute_notebook.get_serializer_from_cls") as serializer:
         stderr_output = _monitor_stderr(p, "abc123", DEFAULT_SERIALIZER, {})
     assert stderr_output == expected_output
 

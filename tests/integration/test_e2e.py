@@ -33,13 +33,16 @@ def _check_report_output(job_id, serialiser, **kwargs):
 
 @pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name):
+def test_run_report(
+    bson_library, flask_app, webapp_config, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
+):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
         report_title = "my report title"
         mailto = ""
         job_id = run_report_in_subprocess(
+            webapp_config,
             report_name,
             report_title,
             mailto,
@@ -63,7 +66,9 @@ def test_run_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesy
 
 
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
-def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace):
+def test_run_failing_report(
+    bson_library, flask_app, webapp_config, setup_and_cleanup_notebooker_filesystem, setup_workspace
+):
     with flask_app.app_context():
         serialiser = get_serializer()
         overrides = {"n_points": 5}
@@ -72,6 +77,7 @@ def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooke
         mailto = ""
         with pytest.raises(RuntimeError, match=".*The report execution failed with exit code .*"):
             run_report_in_subprocess(
+                webapp_config,
                 report_name,
                 report_title,
                 mailto,
@@ -91,7 +97,7 @@ def test_run_failing_report(bson_library, flask_app, setup_and_cleanup_notebooke
 @pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_report_and_rerun(
-    bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
+    bson_library, flask_app, webapp_config, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
 ):
     with flask_app.app_context():
         serialiser = get_serializer()
@@ -99,6 +105,7 @@ def test_run_report_and_rerun(
         report_title = "my report title"
         mailto = ""
         job_id = run_report_in_subprocess(
+            webapp_config,
             report_name,
             report_title,
             mailto,
@@ -136,7 +143,7 @@ def test_run_report_and_rerun(
 @pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_run_report_hide_code(
-    bson_library, flask_app, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
+    bson_library, flask_app, webapp_config, setup_and_cleanup_notebooker_filesystem, setup_workspace, report_name
 ):
     with flask_app.app_context():
         serialiser = get_serializer()
@@ -144,6 +151,7 @@ def test_run_report_hide_code(
         report_title = "my report title"
         mailto = ""
         job_id = run_report_in_subprocess(
+            webapp_config,
             report_name,
             report_title,
             mailto,
