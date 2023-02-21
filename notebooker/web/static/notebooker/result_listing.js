@@ -1,33 +1,31 @@
-add_delete_callback = () => {
-    $('.deletebutton').click((clicked) => {
-        const to_delete = clicked.target.closest('button').id.split('_')[1];
-        $('#deleteModal').modal({
-            closable: true,
-            onDeny() {
-                return true;
-            },
-            onApprove() {
-                $.ajax({
-                    type: 'POST',
-                    url: `/delete_report/${to_delete}`, // We get this from loading.html, which comes from flask
-                    dataType: 'json',
-                    success(data, status, request) {
-                        if (data.status === 'error') {
-                            $('#errorMsg').text(data.content);
-                            $('#errorPopup').show();
-                        } else {
-                            window.location.reload();
-                        }
-                    },
-                    error(xhr, error) {
-                    },
-                });
-            },
-        }).modal('show');
-    });
+
+deleteReport = (delete_url) => {
+    $('#deleteModal').modal({
+        closable: true,
+        onDeny() {
+            return true;
+        },
+        onApprove() {
+            $.ajax({
+                type: 'POST',
+                url: delete_url, // We get this from loading.html, which comes from flask
+                dataType: 'json',
+                success(data, status, request) {
+                    if (data.status === 'error') {
+                        $('#errorMsg').text(data.content);
+                        $('#errorPopup').show();
+                    } else {
+                        window.location.reload();
+                    }
+                },
+                error(xhr, error) {
+                },
+            });
+        },
+    }).modal('show');
 };
 
-create_datatable = (result) => {
+create_datatable = (result, readonly_mode) => {
 
     let columns = [
         {
@@ -129,23 +127,26 @@ create_datatable = (result) => {
             }
         ])
     }
-    columns = columns.concat([
-        {
-            title: 'Rerun',
-            name: 'rerun_url',
-            data: 'rerun_url',
-            render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
-                       + 'type="button" class="ui yellow centred button rerunButton">'
+    if (readonly_mode === "False") {
+        columns = columns.concat([
+            {
+                title: 'Rerun',
+                name: 'rerun_url',
+                data: 'rerun_url',
+                render: (url, type, row) => `<button onclick="rerunReport('${row.job_id}', '${url}')" `
+                    + 'type="button" class="ui yellow centred button rerunButton">'
                     + '<i class="redo alternate icon"></i></button>',
-        },
-        {
-            title: 'Delete',
-            name: 'result_url',
-            data: 'result_url',
-            render: (url, type, row) => `${'<button type="button" class="ui button red deletebutton" '
-                    + 'id="delete_'}${row.job_id}"> <i class="trash icon"></i>`,
-        },
-    ])
+            },
+            {
+                title: 'Delete',
+                name: 'delete_url',
+                data: 'delete_url',
+                render: (url, type, row) => `<button onclick="deleteReport('${url}')" `
+                    + 'type="button" class="ui button red deletebutton">'
+                    + `<i class="trash icon"></i></button>`,
+            }
+        ])
+    }
     let startTimeColumnIndex = 1 + override_keys.size + 1;
     const $resultsTable = $('#resultsTable');
     table = $resultsTable.DataTable({
@@ -159,18 +160,14 @@ create_datatable = (result) => {
     table.rows.add(result);
     table.draw();
     $('#indexTableContainer').fadeIn();
-    add_delete_callback();
-    table.on("draw", function () {
-        add_delete_callback();
-    });
 }
 
-load_data = (limit, report_name) => {
+load_data = (limit, report_name, readonly_mode) => {
     $.ajax({
         url: `/core/get_all_available_results?limit=${limit}&report_name=${report_name}`,
         dataType: 'json',
         success: (result) => {
-            create_datatable(result);
+            create_datatable(result, readonly_mode);
         },
         error: (jqXHR, textStatus, errorThrown) => {
             $('#failedLoad').fadeIn();
@@ -180,5 +177,5 @@ load_data = (limit, report_name) => {
 
 
 $(document).ready(() => {
-    load_data(LIMIT, REPORT_NAME);
+    load_data(LIMIT, REPORT_NAME, READONLY_MODE);
 });

@@ -5,7 +5,8 @@ import mock
 from werkzeug.datastructures import CombinedMultiDict, ImmutableMultiDict
 
 from notebooker.constants import DEFAULT_SERIALIZER
-from notebooker.web.routes.run_report import _monitor_stderr, validate_run_params, RunReportParams
+from notebooker.web.routes.report_execution import validate_run_params, RunReportParams
+from notebooker.execute_notebook import _monitor_stderr
 
 
 def test_monitor_stderr():
@@ -22,7 +23,7 @@ This is going to stderr a bit later
 """
     p = subprocess.Popen([sys.executable, "-c", dummy_process], stderr=subprocess.PIPE)
 
-    with mock.patch("notebooker.web.routes.run_report.get_serializer_from_cls") as serializer:
+    with mock.patch("notebooker.execute_notebook.get_serializer_from_cls") as serializer:
         stderr_output = _monitor_stderr(p, "abc123", DEFAULT_SERIALIZER, {})
     assert stderr_output == expected_output
 
@@ -41,7 +42,7 @@ def test_validate_run_params():
             ImmutableMultiDict(
                 [
                     ("overrides", "{}"),
-                    ("report_title", "asdas"),
+                    ("report_title", ""),
                     ("mailto", ""),
                     ("generate_pdf", "True"),
                     ("hide_code", "True"),
@@ -55,7 +56,7 @@ def test_validate_run_params():
     )
     issues = []
     expected_output = RunReportParams(
-        report_title="asdas",
+        report_title="lovely_report_name",
         mailto="",
         generate_pdf_output=True,
         hide_code=True,
@@ -63,6 +64,6 @@ def test_validate_run_params():
         mailfrom="test@example.com",
         is_slideshow=True,
     )
-    actual_output = validate_run_params(input_params, issues)
+    actual_output = validate_run_params("lovely_report_name", input_params, issues)
     assert issues == []
     assert actual_output == expected_output

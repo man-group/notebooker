@@ -54,7 +54,7 @@ load_data = (callback) => {
 
 function loadTemplateParameters(templateName) {
     $.ajax({
-        url: '/get_report_parameters/' + templateName,
+        url: '/core/get_template_parameters/' + templateName,
         dataType: 'json',
         success: (result) => {
             $('#notebookParameters').text(result.result);

@@ -3,7 +3,7 @@ import os
 from logging import getLogger
 from typing import Any, Union
 
-from flask import Blueprint, Response, abort, render_template, request, url_for, jsonify
+from flask import Blueprint, Response, abort, render_template, request, url_for, jsonify, current_app
 
 from notebooker.constants import (
     JobStatus,
@@ -27,35 +27,48 @@ logger = getLogger(__name__)
 
 
 def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -> str:
-    report_name = convert_report_name_path_to_url(report_name)
-    result_url = url_for("serve_results_bp.task_results_html", report_name=report_name, job_id=job_id) if job_id else ""
-    ipynb_url = (
-        url_for("serve_results_bp.download_ipynb_result", report_name=report_name, job_id=job_id) if job_id else ""
-    )
-    pdf_url = url_for("serve_results_bp.download_pdf_result", report_name=report_name, job_id=job_id) if job_id else ""
-    stdout_url = url_for("serve_results_bp.view_stdout", report_name=report_name, job_id=job_id) if job_id else ""
-    rerun_url = url_for("run_report_bp.rerun_report", report_name=report_name, job_id=job_id) if job_id else ""
-    clone_url = url_for("run_report_bp.run_report_http", report_name=report_name)
-    fullscreen_url = (
-        url_for("serve_results_bp.task_results_html", report_name=report_name, job_id=job_id) if job_id else ""
-    )
-    if result and result.overrides:
-        clone_url = clone_url + "?json_params={}".format(json.dumps(result.overrides))
-    return render_template(
-        "results.html",
-        job_id=job_id,
-        report_name=report_name,
-        result=result,
-        donevalue=JobStatus.DONE,  # needed so we can check if a result is available
-        html_render=result_url,
-        ipynb_url=ipynb_url,
-        pdf_url=pdf_url,
-        stdout_url=stdout_url,
-        rerun_url=rerun_url,
-        clone_url=clone_url,
-        fullscreen_url=fullscreen_url,
-        all_reports=get_all_possible_templates(),
-    )
+    with current_app.app_context():
+        readonly_mode = current_app.config["READONLY_MODE"]
+        report_name = convert_report_name_path_to_url(report_name)
+        urls = {
+            "result_url": "",
+            "ipynb_url": "",
+            "pdf_url": "",
+            "stdout_url": "",
+            "fullscreen_url": "",
+            "rerun_url": "",
+            "clone_url": "",
+        }
+        if job_id:
+            urls_update = {
+                "result_url": url_for("serve_results_bp.task_results_html", report_name=report_name, job_id=job_id),
+                "ipynb_url": url_for("serve_results_bp.download_ipynb_result", report_name=report_name, job_id=job_id),
+                "pdf_url": url_for("serve_results_bp.download_pdf_result", report_name=report_name, job_id=job_id),
+                "stdout_url": url_for("serve_results_bp.view_stdout", report_name=report_name, job_id=job_id),
+                "fullscreen_url": url_for("serve_results_bp.task_results_html", report_name=report_name, job_id=job_id),
+            }
+            urls.update(urls_update)
+            if not readonly_mode:
+                urls.update(
+                    {
+                        "rerun_url": url_for("run_report_bp.rerun_report", report_name=report_name, job_id=job_id),
+                        "clone_url": url_for("run_report_bp.run_report_http", report_name=report_name),
+                    }
+                )
+
+        if result and result.overrides and urls["clone_url"]:
+            urls["clone_url"] = urls["clone_url"] + "?json_params={}".format(json.dumps(result.overrides))
+        return render_template(
+            "results.html",
+            job_id=job_id,
+            report_name=report_name,
+            result=result,
+            donevalue=JobStatus.DONE,  # needed so we can check if a result is available
+            all_reports=get_all_possible_templates(),
+            readonly_mode=current_app.config["READONLY_MODE"],
+            scheduler_disabled=current_app.config["DISABLE_SCHEDULER"],
+            **urls
+        )
 
 
 @serve_results_bp.route("/results/<path:report_name>/<job_id>")

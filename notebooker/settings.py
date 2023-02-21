@@ -39,6 +39,11 @@ class BaseConfig:
     def copy_existing(cls, existing: "BaseConfig"):
         return cls(**asdict(existing))
 
+    @classmethod
+    def from_superset_kwargs(cls, kwargs: dict):
+        """ When we have too many kwargs but we want to use a subset containing the fields. """
+        return cls(**{k: v for (k, v) in kwargs.items() if k in cls.__dataclass_fields__})
+
 
 @dataclass
 class WebappConfig(BaseConfig):
@@ -53,3 +58,4 @@ class WebappConfig(BaseConfig):
     SCHEDULER_MONGO_DATABASE: str = ""
     SCHEDULER_MONGO_COLLECTION: str = ""
     DISABLE_SCHEDULER: bool = False
+    READONLY_MODE: bool = False

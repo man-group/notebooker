@@ -26,27 +26,32 @@
 {% endmacro %}
 
 
-{% macro ocnHeader() %}
+{% macro notebookerHeader(readonly_mode, scheduler_disabled) %}
     <html>
         {{ justHeader() }}
         <body>
         <div class="ui top attached menu inverted" id="ocnMenu">
-          <div class="header item white">
-            <a href="/"><h1>Notebooker</h1></a>
+          <div class="item">
+            <a class="header white" href="/"><h1>Notebooker</h1></a>
           </div>
           <a class="item" href="/">
               Main Menu
           </a>
-          <a class="item" id="runReport">
+          <a class="{% if readonly_mode %}disabled{% endif %} item" id="runReport">
               Execute a Notebook
           </a>
-          <a class="item" id="schedulerButton" href="/scheduler">
+          <a class="{% if scheduler_disabled %}disabled{% endif %} item" id="schedulerButton" href="/scheduler" >
               Scheduler
           </a>
           <div class="right menu">
             <div class="ui item">
                 <span id="versionTitle"></span>
             </div>
+            {% if readonly_mode %}
+            <div class="ui item">
+              <i>Read-only mode enabled</i>
+            </div>
+            {% endif %}
             <div id="authArea">
               <div class="ui item loggedIn" style="display: none">
                   Logged in as: <span id="usernameInfo"></span>
