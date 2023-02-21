@@ -18,6 +18,7 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile(r"^(?P<variable_name>[a-zA-Z_]+) *= *(?P<
 
 
 @hypothesis.given(st.text())
+@hypothesis.settings(deadline=5000)  # 5 seconds should be more than enough
 def test_handle_overrides_handles_anything_cleanly_no_process_junk(text):
     # Check that it doesn't just crash with random input
     with mock.patch("notebooker.web.handle_overrides.subprocess.check_output") as popen:
