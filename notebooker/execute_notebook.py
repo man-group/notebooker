@@ -136,6 +136,7 @@ def _run_checks(
         overrides=overrides,
         scheduler_job_id=scheduler_job_id,
         mailfrom=mailfrom,
+        hide_code=hide_code,
         is_slideshow=is_slideshow,
     )
     return notebook_result
@@ -218,6 +219,7 @@ def run_report(
             generate_pdf_output=generate_pdf_output,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
+            hide_code=hide_code,
             is_slideshow=is_slideshow,
         )
         logger.error(
