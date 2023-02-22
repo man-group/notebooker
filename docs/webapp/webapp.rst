@@ -92,6 +92,10 @@ the stdout from the run via a modal by clicking the "View Stdout" button on this
 
 Scheduling a report
 -------------------
+
+.. note::
+    Available from version 0.3.0 onwards.
+
 Once you are happy with your report, you can choose to schedule the report within the Notebooker webapp.
 Setting up a schedule is relatively simple, and it begins in the Scheduler tab.
 
@@ -158,6 +162,10 @@ The webapp itself is configured via the command line notebooker-cli:
 
 Read-only mode
 --------------
+
+.. note::
+    Available from version 0.5.1 onwards.
+
 There exists a read-only mode (add :code:`--readonly-mode` to command line arguments) in the
 Notebooker webapp which will disable the ability to run new,
 rerun, or delete existing reports. This mode is useful in situations where you would like Notebooker
