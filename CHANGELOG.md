@@ -1,8 +1,10 @@
-0.5.1 (2023-02-??)
+0.5.1 (2023-02-22)
 ------------------
 
 * Feature: A new `--readonly-mode` is available for the webapp. This allows users to have an instance of Notebooker which only displays the results of externally-run or scheduler-run reports. See [the docs](https://notebooker.readthedocs.io/en/latest/webapp/webapp.html#read-only-mode) for more details.
 * Bugfix: Scheduler-executed reports will now correctly record stdout.
+* Bugfix: Pull from current upstream instead of hard-coded origin/master in git backend of webapp.
+* Bugfix: Ensure that the hide_code option is consistent when a rerun is executed via the webapp.
 
 0.5.0 (2023-01-19)
 ------------------
