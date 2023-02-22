@@ -113,6 +113,8 @@ def test_run_report_and_rerun(
             generate_pdf_output=False,
             prepare_only=True,
             run_synchronously=True,
+            hide_code=True,
+            is_slideshow=True,
         )
         _check_report_output(
             job_id,
@@ -122,6 +124,8 @@ def test_run_report_and_rerun(
             report_title=report_title,
             mailto=mailto,
             generate_pdf_output=False,
+            hide_code=True,
+            is_slideshow=True,
         )
 
         new_job_id = _rerun_report(job_id, prepare_only=True, run_synchronously=True)
@@ -133,6 +137,8 @@ def test_run_report_and_rerun(
             report_title="Rerun of " + report_title,
             mailto=mailto,
             generate_pdf_output=False,
+            hide_code=True,
+            is_slideshow=True,
         )
         assert new_job_id == serialiser.get_latest_job_id_for_name_and_params(report_name, overrides)
         assert not {job_id, new_job_id} - set(serialiser.get_all_job_ids_for_name_and_params(report_name, overrides))

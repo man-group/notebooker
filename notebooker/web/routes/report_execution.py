@@ -234,6 +234,7 @@ def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
         abort(404)
     prefix = "Rerun of "
     title = result.report_title if result.report_title.startswith(prefix) else (prefix + result.report_title)
+
     with current_app.app_context():
         app_config = WebappConfig.from_superset_kwargs(current_app.config)
     new_job_id = run_report_in_subprocess(
@@ -242,6 +243,7 @@ def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
         title,
         result.mailto,
         result.overrides,
+        hide_code=result.hide_code,
         generate_pdf_output=result.generate_pdf_output,
         prepare_only=prepare_only,
         scheduler_job_id=None,  # the scheduler will never call rerun
