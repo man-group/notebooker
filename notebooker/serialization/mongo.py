@@ -91,9 +91,17 @@ class MongoResultSerializer(ABC):
         self.database_name = database_name
         self.mongo_host = mongo_host
         self.result_collection_name = result_collection_name
-        mongo_connection = self.get_mongo_database()
-        self.library = mongo_connection[result_collection_name]
-        self.result_data_store = gridfs.GridFS(mongo_connection, "notebook_data")
+
+        mongo_database = self.get_mongo_database()
+        self.library = mongo_database[result_collection_name]
+        self.result_data_store = gridfs.GridFS(mongo_database, "notebook_data")
+
+        conn = self.get_mongo_connection()
+        try:
+            conn.admin.command("enableSharding", self.database_name)
+            conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks", "key": {"files_id": 1, "n": 1}})
+        except pymongo.errors.OperationFailure:
+            pass
 
     def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
         if cli_options is None:

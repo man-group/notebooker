@@ -21,7 +21,8 @@ def test_mongo_filter_status():
 @patch("notebooker.serialization.mongo.gridfs")
 @patch("notebooker.serialization.mongo.MongoResultSerializer.get_mongo_database")
 @patch("notebooker.serialization.mongo.MongoResultSerializer._get_all_job_ids")
-def test_get_latest_job_id_for_name_and_params(_get_all_job_ids, conn, gridfs):
+@patch("notebooker.serialization.mongo.MongoResultSerializer.get_mongo_connection")
+def test_get_latest_job_id_for_name_and_params(conn, _get_all_job_ids, db, gridfs):
     serializer = MongoResultSerializer()
     serializer.get_latest_job_id_for_name_and_params("report_name", None)
     _get_all_job_ids.assert_called_once_with("report_name", None, as_of=None, limit=1)
@@ -29,7 +30,8 @@ def test_get_latest_job_id_for_name_and_params(_get_all_job_ids, conn, gridfs):
 
 @patch("notebooker.serialization.mongo.gridfs")
 @patch("notebooker.serialization.mongo.MongoResultSerializer.get_mongo_database")
-def test__get_all_job_ids(conn, gridfs):
+@patch("notebooker.serialization.mongo.MongoResultSerializer.get_mongo_connection")
+def test__get_all_job_ids(conn, db, gridfs):
     serializer = MongoResultSerializer()
     serializer._get_all_job_ids("report_name", None, limit=1)
     serializer.library.aggregate.assert_called_once_with(
