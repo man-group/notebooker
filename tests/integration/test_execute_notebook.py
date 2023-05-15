@@ -75,7 +75,7 @@ def test_main(mongo_host, setup_and_cleanup_notebooker_filesystem, webapp_config
     [
         (
             ["--report-name", "crashyreport", "--mailto", "happy@email", "--mailfrom", "notebooker@example.com"],
-            None,
+            "happy@email",
             "notebooker@example.com",
         ),
         (
@@ -97,6 +97,7 @@ def test_main(mongo_host, setup_and_cleanup_notebooker_filesystem, webapp_config
             "sad@email",
             "notebooker@example.com",
         ),
+        (["--report-name", "crashyreport", "--mailfrom", "notebooker@example.com"], None, "notebooker@example.com"),
     ],
 )
 def test_erroring_notebook_with_emails(mongo_host, cli_args, expected_mailto, expected_from):

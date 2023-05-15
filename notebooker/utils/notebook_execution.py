@@ -67,7 +67,7 @@ def send_result_email(result: Union[NotebookResultComplete, NotebookResultError]
     if isinstance(result, NotebookResultComplete):
         to_email = result.mailto
     else:
-        to_email = result.error_mailto
+        to_email = result.error_mailto or result.mailto
     if not to_email:
         logger.info("Not sending email as no recipients specified")
         return
