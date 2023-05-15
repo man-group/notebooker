@@ -44,6 +44,7 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     hide_code: Optional[bool] = False,
     mailto: Optional[str] = "",
+    error_mailto: Optional[str] = "",
     email_subject: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,
@@ -76,7 +77,9 @@ def _run_checks(
     generate_pdf_output : `Optional[bool]`
         Whether to generate PDF output or not. NB this requires xelatex to be installed on the executor.
     mailto : `Optional[str]`
-        Comma-separated email addresses to send on completion (or error).
+        Comma-separated email addresses to send on completion.
+    error_mailto : `Optional[str]`
+        Comma-separated email addresses to send on error.
     prepare_only : `Optional[bool]`
         Internal usage. Whether we want to do everything apart from executing the notebook.
     scheduler_job_id : `Optional[str]`
@@ -128,6 +131,7 @@ def _run_checks(
         raw_html=html,
         email_html=email_html,
         mailto=mailto,
+        error_mailto=error_mailto,
         email_subject=email_subject,
         pdf=pdf,
         generate_pdf_output=generate_pdf_output,
@@ -191,6 +195,7 @@ def run_report(
             template_base_dir,
             overrides,
             mailto=mailto,
+            error_mailto=error_mailto,
             email_subject=email_subject,
             generate_pdf_output=generate_pdf_output,
             hide_code=hide_code,
@@ -215,7 +220,8 @@ def run_report(
             report_title=report_title,
             error_info=error_info,
             overrides=overrides,
-            mailto=error_mailto or mailto,
+            mailto=mailto,
+            error_mailto=error_mailto,
             generate_pdf_output=generate_pdf_output,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
@@ -402,8 +408,7 @@ def execute_notebook_entrypoint(
             mailfrom=mailfrom,
             is_slideshow=is_slideshow,
         )
-        if result.mailto:
-            send_result_email(result, config.DEFAULT_MAILFROM)
+        send_result_email(result, config.DEFAULT_MAILFROM)
         logger.info(f"Here is the result!{result}")
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
@@ -458,6 +463,7 @@ def run_report_in_subprocess(
     report_name,
     report_title,
     mailto,
+    error_mailto,
     overrides,
     *,
     hide_code=False,
@@ -476,6 +482,7 @@ def run_report_in_subprocess(
     :param report_name: `str` The report which we are executing
     :param report_title: `str` The user-specified title of the report
     :param mailto: `Optional[str]` Who the results will be emailed to
+    :param error_mailto: `Optional[str]` Who the errors will be emailed to
     :param overrides: `Optional[Dict[str, Any]]` The parameters to be passed into the report
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
@@ -497,6 +504,7 @@ def run_report_in_subprocess(
         status=JobStatus.SUBMITTED,
         overrides=overrides,
         mailto=mailto,
+        error_mailto=error_mailto,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=scheduler_job_id,
@@ -530,6 +538,8 @@ def run_report_in_subprocess(
             report_title,
             "--mailto",
             mailto,
+            "--error-mailto",
+            error_mailto,
             "--overrides-as-json",
             json.dumps(overrides),
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",

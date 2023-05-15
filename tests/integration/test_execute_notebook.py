@@ -71,15 +71,11 @@ def test_main(mongo_host, setup_and_cleanup_notebooker_filesystem, webapp_config
 
 
 @pytest.mark.parametrize(
-    (
-        "cli_args",
-        "expected_mailto",
-        "expected_from",
-    ),
+    ("cli_args", "expected_mailto", "expected_from"),
     [
         (
             ["--report-name", "crashyreport", "--mailto", "happy@email", "--mailfrom", "notebooker@example.com"],
-            "happy@email",
+            None,
             "notebooker@example.com",
         ),
         (
@@ -106,7 +102,7 @@ def test_main(mongo_host, setup_and_cleanup_notebooker_filesystem, webapp_config
 def test_erroring_notebook_with_emails(mongo_host, cli_args, expected_mailto, expected_from):
     with mock.patch("notebooker.execute_notebook.pm.execute_notebook") as exec_nb, mock.patch(
         "notebooker.utils.conversion.jupytext.read"
-    ) as read_nb, mock.patch("notebooker.execute_notebook.send_result_email") as send_email:
+    ) as read_nb, mock.patch("notebooker.utils.notebook_execution._send_email") as send_email:
         exec_nb.side_effect = Exception()
         versions = nbv.split(".")
         major, minor = int(versions[0]), int(versions[1])
@@ -117,18 +113,13 @@ def test_erroring_notebook_with_emails(mongo_host, cli_args, expected_mailto, ex
         runner = CliRunner()
         cli_result = runner.invoke(
             base_notebooker,
-            [
-                "--serializer-cls",
-                DEFAULT_SERIALIZER,
-                "--mongo-host",
-                mongo_host,
-                "execute-notebook",
-                "--job-id",
-                job_id,
-            ]
+            ["--serializer-cls", DEFAULT_SERIALIZER, "--mongo-host", mongo_host, "execute-notebook", "--job-id", job_id]
             + cli_args,
         )
-        mailto = send_email.call_args_list[0][0][0].mailto
-        mailfrom = send_email.call_args_list[0][0][0].mailfrom
-        assert mailto == expected_mailto
-        assert mailfrom == expected_from
+        if expected_mailto is None:
+            assert len(send_email.call_args_list) == 0
+        else:
+            mailfrom = send_email.call_args_list[0][1]["from_email"]
+            mailto = send_email.call_args_list[0][1]["to_email"]
+            assert mailto == expected_mailto
+            assert mailfrom == expected_from
