@@ -1,5 +1,5 @@
 import json
-from typing import Optional, List
+from typing import Optional, List, Callable
 import logging
 
 from apscheduler.jobstores.base import ConflictingIdError
@@ -125,37 +125,38 @@ def create_schedule(report_name):
         return jsonify({"status": "Failed", "content": str(e)})
 
 
-def convert_day_of_week(day_of_week: str) -> str:
+def _convert_day_of_week(day_of_week: str, convert_func: Callable) -> str:
     """
-    UNIX standard maps days-of-week to ints as:
-    SUN: 0
-    MON: 1
-    TUE: 2....
-
-    APScheduler uses:
-    MON: 0
-    TUE: 1
-    WED: 2.....
-
-    Given we are providing a UNIX-style crontab, convert ints accordingly.  Don't shift char-based descriptors,
-    ie., 'MON-FRI'.
+    Given we are providing a crontab converts the int-based day specification according to the function passed.
+    Does not shift char-based descriptors i.e. 'MON-FRI'.
     Parameters
     ----------
     day_of_week - str - "FRI", "MON-FRI", "1"(UNIX Monday)
-
-    Returns
-    -------
-    day_of_week formatted to APScheduler standard
+    convert_func - function to use for conversion
     """
 
     def shift(mychar):
         if mychar.isnumeric():
             myint = int(mychar)
-            return str((myint + 6) % 7)
+            return str(convert_func(myint))
         else:
             return mychar
 
     return "".join([shift(char) for char in day_of_week])
+
+
+def crontab_to_apscheduler_day_of_week(day_of_week: str) -> str:
+    """
+    Converts UNIX standard days-of-week (SUN=0, MON=1, ...) to APScheduler ones (MON=0, TUE=1, ...)
+    """
+    return _convert_day_of_week(day_of_week, lambda dow: (dow + 6) % 7)
+
+
+def apscheduler_to_crontab_day_of_week(day_of_week: str) -> str:
+    """
+    Converts APScheduler days-of-week (MON=0, TUE=1, ...) to UNIX standard ones (SUN=0, MON=1, ...)
+    """
+    return _convert_day_of_week(day_of_week, lambda dow: (dow - 6) % 7)
 
 
 def validate_crontab(crontab: str, issues: List[str]) -> cron.CronTrigger:
@@ -163,13 +164,14 @@ def validate_crontab(crontab: str, issues: List[str]) -> cron.CronTrigger:
     if len(parts) != 5:
         issues.append("The crontab key must be passed with a string using 5 crontab parts")
     else:
-        parts[4] = convert_day_of_week(parts[4])
+        parts[4] = crontab_to_apscheduler_day_of_week(parts[4])
         return cron.CronTrigger(minute=parts[0], hour=parts[1], day=parts[2], month=parts[3], day_of_week=parts[4])
 
 
 def trigger_to_crontab(trigger: cron.CronTrigger) -> str:
     fields = {f.name: str(f) for f in trigger.fields}
-    return f"{fields['minute']} {fields['hour']} {fields['day']} {fields['month']} {fields['day_of_week']}"
+    day_of_week = apscheduler_to_crontab_day_of_week(fields["day_of_week"])
+    return f"{fields['minute']} {fields['hour']} {fields['day']} {fields['month']} {day_of_week}"
 
 
 def _job_to_json(job):
