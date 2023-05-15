@@ -493,6 +493,8 @@ def run_report_in_subprocess(
     :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
     :return: The unique job_id.
     """
+    if error_mailto is None:
+        error_mailto = ""
     job_id = str(uuid.uuid4())
     job_start_time = datetime.datetime.now()
     result_serializer = initialize_serializer_from_config(base_config)
