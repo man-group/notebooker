@@ -86,6 +86,7 @@ class NotebookResultBase(object):
     stdout = attr.ib(default=attr.Factory(list))
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
+    email_subject = attr.ib(default=None)
     is_slideshow = attr.ib(default=False)
 
     def saveable_output(self):

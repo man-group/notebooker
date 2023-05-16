@@ -61,6 +61,8 @@
                 {% endif %}
                 {% if result.error_mailto %}
                     <h4>Mailing errors to:</h4> {{ result.error_mailto }}
+                {% if result.email_subject %}
+                    <h4>Email subject:</h4> {{ result.email_subject }}
                 {% endif %}
                 {% if result.overrides %}
                     <h4>Parameters:</h4>

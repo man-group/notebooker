@@ -227,6 +227,7 @@ def run_report(
             mailfrom=mailfrom,
             hide_code=hide_code,
             is_slideshow=is_slideshow,
+            email_subject=email_subject,
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
@@ -472,6 +473,7 @@ def run_report_in_subprocess(
     scheduler_job_id=None,
     run_synchronously=False,
     mailfrom=None,
+    email_subject=None,
     n_retries=3,
     is_slideshow=False,
 ) -> str:
@@ -489,6 +491,7 @@ def run_report_in_subprocess(
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :param mailfrom: `str` if passed, then this string will be used in the from field
+    :param email_subject: `str` if passed, then this string will be used in the email subject
     :param n_retries: The number of retries to attempt.
     :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
     :return: The unique job_id.
@@ -511,6 +514,7 @@ def run_report_in_subprocess(
         hide_code=hide_code,
         scheduler_job_id=scheduler_job_id,
         is_slideshow=is_slideshow,
+        email_subject=email_subject,
     )
 
     command = (
@@ -553,6 +557,7 @@ def run_report_in_subprocess(
         + (["--is-slideshow"] if is_slideshow else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
         + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
+        + ([f"--email-subject={email_subject}"] if email_subject else [])
     )
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
