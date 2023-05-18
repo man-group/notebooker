@@ -1,3 +1,9 @@
+0.5.2 (2023-??)
+------------------
+* Feature: Allow configuring error email addresses via UI. 
+
+
+
 0.5.1 (2023-02-22)
 ------------------
 
