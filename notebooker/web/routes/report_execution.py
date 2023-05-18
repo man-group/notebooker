@@ -122,6 +122,7 @@ def run_report_http(report_name):
 class RunReportParams(NamedTuple):
     report_title: AnyStr
     mailto: AnyStr
+    error_mailto: AnyStr
     mailfrom: AnyStr
     generate_pdf_output: bool
     hide_code: bool
@@ -135,6 +136,7 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
     report_title = validate_title(params.get("report_title") or report_name, issues)
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
+    error_mailto = validate_mailto(params.get("error_mailto"), issues)
     mailfrom = validate_mailto(params.get("mailfrom"), issues)
     # "on" comes from HTML, "True" comes from urlencoded JSON params
     generate_pdf_output = params.get("generate_pdf") in ("on", "True", True)
@@ -144,6 +146,7 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
     out = RunReportParams(
         report_title=report_title,
         mailto=mailto,
+        error_mailto=error_mailto,
         mailfrom=mailfrom,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
@@ -165,6 +168,7 @@ def _handle_run_report(
         f"Handling run report with parameters report_name={report_name} "
         f"report_title={params.report_title}"
         f"mailto={params.mailto} "
+        f"error_mailto={params.error_mailto} "
         f"overrides_dict={overrides_dict} "
         f"generate_pdf_output={params.generate_pdf_output} "
         f"hide_code={params.hide_code} "
@@ -180,6 +184,7 @@ def _handle_run_report(
                 report_name=report_name,
                 report_title=params.report_title,
                 mailto=params.mailto,
+                error_mailto=params.error_mailto,
                 overrides=overrides_dict,
                 generate_pdf_output=params.generate_pdf_output,
                 hide_code=params.hide_code,
@@ -242,6 +247,7 @@ def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
         result.report_name,
         title,
         result.mailto,
+        result.error_mailto,
         result.overrides,
         hide_code=result.hide_code,
         generate_pdf_output=result.generate_pdf_output,

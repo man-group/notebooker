@@ -15,12 +15,7 @@ def _output_dir(output_base_dir, report_name, job_id):
     return os.path.join(output_base_dir, report_name, job_id)
 
 
-def send_result_email(result: Union[NotebookResultComplete, NotebookResultError], default_mailfrom: str) -> None:
-    if result.mailfrom:
-        mailfrom = result.mailfrom
-    else:
-        mailfrom = default_mailfrom
-    to_email = result.mailto
+def _send_email(from_email: str, to_email: str, result: Union[NotebookResultComplete, NotebookResultError]) -> None:
     report_title = (
         result.report_title.decode("utf-8") if isinstance(result.report_title, bytes) else result.report_title
     )
@@ -57,8 +52,23 @@ def send_result_email(result: Union[NotebookResultComplete, NotebookResultError]
         msg = ["Please either activate HTML emails, or see the PDF attachment.", body]
 
         logger.info("Sending email to %s with %d attachments", to_email, len(attachments))
-        mail(mailfrom, to_email, subject, msg, attachments=attachments)
+        mail(from_email, to_email, subject, msg, attachments=attachments)
     finally:
         if tmp_dir:
             logger.info("Cleaning up temporary email attachment directory %s", tmp_dir)
             shutil.rmtree(tmp_dir)
+
+
+def send_result_email(result: Union[NotebookResultComplete, NotebookResultError], default_mailfrom: str) -> None:
+    if result.mailfrom:
+        mailfrom = result.mailfrom
+    else:
+        mailfrom = default_mailfrom
+    if isinstance(result, NotebookResultComplete):
+        to_email = result.mailto
+    else:
+        to_email = result.error_mailto or result.mailto
+    if not to_email:
+        logger.info("Not sending email as no recipients specified")
+        return
+    _send_email(from_email=mailfrom, to_email=to_email, result=result)

@@ -35,16 +35,23 @@ You can import anything, but ensure that in any x=y statements, y is JSON serial
                 <input name="report_name" value="{{ report_name }}" style="display:none">
             </div>
             <div class="field">
-                <h3>Email to:</h3>
+                <h3>Email result to:</h3>
                 <input name="mailto"
                        placeholder="Comma-separated email addresses (optional)"
                        id="titleInput"
                        width="100%"/>
             </div>
             <div class="field">
-                <h3>Email from (optional):</h3>
+                <h3>Email errors to:</h3>
+                <input name="error_mailto"
+                       placeholder="Comma-separated email addresses (optional), defaults to the above"
+                       id="titleInput"
+                       width="100%"/>
+            </div>
+            <div class="field">
+                <h3>Email from:</h3>
                 <input name="mailfrom"
-                       placeholder="{{ default_mailfrom }}"
+                       placeholder="{{ default_mailfrom }} (optional)"
                        id="titleInput"
                        width="100%"/>
             </div>

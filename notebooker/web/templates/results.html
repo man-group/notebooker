@@ -59,6 +59,9 @@
                 {% if result.mailto %}
                     <h4>Mailing results to:</h4> {{ result.mailto }}
                 {% endif %}
+                {% if result.error_mailto %}
+                    <h4>Mailing errors to:</h4> {{ result.error_mailto }}
+                {% endif %}
                 {% if result.overrides %}
                     <h4>Parameters:</h4>
                     <div class="ui list">
