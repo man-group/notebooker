@@ -1,6 +1,7 @@
 0.5.2 (2023-??)
 ------------------
 * Feature: Allow configuring error email addresses via UI. 
+* Bugfix: . and .. should now be allowed to be used when specifying the templates directory.
 
 
 
