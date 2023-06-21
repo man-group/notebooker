@@ -86,6 +86,13 @@ def load_files_from_gridfs(result_data_store: gridfs.GridFS, result: Dict, do_re
 
 
 class MongoResultSerializer(ABC):
+    instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls.instance, cls):
+            cls.instance = object.__new__(cls)
+        return cls.instance
+
     # This class is the interface between Mongo and the rest of the application
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
         self.database_name = database_name
@@ -101,7 +108,7 @@ class MongoResultSerializer(ABC):
             conn.admin.command("enableSharding", self.database_name)
             conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks", "key": {"files_id": 1, "n": 1}})
         except pymongo.errors.OperationFailure:
-            pass
+            logger.error(f"Could not shard {self.database_name}. Continuing.")
 
     def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
         if cli_options is None:
