@@ -124,10 +124,7 @@ class NotebookResultError(NotebookResultBase):
     scheduler_job_id = attr.ib(default=None)
     mailfrom = attr.ib(default=None)
     is_slideshow = attr.ib(default=False)
-
-    @property
-    def email_subject(self):
-        return ""
+    email_subject = attr.ib(default=None)
 
     @property
     def raw_html(self):
