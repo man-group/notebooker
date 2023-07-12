@@ -169,11 +169,7 @@ class MongoResultSerializer(ABC):
             existing["status"] = status.value
             for k, v in extra.items():
                 if k == "error_info" and v:
-                    self.result_data_store.put(
-                        v,
-                        filename=_error_info_filename(job_id),
-                        encoding="utf-8",
-                    )
+                    self.result_data_store.put(v, filename=_error_info_filename(job_id), encoding="utf-8")
                 else:
                     existing[k] = v
             self._save_raw_to_db(existing)
@@ -192,6 +188,7 @@ class MongoResultSerializer(ABC):
         hide_code: bool = False,
         scheduler_job_id: Optional[str] = None,
         is_slideshow: bool = False,
+        email_subject: Optional[str] = None,
     ) -> None:
         """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
@@ -204,6 +201,7 @@ class MongoResultSerializer(ABC):
             report_name=report_name,
             mailto=mailto,
             error_mailto=error_mailto,
+            email_subject=email_subject,
             generate_pdf_output=generate_pdf_output,
             overrides=overrides or {},
             hide_code=hide_code,
@@ -226,9 +224,7 @@ class MongoResultSerializer(ABC):
                     filename=filename_func(notebook_result.job_id),
                     encoding="utf-8",
                 )
-        for json_attribute, filename_func in [
-            ("raw_ipynb_json", _raw_json_filename),
-        ]:
+        for json_attribute, filename_func in [("raw_ipynb_json", _raw_json_filename)]:
             if getattr(notebook_result, json_attribute, None):
                 self.result_data_store.put(
                     json.dumps(getattr(notebook_result, json_attribute)),
@@ -306,6 +302,7 @@ class MongoResultSerializer(ABC):
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", None),
                 is_slideshow=result.get("is_slideshow", False),
+                email_subject=result.get("email_subject", None),
             )
         elif cls == NotebookResultPending:
             return NotebookResultPending(
@@ -319,6 +316,7 @@ class MongoResultSerializer(ABC):
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
                 error_mailto=result.get("error_mailto", ""),
+                email_subject=result.get("email_subject", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", None),
@@ -343,6 +341,7 @@ class MongoResultSerializer(ABC):
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
                 error_mailto=result.get("error_mailto", ""),
+                email_subject=result.get("email_subject", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", False),
