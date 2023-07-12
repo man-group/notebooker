@@ -36,6 +36,7 @@ function updateContents(currentFolder, entries){
     let $cardContainer = $('#cardContainer');
     $cardContainer.empty();
     subfolderPaths = {}
+    subfolderReportCounts = {}
     reportParts = []
     for (let report in entries) {
         if(!report.startsWith(currentFolder)){
@@ -46,6 +47,11 @@ function updateContents(currentFolder, entries){
         if(shortReportName.includes('/')) {
             subfolderName = shortReportName.substring(0, shortReportName.indexOf('/'))
             subfolderPaths[subfolderName] = currentFolder + subfolderName
+            if (subfolderName in subfolderReportCounts) {
+                subfolderReportCounts[subfolderName] = subfolderReportCounts[subfolderName] + 1
+            } else{
+                subfolderReportCounts[subfolderName] = 1
+            }
             // it is a folder
             continue
         }
@@ -77,7 +83,8 @@ function updateContents(currentFolder, entries){
         $cardContainer.append(
             '<a class="ui card folder" href="/folder/' + subfolderPaths[subfolder] + '">' +
             '  <div class="content">' +
-            '    <h1><img src="/static/notebooker/folder.svg" class="folderImg">' + subfolder + '</h1>\n' +
+            '    <h1><i class="fa-solid fa-folder fa-xs"></i> ' + subfolder + '</h1>\n' +
+            ' <span>Reports: ' + subfolderReportCounts[subfolder] + '</span>' + 
             '  </div>' +
             '</a>');
     }
