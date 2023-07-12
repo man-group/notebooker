@@ -29,7 +29,7 @@ def _get_python_template_dir() -> str:
     return python_template_dir(current_app.config["PY_TEMPLATE_BASE_DIR"], current_app.config["PY_TEMPLATE_SUBDIR"])
 
 
-def get_all_possible_templates(warn_on_local=True):
+def get_all_possible_templates(warn_on_local=True, subfolder: Optional[str] = None):
     if _get_python_template_dir():
         all_checks = get_directory_structure()
     else:
@@ -39,6 +39,8 @@ def get_all_possible_templates(warn_on_local=True):
         from notebooker import notebook_templates_example
 
         all_checks = get_directory_structure(os.path.abspath(notebook_templates_example.__path__[0]))
+    if subfolder is not None:
+        all_checks = {c: val for c, val in all_checks.items() if c.startswith(subfolder)}
     return all_checks
 
 
@@ -54,7 +56,11 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
         if not _valid_dirname(path):
             continue
         folders = path[start:].split(os.sep)
-        subdir = {os.sep.join(folders[1:] + [f.replace(".ipynb", "").replace(".py", "")]): None for f in files if _valid_filename(f)}
+        subdir = {
+            os.sep.join(folders[1:] + [f.replace(".ipynb", "").replace(".py", "")]): None
+            for f in files
+            if _valid_filename(f)
+        }
         parent = reduce(dict.get, folders[:-1], all_dirs)
         parent[folders[-1]] = subdir
     return all_dirs[rootdir[start:]]

@@ -32,59 +32,75 @@ function updateNavigationPanel(currentFolder){
 }
 
 
+function entryAfterLevel(path, level){
+    while(level > 0) {
+        path = path.substring(path.indexOf('/') + 1)
+        level = level - 1
+    }
+    return path
+}
+
 function updateContents(currentFolder, entries){
     let $cardContainer = $('#cardContainer');
     $cardContainer.empty();
-    subfolderPaths = {}
-    subfolderReportCounts = {}
+    subfoldersInfo = {}
     reportParts = []
     for (let report in entries) {
-        if(!report.startsWith(currentFolder)){
+        report_data = entries[report]
+        report_path = report_data.report_name
+        if(!report_path.startsWith(currentFolder)){
             continue;
         }
-        
-        shortReportName = report.substring(currentFolder.length)
-        if(shortReportName.includes('/')) {
-            subfolderName = shortReportName.substring(0, shortReportName.indexOf('/'))
-            subfolderPaths[subfolderName] = currentFolder + subfolderName
-            if (subfolderName in subfolderReportCounts) {
-                subfolderReportCounts[subfolderName] = subfolderReportCounts[subfolderName] + 1
-            } else{
-                subfolderReportCounts[subfolderName] = 1
-            }
+        remainingPath = report_path.substring(currentFolder.length)
+        if(remainingPath.includes('/')) {
             // it is a folder
-            continue
+            subfolderPathName = remainingPath.substring(0, remainingPath.indexOf('/'))
+            subfolderPath = currentFolder + subfolderPathName
+            if (subfolderPath in subfoldersInfo) {
+                info.reportCount = info.reportCount + 1
+            } else{
+                info = {}
+                info.pathName = subfolderPathName
+                info.path = subfolderPath
+                info.reportCount = 1
+                subfoldersInfo[subfolderPath] = info
+            }
+        }else{
+            level = currentFolder.split('/').length - 1
+            displayName = entryAfterLevel(report, level)
+            let stats = entries[report];
+            reportParts.push('<a class="ui card" href="/result_listing/' + stats.report_name + '">' +
+                '  <div class="content">' +
+                '    <h1>' + displayName + '</h1>\n' +
+                '    <div class="meta">\n' +
+                '      <span class="date">Last ran ' + stats.time_diff + ' ago</span>\n' +
+                '    </div>' +
+                '    <span>\n' +
+                stats.count +
+                '        Runs\n' +
+                '    </span>' +
+                '<br/>' +
+                '    <span>\n' +
+                stats.scheduler_runs +
+                '        Scheduler Runs\n' +
+                '    </span>' +
+                '  </div>' +
+                '  <div class="extra content">' +
+                '      <span>Original report name: ' + stats.report_name + '</span>\n' +
+                '  </div>' +
+                '</a>');
         }
         
-        let stats = entries[report];
-        reportParts.push('<a class="ui card" href="/result_listing/' + stats.report_name + '">' +
-            '  <div class="content">' +
-            '    <h1>' + shortReportName + '</h1>\n' +
-            '    <div class="meta">\n' +
-            '      <span class="date">Last ran ' + stats.time_diff + ' ago</span>\n' +
-            '    </div>' +
-            '    <span>\n' +
-            stats.count +
-            '        Runs\n' +
-            '    </span>' +
-            '<br/>' +
-            '    <span>\n' +
-            stats.scheduler_runs +
-            '        Scheduler Runs\n' +
-            '    </span>' +
-            '  </div>' +
-            '  <div class="extra content">' +
-            '      <span>Original report name: ' + stats.report_name + '</span>\n' +
-            '  </div>' +
-            '</a>');
+        
     }
     // first add all folders
-    for (let subfolder in subfolderPaths) {
+    for (let subfolder in subfoldersInfo) {
+        info = subfoldersInfo[subfolder]
         $cardContainer.append(
-            '<a class="ui card folder" href="/folder/' + subfolderPaths[subfolder] + '">' +
+            '<a class="ui card folder" href="/folder/' + info.path + '">' +
             '  <div class="content">' +
-            '    <h1><i class="fa-solid fa-folder fa-xs"></i> ' + subfolder + '</h1>\n' +
-            ' <span>Reports: ' + subfolderReportCounts[subfolder] + '</span>' + 
+            '    <h1><i class="fa-solid fa-folder fa-xs"></i> ' + info.pathName + '</h1>\n' +
+            ' <span>Reports: ' + info.reportCount + '</span>' + 
             '  </div>' +
             '</a>');
     }
