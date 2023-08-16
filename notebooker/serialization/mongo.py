@@ -103,13 +103,6 @@ class MongoResultSerializer(ABC):
         self.library = mongo_database[result_collection_name]
         self.result_data_store = gridfs.GridFS(mongo_database, "notebook_data")
 
-        conn = self.get_mongo_connection()
-        try:
-            conn.admin.command("enableSharding", self.database_name)
-            conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks", "key": {"files_id": 1, "n": 1}})
-        except pymongo.errors.OperationFailure:
-            logger.error(f"Could not shard {self.database_name}. Continuing.")
-
     def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
         if cli_options is None:
             raise ValueError(
@@ -118,6 +111,16 @@ class MongoResultSerializer(ABC):
             )
         cls.cli_options = cli_options
         super().__init_subclass__(**kwargs)
+
+    def enable_sharding(self):
+        conn = self.get_mongo_connection()
+        try:
+            conn.admin.command("enableSharding", self.database_name)
+            conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks",
+                                "key": {"files_id": 1, "n": 1}})
+            logger.info(f"Successfully sharded GridFS collection for {self.database_name}")
+        except pymongo.errors.OperationFailure:
+            logger.error(f"Could not shard {self.database_name}. Continuing.")
 
     def serializer_args_to_cmdline_args(self) -> List[str]:
         args = []

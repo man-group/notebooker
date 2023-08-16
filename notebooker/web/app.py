@@ -138,6 +138,8 @@ def main(web_config: WebappConfig):
     GLOBAL_CONFIG = web_config
     flask_app = create_app(web_config)
     flask_app = setup_app(flask_app, web_config)
+    serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
+    serializer.enable_sharding()
     start_app(web_config)
     logger.info("Notebooker is now running at http://0.0.0.0:%d", web_config.PORT)
     http_server = WSGIServer(("0.0.0.0", web_config.PORT), flask_app)
