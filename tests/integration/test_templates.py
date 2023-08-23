@@ -13,14 +13,3 @@ def test_get_all_possible_templates(flask_app):
             },
             "other_folder": {"other_folder/other_slideshow_test": None},
         }
-        assert get_all_possible_templates(subfolder="sample") == {
-            "sample": {
-                "sample/plot_random": None,
-                "sample/test_plotly": None,
-                "sample/plot_random_raw": None,
-                "sample/slideshow_test": None,
-            }
-        }
-        assert get_all_possible_templates(subfolder="other_folder") == {
-            "other_folder": {"other_folder/other_slideshow_test": None}
-        }

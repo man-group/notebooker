@@ -17,7 +17,7 @@ def index(subfolder: Optional[str] = None):
     The index page which shows cards of each report which has at least one result in the database.
     """
     username = request.headers.get("X-Auth-Username")
-    all_reports = get_all_possible_templates(subfolder=subfolder)
+    all_reports = get_all_possible_templates()
     with current_app.app_context():
         result = render_template(
             "index.html",

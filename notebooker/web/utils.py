@@ -29,7 +29,7 @@ def _get_python_template_dir() -> str:
     return python_template_dir(current_app.config["PY_TEMPLATE_BASE_DIR"], current_app.config["PY_TEMPLATE_SUBDIR"])
 
 
-def get_all_possible_templates(warn_on_local=True, subfolder: Optional[str] = None):
+def get_all_possible_templates(warn_on_local=True):
     if _get_python_template_dir():
         all_checks = get_directory_structure()
     else:
@@ -39,8 +39,6 @@ def get_all_possible_templates(warn_on_local=True, subfolder: Optional[str] = No
         from notebooker import notebook_templates_example
 
         all_checks = get_directory_structure(os.path.abspath(notebook_templates_example.__path__[0]))
-    if subfolder is not None:
-        all_checks = {c: val for c, val in all_checks.items() if c.startswith(subfolder)}
     return all_checks
 
 

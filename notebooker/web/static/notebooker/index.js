@@ -113,7 +113,7 @@ function updateContents(currentFolder, entries){
 
 load_data = () => {
     $.ajax({
-        url: `/core/get_all_templates_with_results`,
+        url: `/core/get_all_templates_with_results/folder/`.concat(getCurrentFolder()),
         dataType: 'json',
         success: (result) => {
             currentFolder = getCurrentFolder()
