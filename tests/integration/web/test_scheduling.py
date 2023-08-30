@@ -17,10 +17,12 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
+                "error_mailto": "",
                 "generate_pdf": True,
                 "is_slideshow": True,
                 "cron_schedule": "* * * * *",
                 "mailfrom": "test@example.com",
+                "email_subject": "Subject",
             },
         )
         assert rv.status_code == 201
@@ -34,12 +36,14 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "generate_pdf": True,
                 "hide_code": False,
                 "mailto": "",
+                "error_mailto": "",
                 "overrides": "",
                 "report_name": report_name,
                 "report_title": "test2",
                 "is_slideshow": True,
                 "scheduler_job_id": f"{report_name}_test2",
                 "mailfrom": "test@example.com",
+                "email_subject": "Subject",
             },
             "trigger": {
                 "fields": {
@@ -69,6 +73,7 @@ def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_
                 "report_name": report_name,
                 "overrides": "",
                 "mailto": "",
+                "error_mailto": "",
                 "generate_pdf": True,
                 "hide_code": True,
                 "is_slideshow": True,

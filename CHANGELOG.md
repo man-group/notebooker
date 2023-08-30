@@ -1,3 +1,9 @@
+0.5.2 (2023-??)
+------------------
+* Feature: Allow configuring error email addresses and email subject via UI. 
+* Bugfix: . and .. should now be allowed to be used when specifying the templates directory.
+* Bugfix: corrected cron schedule incorrectly shifting back one day upon save.
+
 0.5.1 (2023-02-22)
 ------------------
 

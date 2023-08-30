@@ -12,20 +12,24 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
         overrides = {"a": 1}
         report_title = "title"
         mailto = "abc@email.asdkj"
+        error_mailto = "def@email.asdkj"
         mailfrom = "test@example.com"
         generate_pdf = True
         hide_code = True
         is_slideshow = True
         scheduler_job_id = "abc/123"
+        email_subject = "Subject"
         payload = {
             "overrides": json.dumps(overrides),
             "report_title": report_title,
             "mailto": mailto,
+            "error_mailto": error_mailto,
             "generate_pdf": generate_pdf,
             "hide_code": hide_code,
             "scheduler_job_id": scheduler_job_id,
             "is_slideshow": is_slideshow,
             "mailfrom": mailfrom,
+            "email_subject": email_subject,
         }
         with mock.patch("notebooker.web.routes.report_execution.run_report_in_subprocess") as rr:
             rr.return_value = "fake_job_id"
@@ -38,12 +42,14 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
                 report_name=report_name,
                 report_title=report_title,
                 mailto=mailto,
+                error_mailto=error_mailto,
                 overrides=overrides,
                 generate_pdf_output=generate_pdf,
                 hide_code=hide_code,
                 scheduler_job_id=scheduler_job_id,
                 mailfrom=mailfrom,
                 is_slideshow=is_slideshow,
+                email_subject=email_subject,
             )
 
 

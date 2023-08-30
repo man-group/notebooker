@@ -44,6 +44,7 @@ def _run_checks(
     generate_pdf_output: Optional[bool] = True,
     hide_code: Optional[bool] = False,
     mailto: Optional[str] = "",
+    error_mailto: Optional[str] = "",
     email_subject: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,
@@ -76,7 +77,9 @@ def _run_checks(
     generate_pdf_output : `Optional[bool]`
         Whether to generate PDF output or not. NB this requires xelatex to be installed on the executor.
     mailto : `Optional[str]`
-        Comma-separated email addresses to send on completion (or error).
+        Comma-separated email addresses to send on completion.
+    error_mailto : `Optional[str]`
+        Comma-separated email addresses to send on error.
     prepare_only : `Optional[bool]`
         Internal usage. Whether we want to do everything apart from executing the notebook.
     scheduler_job_id : `Optional[str]`
@@ -128,6 +131,7 @@ def _run_checks(
         raw_html=html,
         email_html=email_html,
         mailto=mailto,
+        error_mailto=error_mailto,
         email_subject=email_subject,
         pdf=pdf,
         generate_pdf_output=generate_pdf_output,
@@ -191,6 +195,7 @@ def run_report(
             template_base_dir,
             overrides,
             mailto=mailto,
+            error_mailto=error_mailto,
             email_subject=email_subject,
             generate_pdf_output=generate_pdf_output,
             hide_code=hide_code,
@@ -215,12 +220,14 @@ def run_report(
             report_title=report_title,
             error_info=error_info,
             overrides=overrides,
-            mailto=error_mailto or mailto,
+            mailto=mailto,
+            error_mailto=error_mailto,
             generate_pdf_output=generate_pdf_output,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
             hide_code=hide_code,
             is_slideshow=is_slideshow,
+            email_subject=email_subject,
         )
         logger.error(
             "Report run failed. Saving error result to mongo library %s@%s...",
@@ -402,8 +409,7 @@ def execute_notebook_entrypoint(
             mailfrom=mailfrom,
             is_slideshow=is_slideshow,
         )
-        if result.mailto:
-            send_result_email(result, config.DEFAULT_MAILFROM)
+        send_result_email(result, config.DEFAULT_MAILFROM)
         logger.info(f"Here is the result!{result}")
         if isinstance(result, NotebookResultError):
             logger.warning("Notebook execution failed! Output was:")
@@ -458,6 +464,7 @@ def run_report_in_subprocess(
     report_name,
     report_title,
     mailto,
+    error_mailto,
     overrides,
     *,
     hide_code=False,
@@ -466,6 +473,7 @@ def run_report_in_subprocess(
     scheduler_job_id=None,
     run_synchronously=False,
     mailfrom=None,
+    email_subject=None,
     n_retries=3,
     is_slideshow=False,
 ) -> str:
@@ -476,16 +484,20 @@ def run_report_in_subprocess(
     :param report_name: `str` The report which we are executing
     :param report_title: `str` The user-specified title of the report
     :param mailto: `Optional[str]` Who the results will be emailed to
+    :param error_mailto: `Optional[str]` Who the errors will be emailed to
     :param overrides: `Optional[Dict[str, Any]]` The parameters to be passed into the report
     :param generate_pdf_output: `bool` Whether we're generating a PDF. Defaults to False.
     :param prepare_only: `bool` Whether to do everything except execute the notebook. Useful for testing.
     :param scheduler_job_id: `Optional[str]` if the job was triggered from the scheduler, this is the scheduler's job id
     :param run_synchronously: `bool` If True, then we will join the stderr monitoring thread until the job has completed
     :param mailfrom: `str` if passed, then this string will be used in the from field
+    :param email_subject: `str` if passed, then this string will be used in the email subject
     :param n_retries: The number of retries to attempt.
     :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
     :return: The unique job_id.
     """
+    if error_mailto is None:
+        error_mailto = ""
     job_id = str(uuid.uuid4())
     job_start_time = datetime.datetime.now()
     result_serializer = initialize_serializer_from_config(base_config)
@@ -497,10 +509,12 @@ def run_report_in_subprocess(
         status=JobStatus.SUBMITTED,
         overrides=overrides,
         mailto=mailto,
+        error_mailto=error_mailto,
         generate_pdf_output=generate_pdf_output,
         hide_code=hide_code,
         scheduler_job_id=scheduler_job_id,
         is_slideshow=is_slideshow,
+        email_subject=email_subject,
     )
 
     command = (
@@ -530,6 +544,8 @@ def run_report_in_subprocess(
             report_title,
             "--mailto",
             mailto,
+            "--error-mailto",
+            error_mailto,
             "--overrides-as-json",
             json.dumps(overrides),
             "--pdf-output" if generate_pdf_output else "--no-pdf-output",
@@ -541,6 +557,7 @@ def run_report_in_subprocess(
         + (["--is-slideshow"] if is_slideshow else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
         + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
+        + ([f"--email-subject={email_subject}"] if email_subject else [])
     )
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

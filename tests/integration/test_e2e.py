@@ -41,11 +41,13 @@ def test_run_report(
         overrides = {"n_points": 5}
         report_title = "my report title"
         mailto = ""
+        error_mailto = ""
         job_id = run_report_in_subprocess(
             webapp_config,
             report_name,
             report_title,
             mailto,
+            error_mailto,
             overrides,
             generate_pdf_output=False,
             prepare_only=True,
@@ -75,12 +77,14 @@ def test_run_failing_report(
         report_name = "fake/report_failing"
         report_title = "my report title"
         mailto = ""
+        error_mailto = ""
         with pytest.raises(RuntimeError, match=".*The report execution failed with exit code .*"):
             run_report_in_subprocess(
                 webapp_config,
                 report_name,
                 report_title,
                 mailto,
+                error_mailto,
                 overrides,
                 generate_pdf_output=False,
                 prepare_only=False,
@@ -104,11 +108,13 @@ def test_run_report_and_rerun(
         overrides = {"n_points": 5}
         report_title = "my report title"
         mailto = ""
+        error_mailto = ""
         job_id = run_report_in_subprocess(
             webapp_config,
             report_name,
             report_title,
             mailto,
+            error_mailto,
             overrides,
             generate_pdf_output=False,
             prepare_only=True,
@@ -156,11 +162,13 @@ def test_run_report_hide_code(
         overrides = {"n_points": 5}
         report_title = "my report title"
         mailto = ""
+        error_mailto = ""
         job_id = run_report_in_subprocess(
             webapp_config,
             report_name,
             report_title,
             mailto,
+            error_mailto,
             overrides,
             hide_code=True,
             generate_pdf_output=False,

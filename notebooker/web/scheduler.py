@@ -22,6 +22,8 @@ def run_report(
     # new parameters should be added below and be optional to avoid migrations
     mailfrom: Optional[str] = None,
     is_slideshow: bool = False,
+    error_mailto: Optional[str] = None,
+    email_subject: Optional[str] = None,
 ):
     """
     This is the entrypoint of the scheduler; APScheduler has to
@@ -33,6 +35,7 @@ def run_report(
             report_name,
             report_title,
             mailto,
+            error_mailto,
             overrides,
             hide_code=hide_code,
             generate_pdf_output=generate_pdf,
@@ -42,6 +45,7 @@ def run_report(
             mailfrom=mailfrom,
             n_retries=0,
             is_slideshow=is_slideshow,
+            email_subject=email_subject,
         )
     else:
         # Fall back to using API. This will not work in readonly mode.
@@ -50,6 +54,7 @@ def run_report(
             "overrides": json.dumps(overrides),
             "report_title": report_title,
             "mailto": mailto,
+            "error_mailto": error_mailto,
             "generate_pdf": generate_pdf,
             "hide_code": hide_code,
             "scheduler_job_id": scheduler_job_id,
@@ -61,6 +66,8 @@ def run_report(
         # natural.
         if mailfrom:
             payload["mailfrom"] = mailfrom
+        if email_subject:
+            payload["email_subject"] = email_subject
         logger.info(f"Running report at {url}, payload = {payload}")
         result = requests.post(url, params=urllib.parse.urlencode(payload))
         logger.info(result.content)
