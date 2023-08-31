@@ -46,6 +46,10 @@ code {
     color: #222222;
 }
 
+.ui.card.folder {
+    background-color: #EEEEEE;
+}
+
 .ui.table {
     width: 99.5%;  /* Because a border with overflow-y:auto causes a tiny scrollbar */
 }
@@ -90,6 +94,14 @@ td button i {
     margin-right: 1em;
     margin-left: 3px;
     max-width: 280px;  /* Enough to show full job id */
+}
+
+.folderImg {
+    margin-right: 10px;
+}
+
+#folderNavigationPanel {
+    margin-bottom: 1em;
 }
 
 .resultHeader {

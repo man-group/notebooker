@@ -371,10 +371,11 @@ class MongoResultSerializer(ABC):
             # pymongo<3.7 compat
             return self.library.count(base_filter)
 
-    def get_count_and_latest_time_per_report(self):
+    def get_count_and_latest_time_per_report(self, subfolder: Optional[str]):
+        base_filer = {} if not subfolder else {"report_name": {"$regex": subfolder + ".*"}}
         reports = list(
             self._get_raw_results(
-                base_filter={},
+                base_filter=base_filer,
                 projection={"report_name": 1, "job_start_time": 1, "scheduler_job_id": 1, "_id": 0},
                 limit=0,
             )

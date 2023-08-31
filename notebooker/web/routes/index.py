@@ -1,3 +1,4 @@
+from typing import Optional
 import traceback
 
 import inflection
@@ -10,7 +11,8 @@ index_bp = Blueprint("index_bp", __name__)
 
 
 @index_bp.route("/", methods=["GET"])
-def index():
+@index_bp.route("/folder/<path:subfolder>", methods=["GET"])
+def index(subfolder: Optional[str] = None):
     """
     The index page which shows cards of each report which has at least one result in the database.
     """
