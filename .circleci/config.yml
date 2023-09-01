@@ -130,9 +130,8 @@ defaults: &defaults
           pip install -e ".[docs]"
           python setup.py build_sphinx
           cp -r ./build "$CIRCLE_ARTIFACTS"
-    # Build egg
     - run:
-        name: Build egg
+        name: Build distribution
         command: |
           set -ex
           . ci/bin/activate
@@ -146,8 +145,7 @@ defaults: &defaults
             cat ../log
             exit 1
           fi # rst2html.py alwaysexits with 0, check log size
-          python setup.py bdist_wheel --universal
-          python setup.py bdist_egg
+          python setup.py bdist_wheel
           python setup.py sdist
           mkdir -p "$CIRCLE_ARTIFACTS/dist"
           cp -r ./dist/* "$CIRCLE_ARTIFACTS/dist"
@@ -192,7 +190,7 @@ jobs:
       PYTHON_VERSION: "3_6"
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_6
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_6
-      VERSION: 0.5.1
+      VERSION: 0.6.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker
@@ -204,7 +202,7 @@ jobs:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_7
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_7
-      VERSION: 0.5.1
+      VERSION: 0.6.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker
@@ -216,7 +214,7 @@ jobs:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_8
       CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_8
-      VERSION: 0.5.1
+      VERSION: 0.6.0
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker

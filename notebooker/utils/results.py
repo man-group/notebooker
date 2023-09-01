@@ -139,8 +139,8 @@ def get_all_available_results_json(
     return json_output
 
 
-def get_count_and_latest_time_per_report(serializer: MongoResultSerializer):
-    reports = serializer.get_count_and_latest_time_per_report()
+def get_count_and_latest_time_per_report(serializer: MongoResultSerializer, subfolder: Optional[str] = None):
+    reports = serializer.get_count_and_latest_time_per_report(subfolder)
     output = {}
     for report_name, metadata in sorted(reports.items(), key=lambda x: x[1]["latest_run"], reverse=True):
         metadata["report_name"] = report_name

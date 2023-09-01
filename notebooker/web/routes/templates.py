@@ -1,3 +1,5 @@
+from typing import Optional
+
 from flask import jsonify, Blueprint
 
 from notebooker.utils.results import get_count_and_latest_time_per_report
@@ -8,14 +10,15 @@ from notebooker.web.utils import all_templates_flattened, get_all_possible_templ
 templates_bp = Blueprint("templates_bp", __name__)
 
 
-@templates_bp.route("/core/get_all_templates_with_results")
-def all_available_templates_with_results():
+@templates_bp.route("/core/get_all_templates_with_results/folder/")
+@templates_bp.route("/core/get_all_templates_with_results/folder/<path:subfolder>")
+def all_available_templates_with_results(subfolder: Optional[str] = None):
     """
     Core function for the index.html view which shows the templates which have results available.
 
     :returns: A JSON containing a list of template names with a count of how many results are in each.
     """
-    return jsonify(get_count_and_latest_time_per_report(get_serializer()))
+    return jsonify(get_count_and_latest_time_per_report(get_serializer(), subfolder))
 
 
 @templates_bp.route("/core/all_possible_templates")

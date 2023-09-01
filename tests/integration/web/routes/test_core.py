@@ -84,9 +84,7 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
     with freezegun.freeze_time(datetime.datetime(2021, 2, 2)):
         with flask_app.test_client() as client:
             with flask_app.app_context():
-                rv = client.get(
-                    "/core/get_all_templates_with_results",
-                )
+                rv = client.get("/core/get_all_templates_with_results/folder/")
                 assert rv.status_code == 200, rv.data
                 data = json.loads(rv.data)
                 assert data == {
@@ -100,12 +98,56 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
                 }
 
 
+def test_get_all_templates_with_results_filtering(flask_app, setup_workspace):
+    results = [
+        NotebookResultComplete(
+            job_id="job1",
+            report_name="f1/report1",
+            job_start_time=datetime.datetime(2020, 1, 1),
+            job_finish_time=datetime.datetime(2020, 1, 1, 1),
+            status=JobStatus.DONE,
+        ),
+        NotebookResultComplete(
+            job_id="job2",
+            report_name="f1/fsub1/report2",
+            job_start_time=datetime.datetime(2020, 1, 1),
+            job_finish_time=datetime.datetime(2020, 1, 1, 1),
+            status=JobStatus.DONE,
+        ),
+        NotebookResultComplete(
+            job_id="job3",
+            report_name="f2/report3",
+            job_start_time=datetime.datetime(2020, 1, 1),
+            job_finish_time=datetime.datetime(2020, 1, 1, 1),
+            status=JobStatus.DONE,
+        ),
+    ]
+    insert_fake_results(flask_app, results)
+    with freezegun.freeze_time(datetime.datetime(2021, 2, 2)):
+        with flask_app.test_client() as client:
+            with flask_app.app_context():
+                rv = client.get("/core/get_all_templates_with_results/folder/f1/")
+                assert rv.status_code == 200, rv.data
+                data = json.loads(rv.data)
+                assert set(data.keys()) == {"F1/Report1", "F1/Fsub1/Report2"}
+
+                rv = client.get("/core/get_all_templates_with_results/folder/f1/fsub1")
+                assert rv.status_code == 200, rv.data
+                assert set(json.loads(rv.data).keys()) == {"F1/Fsub1/Report2"}
+
+                rv = client.get("/core/get_all_templates_with_results/folder/f2/")
+                assert rv.status_code == 200, rv.data
+                assert set(json.loads(rv.data).keys()) == {"F2/Report3"}
+
+                rv = client.get("/core/get_all_templates_with_results/folder/")
+                assert rv.status_code == 200, rv.data
+                assert set(json.loads(rv.data).keys()) == {"F1/Report1", "F1/Fsub1/Report2", "F2/Report3"}
+
+
 def test_get_all_templates_with_results_no_results(flask_app, setup_workspace):
     with flask_app.test_client() as client:
         with flask_app.app_context():
-            rv = client.get(
-                "/core/get_all_templates_with_results",
-            )
+            rv = client.get("/core/get_all_templates_with_results/folder/")
             assert rv.status_code == 200, rv.data
             data = json.loads(rv.data)
             assert data == {}
@@ -142,9 +184,7 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
     with freezegun.freeze_time(datetime.datetime(2021, 2, 2)):
         with flask_app.test_client() as client:
             with flask_app.app_context():
-                rv = client.get(
-                    "/core/get_all_templates_with_results",
-                )
+                rv = client.get("/core/get_all_templates_with_results/folder/")
                 assert rv.status_code == 200, rv.data
                 data = json.loads(rv.data)
                 assert data == {
@@ -167,9 +207,7 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
                 assert rv.status_code == 200, rv.data
                 rv = client.post("/delete_report/job3")
                 assert rv.status_code == 200, rv.data
-                rv = client.get(
-                    "/core/get_all_templates_with_results",
-                )
+                rv = client.get("/core/get_all_templates_with_results/folder/")
                 assert rv.status_code == 200, rv.data
                 data = json.loads(rv.data)
                 assert data == {
