@@ -130,9 +130,8 @@ defaults: &defaults
           pip install -e ".[docs]"
           python setup.py build_sphinx
           cp -r ./build "$CIRCLE_ARTIFACTS"
-    # Build egg
     - run:
-        name: Build egg
+        name: Build distribution
         command: |
           set -ex
           . ci/bin/activate
@@ -146,8 +145,7 @@ defaults: &defaults
             cat ../log
             exit 1
           fi # rst2html.py alwaysexits with 0, check log size
-          python setup.py bdist_wheel --universal
-          python setup.py bdist_egg
+          python setup.py bdist_wheel
           python setup.py sdist
           mkdir -p "$CIRCLE_ARTIFACTS/dist"
           cp -r ./dist/* "$CIRCLE_ARTIFACTS/dist"
