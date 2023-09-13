@@ -1,3 +1,7 @@
+0.6.1 (2023-09-13)
+------------------
+* Feature: GridFS document storage in Mongo-backed instances is now sharded if the mongo server supports it. 
+
 0.6.0 (2023-09-01)
 ------------------
 * Feature: Reports are now grouped by their containing folder on the main UI.
