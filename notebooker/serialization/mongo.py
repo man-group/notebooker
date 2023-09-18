@@ -86,14 +86,22 @@ def load_files_from_gridfs(result_data_store: gridfs.GridFS, result: Dict, do_re
 
 
 class MongoResultSerializer(ABC):
+    instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls.instance, cls):
+            cls.instance = object.__new__(cls)
+        return cls.instance
+
     # This class is the interface between Mongo and the rest of the application
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
         self.database_name = database_name
         self.mongo_host = mongo_host
         self.result_collection_name = result_collection_name
-        mongo_connection = self.get_mongo_database()
-        self.library = mongo_connection[result_collection_name]
-        self.result_data_store = gridfs.GridFS(mongo_connection, "notebook_data")
+
+        mongo_database = self.get_mongo_database()
+        self.library = mongo_database[result_collection_name]
+        self.result_data_store = gridfs.GridFS(mongo_database, "notebook_data")
 
     def __init_subclass__(cls, cli_options: click.Command = None, **kwargs):
         if cli_options is None:
@@ -103,6 +111,16 @@ class MongoResultSerializer(ABC):
             )
         cls.cli_options = cli_options
         super().__init_subclass__(**kwargs)
+
+    def enable_sharding(self):
+        conn = self.get_mongo_connection()
+        try:
+            conn.admin.command("enableSharding", self.database_name)
+            conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks",
+                                "key": {"files_id": 1, "n": 1}})
+            logger.info(f"Successfully sharded GridFS collection for {self.database_name}")
+        except pymongo.errors.OperationFailure:
+            logger.error(f"Could not shard {self.database_name}. Continuing.")
 
     def serializer_args_to_cmdline_args(self) -> List[str]:
         args = []
