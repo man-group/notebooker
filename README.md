@@ -1,3 +1,4 @@
+new testing commit
 testing commit, ignore
 test_commit 2, ignore
 test_commit 3, ignore
