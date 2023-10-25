@@ -17,7 +17,7 @@ services:
       PY_TEMPLATE_BASE_DIR: /var/run/template_repo
     volumes:
       - git-repo:/var/run/template_repo
-    command: ["notebooker-cli", "--mongo-host", "${MONGO_HOST}", "--mongo-user", "${MONGO_USER}", "--mongo-password", "${MONGO_USER}", "start-webapp", "--port", "${PORT}"]
+    command: ["notebooker-cli", "--mongo-host", "mongodb:27017", "--mongo-user", "root", "--mongo-password", "toor", "start-webapp", "--port", "11828"]
     ports:
       - "8080:11828"
     depends_on:
