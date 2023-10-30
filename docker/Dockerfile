@@ -31,7 +31,7 @@ WORKDIR /workspace
 RUN set -eux \
   ; pip install -e ".[prometheus, test, docs]" \
   ; python -m ipykernel install --user --name=notebooker_kernel \
-  ; pip install nbformat jupyter-core jupyter-client --upgrade \
+  ; pip install nbformat jupyter-core jupyter-client Pandoc --upgrade \
   ; pip install -r ./notebooker/notebook_templates_example/notebook_requirements.txt \
   ; python setup.py develop \
   ; python setup.py build_sphinx \
