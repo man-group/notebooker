@@ -1,8 +1,6 @@
 version: "3"
 
 services:
-  # note:
-  #  * the templates' required python modules must be baked into the image
   notebooker:
     build:
       context: ..
@@ -11,20 +9,17 @@ services:
       # config variables are defined in notebooker/web/config/setting.py
       PORT: 11828
       LOGGING_LEVEL: info
-
       MONGO_USER: root
       MONGO_PASSWORD: toor
       MONGO_HOST: mongodb:27017
-      # this should be something like "notebooker" but this simplifies the compose file
       DATABASE_NAME: admin
       RESULT_COLLECTION_NAME: NOTEBOOK_OUTPUT
-
       PY_TEMPLATE_BASE_DIR: /var/run/template_repo
     volumes:
       - git-repo:/var/run/template_repo
-    command: ["notebooker_webapp"]
+    command: ["notebooker-cli", "--mongo-host", "mongodb:27017", "--mongo-user", "root", "--mongo-password", "toor", "start-webapp", "--port", "11828"]
     ports:
-      - 8080:11828
+      - "8080:11828"
     depends_on:
       - mongodb
     restart: always
