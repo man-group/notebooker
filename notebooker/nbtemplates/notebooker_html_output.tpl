@@ -38,25 +38,37 @@ div div.cell {
     var code_blocks = [
     	'.input',
     	'.prompt',
-    	'.output_stream'
+    	'.output_stream',
+    	'.jp-outputPrompt',
+    	'.jp-inputPrompt',
+    	'.jp-InputArea-editor',
+    	'.jp-RenderedText'
     ];
     var show_code = function(){
         code_blocks.forEach(
-            function(block){
-                $(block).show()
+	        function(block){
+	            var elements = document.querySelectorAll(block);
+				for(var i = 0; i < elements.length; i++){
+				    elements[i].style.display = '';
+				}
             }
         )
     };
 	var hide_code = function(){
 	    code_blocks.forEach(
 	        function(block){
-	            $(block).hide()
+	            var elements = document.querySelectorAll(block);
+				for(var i = 0; i < elements.length; i++){
+				    elements[i].style.display = 'none';
+				}
             }
         )
     };
 
-
-	var bodyElement = $('#notebook-container')[0];
+    var bodyElement = document.getElementsByClassName('jp-Notebook')[0];
+    if (bodyElement === undefined) {
+        bodyElement = document.getElementById('notebook-container');
+    }
     var toggleDiv = document.createElement('div');
     var toggleButton = document.createElement('button');
     toggleButton.className = 'btn';
@@ -81,6 +93,6 @@ div div.cell {
 
 {% block stream %}
   {%- if resources.global_content_filter.include_output_prompt -%}
-    {{ super() }}
+    {{ super() or "" }}
   {%- endif -%}
 {%- endblock stream %}
