@@ -36,6 +36,7 @@ def ipython_to_html(
             __name__, "../nbtemplates/notebooker_html_output.tpl"
         )
         c.HTMLExporter.exclude_input = hide_code
+        c.HTMLExporter.exclude_input_prompt = hide_code
         c.HTMLExporter.exclude_output_prompt = hide_code
         html_exporter_with_figs = HTMLExporter(config=c)
         resources_dir = get_resources_dir(job_id)
@@ -47,6 +48,7 @@ def ipython_to_html(
 def ipython_to_pdf(raw_executed_ipynb: str, report_title: str, hide_code: bool = False) -> AnyStr:
     c = Config()
     c.PDFExporter.exclude_input = hide_code
+    c.PDFExporter.exclude_input_prompt = hide_code
     c.PDFExporter.exclude_output_prompt = hide_code
     c.HTMLExporter.template_file = pkg_resources.resource_filename(
         __name__, "../nbtemplates/notebooker_pdf_output.tplx"
