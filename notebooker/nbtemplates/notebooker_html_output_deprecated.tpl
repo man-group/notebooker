@@ -1,4 +1,4 @@
-{% extends 'index.html.j2' %}
+{% extends 'full.tpl' %}
 {% block html_head %}
 {{ super() }}
 <style type="text/css">
