@@ -1,10 +1,7 @@
-0.6.2 (2024-xx-xx)
-------------------
-* Bugfix: None will stop appearing at the top of reports with nbconvert>7.0.0
-
-0.6.1 (2023-09-13)
+0.6.1 (2023-02-26)
 ------------------
 * Feature: GridFS document storage in Mongo-backed instances is now sharded if the mongo server supports it. 
+* Bugfix: None will stop appearing at the top of reports with nbconvert>7.0.0
 
 0.6.0 (2023-09-01)
 ------------------
