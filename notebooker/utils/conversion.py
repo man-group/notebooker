@@ -4,10 +4,12 @@ from typing import Any, AnyStr, Dict, Optional
 
 import git
 import jupytext
+import nbconvert
 import nbformat
 import pkg_resources
 from nbconvert import HTMLExporter, PDFExporter, SlidesExporter
 from nbconvert.exporters.exporter import ResourcesDict
+from packaging import version
 from traitlets.config import Config
 
 from notebooker.constants import TEMPLATE_DIR_SEPARATOR, kernel_spec
@@ -32,9 +34,14 @@ def ipython_to_html(
         html, resources = exporter.from_notebook_node(nb)
     else:
         c.HTMLExporter.preprocessors = ["nbconvert.preprocessors.ExtractOutputPreprocessor"]
+        if version.parse(nbconvert.__version__) >= version.parse("7.0.0"):
+            template_filename = "notebooker_html_output.tpl"
+        else:
+            template_filename = "notebooker_html_output_deprecated.tpl"
         c.HTMLExporter.template_file = pkg_resources.resource_filename(
-            __name__, "../nbtemplates/notebooker_html_output.tpl"
+            __name__, f"../nbtemplates/{template_filename}"
         )
+
         c.HTMLExporter.exclude_input = hide_code
         c.HTMLExporter.exclude_input_prompt = hide_code
         c.HTMLExporter.exclude_output_prompt = hide_code
