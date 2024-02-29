@@ -515,6 +515,7 @@ def run_report_in_subprocess(
         scheduler_job_id=scheduler_job_id,
         is_slideshow=is_slideshow,
         email_subject=email_subject,
+        mailfrom=mailfrom,
     )
 
     command = (
