@@ -89,6 +89,7 @@ commands:
         command: |
           pushd $YARN_STATIC_DIR
           yarn run lint
+          yarn run format
     - run:
         name: Check for JS Formatting Diffs
         command: |
