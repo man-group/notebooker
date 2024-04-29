@@ -116,8 +116,9 @@ class MongoResultSerializer(ABC):
         conn = self.get_mongo_connection()
         try:
             conn.admin.command("enableSharding", self.database_name)
-            conn.admin.command({"shardCollection": f"{self.database_name}.notebook_data.chunks",
-                                "key": {"files_id": 1, "n": 1}})
+            conn.admin.command(
+                {"shardCollection": f"{self.database_name}.notebook_data.chunks", "key": {"files_id": 1, "n": 1}}
+            )
             logger.info(f"Successfully sharded GridFS collection for {self.database_name}")
         except pymongo.errors.OperationFailure:
             logger.error(f"Could not shard {self.database_name}. Continuing.")

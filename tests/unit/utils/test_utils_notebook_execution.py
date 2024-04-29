@@ -98,7 +98,7 @@ def test_send_result_email_fallback_to_raw_html():
         ("", "Notebooker: subjecttest report completed with status: Checks done!"),
         (None, "Notebooker: subjecttest report completed with status: Checks done!"),
         ("my super cool report title", "my super cool report title"),
-    ]
+    ],
 )
 def test_send_result_email_subject(subject, expected):
     body_in = "<body><h1>hello  😆 😉 😊 😋 😎</h1></body>"

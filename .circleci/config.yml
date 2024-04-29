@@ -131,7 +131,8 @@ commands:
           then
             echo "Black worked fine."
           else
-            echo "Black found differences!"; exit $?
+            echo "Black found differences!"
+            exit 1
           fi
     # Test
     - run:

@@ -67,7 +67,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
             all_reports=get_all_possible_templates(),
             readonly_mode=current_app.config["READONLY_MODE"],
             scheduler_disabled=current_app.config["DISABLE_SCHEDULER"],
-            **urls
+            **urls,
         )
 
 
