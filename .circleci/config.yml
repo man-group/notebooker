@@ -107,9 +107,6 @@ commands:
     - run:
        name: Create and activate virtualenv
        command: |
-         set -x
-         pwd
-         cat /home/circleci/.pyenv/libexec/pyenv-version-name
          virtualenv ci
          . ci/bin/activate
          pip install six lxml flake8 tox pytest black .[test]
