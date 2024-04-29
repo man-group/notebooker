@@ -59,7 +59,7 @@ defaults: &defaults
         name: Install JS Dependencies
         command: |
             pushd $YARN_STATIC_DIR
-            yarn install --frozen-lockfile
+            yarn install --frozen-lockfile $EXTRA_YARN_INSTALL_ARGS
     - save_cache:
         name: Save Yarn Package Cache
         key: yarn-packages-{{ checksum "notebooker/web/static/yarn.lock" }}
@@ -199,6 +199,7 @@ jobs:
       PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
       YARN_STATIC_DIR: notebooker/web/static/
       IMAGE_NAME: mangroup/notebooker
+      EXTRA_YARN_INSTALL_ARGS: "--ignore-engines"
     working_directory: ~/notebooker_3_6
     docker:
     - image: cimg/python:3.6-node
