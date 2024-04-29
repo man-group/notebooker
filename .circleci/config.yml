@@ -211,7 +211,7 @@ jobs:
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           nvm install 18
           node --version
-    - <<: *default_steps
+    - *default_steps
     <<: *defaults
   build_3_7:
     environment:
@@ -226,7 +226,7 @@ jobs:
     - image: cimg/python:3.7-node
     <<: *defaults
     steps:
-    - <<: *default_steps
+    - *default_steps
   build_3_8:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_8
@@ -240,7 +240,7 @@ jobs:
     - image: cimg/python:3.8-node
     <<: *defaults
     steps:
-    - <<: *default_steps
+    - *default_steps
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
