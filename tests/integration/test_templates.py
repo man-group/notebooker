@@ -11,5 +11,10 @@ def test_get_all_possible_templates(flask_app):
                 "sample/plot_random_raw": None,
                 "sample/slideshow_test": None,
             },
-            "other_folder": {"other_folder/other_slideshow_test": None},
+            "other_folder": {
+                "other_folder/other_slideshow_test": None,
+                "this one has spaces": {
+                    "other_folder/this one has spaces/plot_random2": None,
+                },
+            },
         }
