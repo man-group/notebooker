@@ -81,6 +81,11 @@ defaults: &defaults
              pushd $YARN_STATIC_DIR
              yarn run bundle
     - run:
+        name: JS tests
+        command: |
+             pushd $YARN_STATIC_DIR
+             yarn test
+    - run:
        name: Create and activate virtualenv
        command: |
          virtualenv ci
