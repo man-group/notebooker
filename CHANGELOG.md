@@ -1,6 +1,6 @@
 0.6.2 (2024-05-xx)
 ------------------
-* Chore: Applying & enforcing Black and Prettier to Python and JS code, respectively.
+* Chore: Applying & enforcing Black and Prettier to Python and JS code, respectively. Setting Black version to 22.8.0 for CircleCI.
 
 0.6.1 (2024-02-26)
 ------------------
