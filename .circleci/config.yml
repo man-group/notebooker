@@ -110,7 +110,7 @@ commands:
        command: |
          virtualenv ci
          . ci/bin/activate
-         pip install six lxml flake8 tox pytest black .[test]
+         pip install six lxml flake8 tox pytest black==23.3.0 .[test]
          pip install --editable .
     # Save dependency cache
     - save_cache:

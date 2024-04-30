@@ -169,7 +169,6 @@ def run_report(
     mailfrom=None,
     is_slideshow=False,
 ):
-
     job_id = job_id or str(uuid.uuid4())
     stop_execution = os.getenv("NOTEBOOKER_APP_STOPPING")
     if stop_execution:

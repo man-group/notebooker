@@ -1,4 +1,8 @@
-0.6.1 (2023-02-26)
+0.6.2 (2024-05-xx)
+------------------
+* Chore: Applying & enforcing Black and Prettier to Python and JS code, respectively.
+
+0.6.1 (2024-02-26)
 ------------------
 * Feature: GridFS document storage in Mongo-backed instances is now sharded if the mongo server supports it. 
 * Bugfix: None will stop appearing at the top of reports with nbconvert>7.0.0
