@@ -1,6 +1,25 @@
 defaults: &defaults
     parallelism: 1
     shell: /bin/bash --login
+commands:
+  set_node_version:
+    description: "Set Node.js version"
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Set Node.js version
+          command: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install << parameters.version >>
+            node --version
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo 'nvm alias default << parameters.version >> > /dev/null' >> $BASH_ENV
+  default_build:
     steps:
     - checkout
     - run: mkdir -p $CIRCLE_ARTIFACTS $CIRCLE_TEST_REPORTS
@@ -39,7 +58,7 @@ defaults: &defaults
         command: |
             # run "cat /etc/os-release" to view information about the OS
             # good article on how to install mongo, https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
-
+  
             cat /etc/os-release
             set -x
             # ------ (2022-10-28) install libssl1.1 since mongo doesn't support Ubuntu 22.04 which has libssl v3 
@@ -59,7 +78,7 @@ defaults: &defaults
         name: Install JS Dependencies
         command: |
             pushd $YARN_STATIC_DIR
-            yarn install --frozen-lockfile
+            yarn install --frozen-lockfile $EXTRA_YARN_INSTALL_ARGS
     - save_cache:
         name: Save Yarn Package Cache
         key: yarn-packages-{{ checksum "notebooker/web/static/yarn.lock" }}
@@ -80,6 +99,11 @@ defaults: &defaults
         command: |
              pushd $YARN_STATIC_DIR
              yarn run bundle
+    - run:
+        name: JS tests
+        command: |
+             pushd $YARN_STATIC_DIR
+             yarn test
     - run:
        name: Create and activate virtualenv
        command: |
@@ -183,7 +207,7 @@ defaults: &defaults
           - ./*/version.txt
           - ./*/changes.md
           - ./*/dist/*
-version: 2
+version: 2.1
 jobs:
   build_3_6:
     environment:
@@ -197,6 +221,10 @@ jobs:
     working_directory: ~/notebooker_3_6
     docker:
     - image: cimg/python:3.6-node
+    steps:
+      - set_node_version:
+          version: "18"
+      - default_build
     <<: *defaults
   build_3_7:
     environment:
@@ -210,6 +238,8 @@ jobs:
     docker:
     - image: cimg/python:3.7-node
     <<: *defaults
+    steps:
+      - default_build
   build_3_8:
     environment:
       CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_8
@@ -222,6 +252,8 @@ jobs:
     docker:
     - image: cimg/python:3.8-node
     <<: *defaults
+    steps:
+      - default_build
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
