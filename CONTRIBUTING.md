@@ -10,9 +10,9 @@ In pull requests please:
 * update the changelog (create a new version if there is no release candidate)
 
 Please make sure that you have
-run [Black](https://black.readthedocs.io/en/stable/), [mypy](http://mypy-lang.org/), 
-and [flake8](https://flake8.pycqa.org/en/latest/) before you submit your changes. 
-The build will fail for flake8 and Black changes.
+run [Black](https://black.readthedocs.io/en/stable/) with `-l 120`, [mypy](http://mypy-lang.org/), 
+and [flake8](https://flake8.pycqa.org/en/latest/) before you submit your changes. Please run `yarn format` to format the javascript code.
+The build will fail for flake8, Black, and Prettier changes.
 PRs without a test will almost certainly be rejected. 
 Do also make sure to run the webapp and make sure you haven't broken anything.
 

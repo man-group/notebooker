@@ -41,7 +41,7 @@ class BaseConfig:
 
     @classmethod
     def from_superset_kwargs(cls, kwargs: dict):
-        """ When we have too many kwargs but we want to use a subset containing the fields. """
+        """When we have too many kwargs but we want to use a subset containing the fields."""
         return cls(**{k: v for (k, v) in kwargs.items() if k in cls.__dataclass_fields__})
 
 

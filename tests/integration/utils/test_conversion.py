@@ -14,13 +14,7 @@ from notebooker.utils.caching import set_cache
 from notebooker.utils.conversion import _output_ipynb_name
 
 
-@pytest.mark.parametrize(
-    "file_type",
-    [
-        "py",
-        "ipynb",
-    ],
-)
+@pytest.mark.parametrize("file_type", ["py", "ipynb"])
 def test_generate_ipynb_from_py(file_type, setup_and_cleanup_notebooker_filesystem, webapp_config, flask_app):
     python_dir = webapp_config.PY_TEMPLATE_BASE_DIR
     with flask_app.app_context():

@@ -13,8 +13,6 @@ def test_get_all_possible_templates(flask_app):
             },
             "other_folder": {
                 "other_folder/other_slideshow_test": None,
-                "this one has spaces": {
-                    "other_folder/this one has spaces/plot_random2": None,
-                },
+                "this one has spaces": {"other_folder/this one has spaces/plot_random2": None},
             },
         }

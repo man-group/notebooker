@@ -4,10 +4,7 @@ import time
 import pytest
 
 
-@pytest.mark.parametrize(
-    "report_name",
-    ["fake/py_report", "fake/ipynb_report"],
-)
+@pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 def test_create_schedule(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
@@ -60,10 +57,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
         }
 
 
-@pytest.mark.parametrize(
-    "report_name",
-    ["fake/py_report", "fake/ipynb_report"],
-)
+@pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 def test_scheduler_handles_booleans_properly(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
@@ -104,10 +98,7 @@ def test_create_schedule_bad_report_name(flask_app, setup_workspace):
         assert rv.status_code == 404
 
 
-@pytest.mark.parametrize(
-    "report_name",
-    ["fake/py_report", "fake/ipynb_report"],
-)
+@pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
@@ -130,10 +121,7 @@ def test_list_scheduled_jobs(flask_app, setup_workspace, report_name):
         assert jobs[0]["id"] == f"{report_name}_test2"
 
 
-@pytest.mark.parametrize(
-    "report_name",
-    ["fake/py_report", "fake/ipynb_report"],
-)
+@pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
         rv = client.post(
@@ -161,10 +149,7 @@ def test_delete_scheduled_jobs(flask_app, setup_workspace, report_name):
         assert len(json.loads(rv.data)) == 0
 
 
-@pytest.mark.parametrize(
-    "report_name",
-    ["fake/py_report", "fake/ipynb_report"],
-)
+@pytest.mark.parametrize("report_name", ["fake/py_report", "fake/ipynb_report"])
 def test_scheduler_runs_notebooks(flask_app, setup_workspace, report_name):
     with flask_app.test_client() as client:
 

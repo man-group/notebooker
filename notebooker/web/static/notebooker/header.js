@@ -1,77 +1,74 @@
 $(document).ready(() => {
     $.ajax({
-        url: '/core/version',
+        url: "/core/version",
         success: (result) => {
-            $('#versionTitle').text("v" + result.version);
-            $('#versionTitle').show();
+            $("#versionTitle").text("v" + result.version);
+            $("#versionTitle").show();
         },
         error: () => {
-            $('#versionTitle').hide();
+            $("#versionTitle").hide();
         },
     });
     // Check auth is enabled on our host
     $.ajax({
-        url: '/oauth/health',
+        url: "/oauth/health",
         success: () => {
             // If enabled, then fetch our login status
             $.ajax({
-                url: '/core/user_profile',
-                dataType: 'json',
+                url: "/core/user_profile",
+                dataType: "json",
                 success: (result) => {
                     console.log(result);
                     const user = result;
                     if (result.username) {
-                        $('#usernameInfo').text(result.username);
-                        $('.loggedIn').fadeIn();
+                        $("#usernameInfo").text(result.username);
+                        $(".loggedIn").fadeIn();
                     } else {
-                        $('.loggedOut').fadeIn();
+                        $(".loggedOut").fadeIn();
                     }
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
-                    $('.loggedOut').fadeIn();
+                    $(".loggedOut").fadeIn();
                 },
             });
         },
         error: () => {
-            $('#authArea').hide();
+            $("#authArea").hide();
         },
     });
     $.ajax({
-        url: '/scheduler/health',
+        url: "/scheduler/health",
         success: () => {
             // Show the status at some point
         },
         error: () => {
-            $('#schedulerButton').hide();
+            $("#schedulerButton").hide();
         },
     });
 
-    const sb = $('.ui.left.sidebar');
+    const sb = $(".ui.left.sidebar");
     sb.sidebar({
-        transition: 'overlay',
+        transition: "overlay",
     });
-    sb.sidebar('attach events', '#runReport');
-    $('.ui .dropdown').dropdown();
+    sb.sidebar("attach events", "#runReport");
+    $(".ui .dropdown").dropdown();
 
-    $('.message .close')
-        .on('click', function () {
-            $(this)
-                .closest('.message')
-                .hide();
-        });
+    $(".message .close").on("click", function () {
+        $(this).closest(".message").hide();
+    });
 });
 
 function rerunReport(jobId, rerunUrl) {
     $.ajax({
-        type: 'POST',
+        type: "POST",
         url: rerunUrl,
-        dataType: 'json',
+        dataType: "json",
         success(data, status, request) {
             window.location.href = data.results_url;
         },
         error(xhr, textStatus, errorThrown) {
-            $('#errorMsg').text(`${xhr.status} ${textStatus} ${errorThrown}`);
-            $('#errorPopup').show();
+            $("#errorMsg").text(`${xhr.status} ${textStatus} ${errorThrown}`);
+            $("#errorPopup").show();
         },
     });
 }
@@ -81,32 +78,34 @@ function cloneReport(cloneUrl) {
 }
 
 function viewStdout(stdoutUrl) {
-    stdoutContent = document.getElementById('stdoutContent')
+    stdoutContent = document.getElementById("stdoutContent");
 
     if (!stdoutContent.textContent) {
         $.ajax({
-            type: 'GET',
+            type: "GET",
             url: stdoutUrl,
-            dataType: 'json',
+            dataType: "json",
             success(data, status, request) {
-                stdoutContent.textContent = data.join("")
+                stdoutContent.textContent = data.join("");
             },
             error(xhr, textStatus, errorThrown) {
-                $('#errorMsg').text(`${xhr.status} ${textStatus} ${errorThrown}`);
-                $('#errorPopup').show();
+                $("#errorMsg").text(`${xhr.status} ${textStatus} ${errorThrown}`);
+                $("#errorPopup").show();
             },
         });
     }
 
-    $('#stdoutModal').modal({
-        onDeny() {
-            return true;
-        },
-        onApprove() {
-            copy(stdoutContent.textContent)
-            return false;
-        },
-    }).modal('show');
+    $("#stdoutModal")
+        .modal({
+            onDeny() {
+                return true;
+            },
+            onApprove() {
+                copy(stdoutContent.textContent);
+                return false;
+            },
+        })
+        .modal("show");
 }
 
 function copy(text) {
@@ -118,13 +117,13 @@ function copy(text) {
         textArea.value = text;
 
         textArea.style.position = "absolute";
-        textArea.style.opacity = 0
+        textArea.style.opacity = 0;
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
 
         new Promise((res, rej) => {
-            document.execCommand('copy') ? res() : rej();
+            document.execCommand("copy") ? res() : rej();
             textArea.remove();
         });
     }

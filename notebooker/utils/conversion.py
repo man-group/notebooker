@@ -38,9 +38,7 @@ def ipython_to_html(
             template_filename = "notebooker_html_output.tpl"
         else:
             template_filename = "notebooker_html_output_deprecated.tpl"
-        c.HTMLExporter.template_file = pkg_resources.resource_filename(
-            __name__, f"../nbtemplates/{template_filename}"
-        )
+        c.HTMLExporter.template_file = pkg_resources.resource_filename(__name__, f"../nbtemplates/{template_filename}")
 
         c.HTMLExporter.exclude_input = hide_code
         c.HTMLExporter.exclude_input_prompt = hide_code

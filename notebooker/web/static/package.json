@@ -29,7 +29,7 @@
   "main": "notebooker/index.js",
   "scripts": {
     "test": "jest",
-    "format": "prettier --write \"notebooker/*.js\"",
+    "format": "npx prettier --write \"notebooker/*.js\" \"tests/*.js\"",
     "lint": "npm run lint-js",
     "lint-js": "eslint notebooker/*.js --ext .js --fix",
     "bundle": "browserify notebooker/scheduler.js -o notebooker/scheduler_bundle.js",

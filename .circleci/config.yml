@@ -89,6 +89,7 @@ commands:
         command: |
           pushd $YARN_STATIC_DIR
           yarn run lint
+          yarn run format
     - run:
         name: Check for JS Formatting Diffs
         command: |
@@ -109,7 +110,7 @@ commands:
        command: |
          virtualenv ci
          . ci/bin/activate
-         pip install six lxml flake8 tox pytest black .[test]
+         pip install six lxml flake8 tox pytest black==22.8.0 .[test]
          pip install --editable .
     # Save dependency cache
     - save_cache:
@@ -130,7 +131,8 @@ commands:
           then
             echo "Black worked fine."
           else
-            echo "Black found differences!"; exit $?
+            echo "Black found differences!"
+            exit 1
           fi
     # Test
     - run:
