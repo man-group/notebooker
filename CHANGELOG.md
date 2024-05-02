@@ -1,5 +1,7 @@
-0.6.2 (2024-05-xx)
+0.6.2 (2024-05-02)
 ------------------
+* Bugfix: Folders with spaces in their names are now correctly handled in the webapp.
+* Chore: Fix readthedocs build and broken CircleCI link. 
 * Chore: Applying & enforcing Black and Prettier to Python and JS code, respectively. Setting Black version to 22.8.0 for CircleCI.
 * Bugfix: Preserve the "mailfrom" parameter on notebook rerun.
 
