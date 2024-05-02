@@ -208,6 +208,7 @@ class MongoResultSerializer(ABC):
         scheduler_job_id: Optional[str] = None,
         is_slideshow: bool = False,
         email_subject: Optional[str] = None,
+        mailfrom: Optional[str] = None,
     ) -> None:
         """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
@@ -226,6 +227,7 @@ class MongoResultSerializer(ABC):
             hide_code=hide_code,
             scheduler_job_id=scheduler_job_id,
             is_slideshow=is_slideshow,
+            mailfrom=mailfrom,
         )
         self._save_to_db(pending_result)
 
@@ -316,6 +318,7 @@ class MongoResultSerializer(ABC):
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                mailfrom=result.get("mailfrom", ""),
                 error_mailto=result.get("error_mailto", ""),
                 hide_code=result.get("hide_code", False),
                 stdout=result.get("stdout", []),
@@ -334,6 +337,7 @@ class MongoResultSerializer(ABC):
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                mailfrom=result.get("mailfrom", ""),
                 error_mailto=result.get("error_mailto", ""),
                 email_subject=result.get("email_subject", ""),
                 hide_code=result.get("hide_code", False),
@@ -359,6 +363,7 @@ class MongoResultSerializer(ABC):
                 generate_pdf_output=result.get("generate_pdf_output", True),
                 report_title=result.get("report_title", result["report_name"]),
                 mailto=result.get("mailto", ""),
+                mailfrom=result.get("mailfrom", ""),
                 error_mailto=result.get("error_mailto", ""),
                 email_subject=result.get("email_subject", ""),
                 hide_code=result.get("hide_code", False),

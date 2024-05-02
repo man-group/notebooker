@@ -261,6 +261,7 @@ def _rerun_report(job_id, prepare_only=False, run_synchronously=False):
         run_synchronously=run_synchronously,
         is_slideshow=result.is_slideshow,
         email_subject=result.email_subject,
+        mailfrom=result.mailfrom,
     )
     return new_job_id
 
