@@ -1,6 +1,5 @@
 import datetime
 import re
-import sys
 
 import pytest
 
@@ -30,12 +29,9 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile("^(?P<variable_name>[a-zA-Z_]+) *= *(?P<v
             "import datetime\nd = datetime.datetime(2018, 1, 1)",
             {},
             [
-                'Could not JSON serialise a parameter ("d") - this must be serialisable so that we can '
-                "execute the notebook with it! (Error: {})".format(
-                    "Object of type 'datetime' is not JSON serializable, Value: 2018-01-01 00:00:00"
-                    if sys.version_info < (3, 7)
-                    else "Object of type datetime is not JSON serializable, Value: 2018-01-01 00:00:00"
-                )
+                r'Could not JSON serialise a parameter \("d"\) - this must be serialisable so that we can '
+                r"execute the notebook with it! "
+                r"\(Error: Object of type '?datetime'? is not JSON serializable, Value: 2018-01-01 00:00:00\)"
             ],
         ),
         (
@@ -47,7 +43,10 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile("^(?P<variable_name>[a-zA-Z_]+) *= *(?P<v
         (
             "Successfully importing and using a library",
             "from datetime import datetime as dt;d = dt(2018, 1, 1).isoformat()\nq=\\\ndt(2011, 5, 1).isoformat()",
-            {"d": datetime.datetime(2018, 1, 1).isoformat(), "q": datetime.datetime(2011, 5, 1).isoformat()},
+            {
+                "d": datetime.datetime(2018, 1, 1).isoformat(),
+                "q": datetime.datetime(2011, 5, 1).isoformat(),
+            },
             [],
         ),
         (
@@ -60,12 +59,12 @@ VARIABLE_ASSIGNMENT_REGEX = re.compile("^(?P<variable_name>[a-zA-Z_]+) *= *(?P<v
             "Importing but just using an expression",
             "import datetime;datetime.datetime(2018, 1, 1)",
             {},
-            ["Found an expression that did nothing! It has a value of type: <class '_ast.Call'>"],
+            [r"Found an expression that did nothing! It has a value of type: <class '_?ast.Call'>"],
         ),
     ],
 )
 def test_handle_overrides_normal(test_name, input_str, expected_output_values, expected_issues):
     issues = []
     override_dict = handle_overrides(input_str, issues)
-    assert sorted(issues) == sorted(expected_issues)
+    assert all(re.match(pattern, issue) for issue, pattern in zip(sorted(issues), sorted(expected_issues)))
     assert sorted(override_dict.items()) == sorted(expected_output_values.items())

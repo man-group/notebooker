@@ -202,6 +202,10 @@ commands:
     - store_artifacts:
         path: "/tmp/circleci-artifacts/3_8/build/sphinx/"
     - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_11/dist/"
+    - store_artifacts:
+        path: "/tmp/circleci-artifacts/3_11/build/sphinx/"
+    - store_artifacts:
         path: test-results
     - persist_to_workspace:
         root: /tmp/circleci-artifacts
@@ -256,6 +260,20 @@ jobs:
     <<: *defaults
     steps:
       - default_build
+  build_3_11:
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts/3_11
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results/3_11
+      VERSION: 0.6.2
+      PANDOC_RELEASES_URL: https://github.com/jgm/pandoc/releases
+      YARN_STATIC_DIR: notebooker/web/static/
+      IMAGE_NAME: mangroup/notebooker
+    working_directory: ~/notebooker_3_11
+    docker:
+    - image: cimg/python:3.11-node
+    <<: *defaults
+    steps:
+      - default_build
   publish-github-release:
     docker:
       - image: cibuilds/github:0.13
@@ -282,11 +300,13 @@ workflows:
       - build_3_6
       - build_3_7
       - build_3_8
+      - build_3_11
       - publish-github-release:
           requires:
             - build_3_6
             - build_3_7
             - build_3_8
+            - build_3_11
           filters:
             branches:
               only:
@@ -303,3 +323,4 @@ workflows:
       - build_3_6
       - build_3_7
       - build_3_8
+      - build_3_11
