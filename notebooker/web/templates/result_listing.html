@@ -38,11 +38,11 @@
             </div>
             {% endif %}
             {% if not readonly_mode %}
-            <div class="three wide column">
-                <a class="ui button green" id="runReportButton" href="/run_report/{{ report_name }}">
+            <div class="three wide column" style="display: flex;">
+                <a class="ui button green" id="runReportButton" href="/run_report/{{ report_name }}" style="margin-right: 40px;">
                     Manually run this report
                 </a>
-                <button class="ui button red" id="deleteAllReportsButton" href="/delete_all_reports/{{ report_name }}">
+                <button class="ui button red" id="deleteAllReportsButton" data-href="/delete_all_reports/{{ report_name }}">
                     Delete all reports
                 </button>
             </div>

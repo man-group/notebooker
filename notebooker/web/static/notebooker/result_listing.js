@@ -25,32 +25,6 @@ deleteReport = (delete_url) => {
         .modal("show");
 };
 
-deleteAllReports = (delete_url) => {
-    $("#deleteAllModal")
-        .modal({
-            closable: true,
-            onDeny() {
-                return true;
-            },
-            onApprove() {
-                $.ajax({
-                    type: "POST",
-                    url: delete_all_url, // We get this from loading.html, which comes from flask
-                    dataType: "json",
-                    success(data, status, request) {
-                        if (data.status === "error") {
-                            $("#errorMsg").text(data.content);
-                            $("#errorPopup").show();
-                        } else {
-                            window.location.reload();
-                        }
-                    },
-                    error(xhr, error) {},
-                });
-            },
-        })
-        .modal("show");
-};
 
 create_datatable = (result, readonly_mode) => {
     let columns = [

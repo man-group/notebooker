@@ -7,7 +7,7 @@ from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
-from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
+from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app, redirect
 from nbformat import NotebookNode
 
 from notebooker.constants import DEFAULT_RESULT_LIMIT
@@ -302,7 +302,7 @@ def delete_report(job_id):
         return jsonify({"status": "error", "error": error_info}), 500
 
 
-@run_report_bp.route("/delete_all_reports/<path:report_name>", methods=["POST"])
+@run_report_bp.route("/delete_all_reports/<path:report_name>", methods=["GET", "POST"])
 def delete_all_reports(report_name):
     """
     Deletes all reports associated with a particular report_name from the underlying storage.
@@ -314,7 +314,7 @@ def delete_all_reports(report_name):
     :return: A JSON which contains "status" which will either be "ok" or "error".
     """
     try:
-        get_serializer().delete_many({"report_name": report_name})
+        get_serializer().delete_all_for_report_name(report_name)
         get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
         return jsonify({"status": "ok"}), 200
     except Exception:
