@@ -25,7 +25,6 @@ deleteReport = (delete_url) => {
         .modal("show");
 };
 
-
 create_datatable = (result, readonly_mode) => {
     let columns = [
         {
