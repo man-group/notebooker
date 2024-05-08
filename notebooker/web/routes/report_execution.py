@@ -320,4 +320,3 @@ def delete_all_reports(report_name):
     except Exception:
         error_info = traceback.format_exc()
         return jsonify({"status": "error", "error": error_info}), 500
-    
