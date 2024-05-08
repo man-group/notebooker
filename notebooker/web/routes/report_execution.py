@@ -300,3 +300,23 @@ def delete_report(job_id):
     except Exception:
         error_info = traceback.format_exc()
         return jsonify({"status": "error", "error": error_info}), 500
+
+
+@run_report_bp.route("/delete_all_reports/<path:report_name>", methods=["POST"])
+def delete_all_reports(report_name):
+    """
+    Deletes all reports associated with a particular report_name from the underlying storage.
+    Only marks as "status=deleted" so the report is retrievable at a later date.
+
+    :param report_name: The parameter here should be a "/"-delimited string which mirrors the directory structure of \
+        the notebook templates.
+
+    :return: A JSON which contains "status" which will either be "ok" or "error".
+    """
+    try:
+        get_serializer().delete_many({"report_name": report_name})
+        get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
+        return jsonify({"status": "ok"}), 200
+    except Exception:
+        error_info = traceback.format_exc()
+        return jsonify({"status": "error", "error": error_info}), 500

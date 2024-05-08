@@ -42,6 +42,9 @@
                 <a class="ui button green" id="runReportButton" href="/run_report/{{ report_name }}">
                     Manually run this report
                 </a>
+                <button class="ui button red" id="deleteAllReportsButton" href="/delete_all_reports/{{ report_name }}">
+                    Delete all reports
+                </button>
             </div>
             {% endif %}
         </div>
@@ -56,5 +59,14 @@
             <div class="ui cancel button">Cancel</div>
           </div>
         </div>
+<script type="application/javascript">
+    document.getElementById('deleteAllReportsButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        var confirmed = confirm('Are you sure you wish to delete all reports?');
+        if (confirmed) {
+            window.location.href = this.getAttribute('data-href');
+        }
+    });
+</script>
 </body>
 </html>
