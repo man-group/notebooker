@@ -316,7 +316,7 @@ def delete_all_reports(report_name):
     try:
         get_serializer().delete_all_for_report_name(report_name)
         get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
-        return jsonify({"status": "ok"}), 200
+        return redirect("/")
     except Exception:
         error_info = traceback.format_exc()
         return jsonify({"status": "error", "error": error_info}), 500
