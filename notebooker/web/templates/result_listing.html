@@ -64,9 +64,69 @@
         e.preventDefault();
         var confirmed = confirm('Are you sure you wish to delete all reports?');
         if (confirmed) {
-            window.location.href = this.getAttribute('data-href');
+            // Show the spinner
+            document.getElementById('spinner').style.display = 'block';
+
+            // Use fetch API to make the request
+            fetch(this.getAttribute('data-href'))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    // Hide the spinner
+                    document.getElementById('spinner').style.display = 'none';
+                    // Refresh the page or redirect as needed
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                    // Hide the spinner
+                    document.getElementById('spinner').style.display = 'none';
+                });
         }
     });
 </script>
+<!-- Spinner -->
+<div id="spinner" style="display: none;">
+    <div class="loader"></div>
+</div>
+
+<!-- CSS for the spinner -->
+<style>
+#spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  top: 0:
+  left: 0;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+  margin: auto;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
 </body>
 </html>
