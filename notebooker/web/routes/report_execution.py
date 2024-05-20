@@ -7,7 +7,7 @@ from logging import getLogger
 from typing import Any, Dict, List, Tuple, NamedTuple, Optional, AnyStr
 
 import nbformat
-from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app
+from flask import Blueprint, abort, jsonify, render_template, request, url_for, current_app, redirect
 from nbformat import NotebookNode
 
 from notebooker.constants import DEFAULT_RESULT_LIMIT
@@ -297,6 +297,26 @@ def delete_report(job_id):
         get_serializer().delete_result(job_id)
         get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
         return jsonify({"status": "ok"}), 200
+    except Exception:
+        error_info = traceback.format_exc()
+        return jsonify({"status": "error", "error": error_info}), 500
+
+
+@run_report_bp.route("/delete_all_reports/<path:report_name>", methods=["GET", "POST"])
+def delete_all_reports(report_name):
+    """
+    Deletes all reports associated with a particular report_name from the underlying storage.
+    Only marks as "status=deleted" so the report is retrievable at a later date.
+
+    :param report_name: The parameter here should be a "/"-delimited string which mirrors the directory structure of \
+        the notebook templates.
+
+    :return: A JSON which contains "status" which will either be "ok" or "error".
+    """
+    try:
+        get_serializer().delete_all_for_report_name(report_name)
+        get_all_result_keys(get_serializer(), limit=DEFAULT_RESULT_LIMIT, force_reload=True)
+        return redirect("/")
     except Exception:
         error_info = traceback.format_exc()
         return jsonify({"status": "error", "error": error_info}), 500

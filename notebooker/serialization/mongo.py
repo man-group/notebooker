@@ -535,6 +535,10 @@ class MongoResultSerializer(ABC):
             self.result_data_store.delete(filename)
         return {"deleted_result_document": result, "gridfs_filenames": gridfs_filenames}
 
+    def delete_all_for_report_name(self, report_name: AnyStr) -> Dict[str, Any]:
+        results = self.get_all_result_keys(mongo_filter={"report_name": report_name})
+        return {job_id: self.delete_result(job_id) for _, job_id in results}
+
 
 def _pdf_filename(job_id: str) -> str:
     return f"{job_id}.pdf"
