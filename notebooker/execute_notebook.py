@@ -122,7 +122,12 @@ def _run_checks(
         logger.info("Setting working directory for execution {}".format(working_dir))
 
     pm.execute_notebook(
-        ipynb_raw_path, ipynb_executed_path, parameters=overrides, log_output=True, prepare_only=prepare_only, cwd=working_dir
+        ipynb_raw_path,
+        ipynb_executed_path,
+        parameters=overrides,
+        log_output=True,
+        prepare_only=prepare_only,
+        cwd=working_dir,
     )
     with open(ipynb_executed_path, "r") as f:
         raw_executed_ipynb = f.read()
