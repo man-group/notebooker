@@ -3,10 +3,10 @@ x_n = 2000
 y_n = 2070
 # -
 
-filename = 'hello.txt'
+filename = "hello.txt"
 
 # Open the file and read its content
-with open(filename, 'r') as file:
+with open(filename, "r") as file:
     content = file.read()
 
 # Print the content

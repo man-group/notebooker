@@ -28,9 +28,11 @@ def all_templates():
         templates = list(_gen_all_templates(get_all_possible_templates(warn_on_local=False)))
         return templates
 
+
 def templates_with_local_context():
     templates = all_templates()
     return list(filter(lambda x: x.startswith("local_context"), templates))
+
 
 def templates_without_local_context():
     templates = all_templates()
