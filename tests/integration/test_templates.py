@@ -15,4 +15,9 @@ def test_get_all_possible_templates(flask_app):
                 "other_folder/other_slideshow_test": None,
                 "this one has spaces": {"other_folder/this one has spaces/plot_random2": None},
             },
+            "local_context": {
+                "local_context/hello_module": None,
+                "local_context/local_import": None,
+                "local_context/local_read": None,
+            },
         }
