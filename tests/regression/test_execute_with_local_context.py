@@ -10,10 +10,13 @@ from notebooker.execute_notebook import _run_checks
 @pytest.fixture(scope="module")
 def py_template_base_dir():
     import tests.regression.local_context as local_context
+
     return os.path.abspath(local_context.__path__[0])
+
 
 def all_templates():
     return ["local_read", "local_import"]
+
 
 @pytest.mark.parametrize("template_name", all_templates())
 def test_execution_of_templates_with_local_context(
