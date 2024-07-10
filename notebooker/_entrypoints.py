@@ -68,7 +68,7 @@ def filesystem_default_value(dirname):
     "--execute-at-origin",
     default=False,
     is_flag=True,
-    help="If selected, notebooker will execute the notebook at the origin to keep original context",
+    help="If selected, notebooker set current working directory to absolute path of the notebook to keep it local context available",
 )
 @click.option(
     "--default-mailfrom", default=DEFAULT_MAILFROM_ADDRESS, help="Set a new value for the default mailfrom setting."
