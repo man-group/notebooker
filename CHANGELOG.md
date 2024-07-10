@@ -1,4 +1,4 @@
-0.6.3 (2024-07-04)
+0.6.3 (2024-07-11)
 ------------------
 * Feature: Flag to preserve original working directory when running notebooks to make local imports and relative paths work.
 
