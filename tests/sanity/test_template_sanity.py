@@ -9,7 +9,7 @@ from ..utils import all_templates
 
 logger = getLogger("template_sanity_check")
 
-
+x
 @pytest.fixture(autouse=True)
 def clean_file_cache(clean_file_cache):
     pass
