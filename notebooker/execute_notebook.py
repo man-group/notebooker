@@ -539,7 +539,7 @@ def run_report_in_subprocess(
 
     command = (
         [
-            os.path.join(sys.exec_prefix, "bin", "notebooker-cli"),
+            os.path.join("notebooker-cli"),
             "--output-base-dir",
             base_config.OUTPUT_DIR,
             "--template-base-dir",
