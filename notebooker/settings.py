@@ -25,6 +25,9 @@ class BaseConfig:
     # or list the available templates.
     NOTEBOOKER_DISABLE_GIT: bool = False
 
+    # A boolean flag to dictate whether we should execute the notebook at the origin or not.
+    EXECUTE_AT_ORIGIN: bool = False
+
     # The serializer class we are using for storage, e.g. PyMongoResultSerializer
     SERIALIZER_CLS: DEFAULT_SERIALIZER = None
     # The dictionary of parameters which are used to initialize the serializer class above

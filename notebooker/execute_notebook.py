@@ -48,6 +48,7 @@ def _run_checks(
     email_subject: Optional[str] = "",
     prepare_only: Optional[bool] = False,
     notebooker_disable_git: bool = False,
+    execute_at_origin: bool = False,
     py_template_base_dir: str = "",
     py_template_subdir: str = "",
     scheduler_job_id: Optional[str] = None,
@@ -82,6 +83,10 @@ def _run_checks(
         Comma-separated email addresses to send on error.
     prepare_only : `Optional[bool]`
         Internal usage. Whether we want to do everything apart from executing the notebook.
+    notebooker_disable_git : `bool`
+        Whether to disable git pulling of the notebook templates.
+    execute_at_origin : `bool`
+        Whether to execute the notebook at the original path of the template notebook.
     scheduler_job_id : `Optional[str]`
         If available, it will be part of the Error or Completed run report.
     mailfrom : `Optional[str]`
@@ -111,8 +116,18 @@ def _run_checks(
     ipynb_executed_path = os.path.join(output_dir, output_ipynb)
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
+    working_dir = None
+    if execute_at_origin:
+        working_dir = os.path.dirname(os.path.join(py_template_dir, template_name))
+        logger.info("Setting working directory for execution {}".format(working_dir))
+
     pm.execute_notebook(
-        ipynb_raw_path, ipynb_executed_path, parameters=overrides, log_output=True, prepare_only=prepare_only
+        ipynb_raw_path,
+        ipynb_executed_path,
+        parameters=overrides,
+        log_output=True,
+        prepare_only=prepare_only,
+        cwd=working_dir,
     )
     with open(ipynb_executed_path, "r") as f:
         raw_executed_ipynb = f.read()
@@ -163,6 +178,7 @@ def run_report(
     hide_code=False,
     prepare_only=False,
     notebooker_disable_git=False,
+    execute_at_origin=False,
     py_template_base_dir="",
     py_template_subdir="",
     scheduler_job_id=None,
@@ -200,6 +216,7 @@ def run_report(
             hide_code=hide_code,
             prepare_only=prepare_only,
             notebooker_disable_git=notebooker_disable_git,
+            execute_at_origin=execute_at_origin,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
@@ -353,6 +370,7 @@ def execute_notebook_entrypoint(
     output_dir, template_dir, _ = initialise_base_dirs(output_dir=config.OUTPUT_DIR, template_dir=config.TEMPLATE_DIR)
     all_overrides = _get_overrides(overrides_as_json, iterate_override_values_of)
     notebooker_disable_git = config.NOTEBOOKER_DISABLE_GIT
+    execute_at_origin = config.EXECUTE_AT_ORIGIN
     py_template_base_dir = config.PY_TEMPLATE_BASE_DIR
     py_template_subdir = config.PY_TEMPLATE_SUBDIR
 
@@ -376,6 +394,7 @@ def execute_notebook_entrypoint(
     logger.info("prepare_notebook_only = %s", prepare_notebook_only)
     logger.info("scheduler job id = %s", scheduler_job_id)
     logger.info("notebooker_disable_git = %s", notebooker_disable_git)
+    logger.info("execute_at_origin = %s", execute_at_origin)
     logger.info("py_template_base_dir = %s", py_template_base_dir)
     logger.info("py_template_subdir = %s", py_template_subdir)
     logger.info("serializer_cls = %s", config.SERIALIZER_CLS)
@@ -402,6 +421,7 @@ def execute_notebook_entrypoint(
             hide_code=hide_code,
             prepare_only=prepare_notebook_only,
             notebooker_disable_git=notebooker_disable_git,
+            execute_at_origin=execute_at_origin,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
             scheduler_job_id=scheduler_job_id,
@@ -532,6 +552,7 @@ def run_report_in_subprocess(
             base_config.DEFAULT_MAILFROM,
         ]
         + (["--notebooker-disable-git"] if base_config.NOTEBOOKER_DISABLE_GIT else [])
+        + (["--execute-at-origin"] if base_config.EXECUTE_AT_ORIGIN else [])
         + ["--serializer-cls", result_serializer.__class__.__name__]
         + result_serializer.serializer_args_to_cmdline_args()
         + [

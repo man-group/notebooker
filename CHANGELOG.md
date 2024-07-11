@@ -1,3 +1,7 @@
+0.6.3 (2024-07-11)
+------------------
+* Feature: Flag to preserve original working directory when running notebooks to make local imports and relative paths work.
+
 0.6.2 (2024-05-02)
 ------------------
 * Bugfix: Folders with spaces in their names are now correctly handled in the webapp.

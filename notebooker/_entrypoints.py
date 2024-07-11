@@ -65,6 +65,12 @@ def filesystem_default_value(dirname):
     help="If selected, notebooker will not try to pull the latest version of python templates from git.",
 )
 @click.option(
+    "--execute-at-origin",
+    default=False,
+    is_flag=True,
+    help="If selected, notebooker set current working directory to absolute path of the notebook to keep it local context available",
+)
+@click.option(
     "--default-mailfrom", default=DEFAULT_MAILFROM_ADDRESS, help="Set a new value for the default mailfrom setting."
 )
 @click.option(
@@ -84,6 +90,7 @@ def base_notebooker(
     py_template_base_dir,
     py_template_subdir,
     notebooker_disable_git,
+    execute_at_origin,
     default_mailfrom,
     running_timeout,
     serializer_cls,
@@ -98,6 +105,7 @@ def base_notebooker(
         PY_TEMPLATE_BASE_DIR=py_template_base_dir,
         PY_TEMPLATE_SUBDIR=py_template_subdir,
         NOTEBOOKER_DISABLE_GIT=notebooker_disable_git,
+        EXECUTE_AT_ORIGIN=execute_at_origin,
         DEFAULT_MAILFROM=default_mailfrom,
         RUNNING_TIMEOUT=running_timeout,
     )
