@@ -2,7 +2,7 @@
 line-length = 120
 target-version = ['py36', 'py37', 'py38']
 
-# Project Information - PEP 621 compliant
+# Project Information 
 [project]
 name = "Notebooker"
 version = "0.6.2"   
@@ -27,7 +27,6 @@ dependencies = ["pandas", "mongodb", "jupyter"]
 
 license = { text = "MIT" }
 
-# URLs should be inside [project] as "urls" subsection
 [project.urls]
 homepage = "https://notebooker.readthedocs.io/"
 documentation = "https://notebooker.readthedocs.io/en/latest/"
