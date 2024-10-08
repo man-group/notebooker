@@ -52,6 +52,8 @@ def remove_schedule(job_id):
 
 
 def get_job_id(report_name: str, report_title: str) -> str:
+    if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+        report_name = current_app.config["PATH_TO_CATEGORY_DICT"][report_name] + "/" + report_name.split("/")[-1]
     return f"{report_name}_{report_title}"
 
 
@@ -68,7 +70,10 @@ def update_schedule(report_name):
     overrides_dict = handle_overrides(request.values.get("overrides", ""), issues)
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
-
+    if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+        category = current_app.config["PATH_TO_CATEGORY_DICT"][report_name]
+    else:
+        category = ""
     params = {
         "report_name": report_name,
         "overrides": overrides_dict,
@@ -81,6 +86,7 @@ def update_schedule(report_name):
         "hide_code": params.hide_code,
         "is_slideshow": params.is_slideshow,
         "scheduler_job_id": job_id,
+        "category": category,
     }
     job.modify(trigger=trigger, kwargs=params)
     current_app.apscheduler.reschedule_job(job_id, jobstore="mongo", trigger=trigger)
@@ -103,6 +109,10 @@ def create_schedule(report_name):
     if issues:
         return jsonify({"status": "Failed", "content": ("\n".join(issues))})
     job_id = get_job_id(report_name, params.report_title)
+    if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+        category = current_app.config["PATH_TO_CATEGORY_DICT"][report_name]
+    else:
+        category = ""
     dict_params = {
         "report_name": report_name,
         "overrides": overrides_dict,
@@ -115,6 +125,7 @@ def create_schedule(report_name):
         "hide_code": params.hide_code,
         "scheduler_job_id": job_id,
         "is_slideshow": params.is_slideshow,
+        "category": category,
     }
     logger.info(f"Creating job with params: {dict_params}")
     try:
