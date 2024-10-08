@@ -1,3 +1,12 @@
+0.6.4 (2024-10-08)
+------------------
+* Feature: Categorization of the notebooks, allowing set special category tag to notebooks for easy grouping
+* This feature solves issues with huge repo's where only limited number of notebooks are used in the webapp:
+    * Very deep navigation tree in the ui for deepest notebook paths
+    * Super long names of the reports in scheduler and results pages
+    * Hard tile navigation for the reports
+* Important: only categorized notebooks, those having 'category=..' tag are shown as options to select in the webapp
+
 0.6.3 (2024-07-11)
 ------------------
 * Feature: Flag to preserve original working directory when running notebooks to make local imports and relative paths work.
