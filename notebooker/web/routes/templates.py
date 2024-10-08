@@ -5,7 +5,7 @@ from flask import jsonify, Blueprint
 from notebooker.utils.results import get_count_and_latest_time_per_report
 from notebooker.utils.web import convert_report_name_url_to_path
 from notebooker.web.routes.report_execution import get_report_parameters_html
-from notebooker.web.utils import all_templates_flattened, get_all_possible_templates, get_serializer
+from notebooker.web.utils import get_all_possible_templates, get_serializer
 
 templates_bp = Blueprint("templates_bp", __name__)
 
@@ -41,7 +41,7 @@ def all_possible_templates_flattened():
 
     :returns: A JSON which is a list of all possible templates with their full names.
     """
-    return jsonify({"result": all_templates_flattened()})
+    return jsonify({"result": get_all_templates()})
 
 
 @templates_bp.route("/core/get_template_parameters/<path:report_name>", methods=["GET"])
