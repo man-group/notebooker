@@ -6,7 +6,7 @@ from typing import Callable, Dict, Iterator, List, Mapping, Optional, Tuple
 
 import babel.dates
 import inflection
-from flask import url_for,current_app
+from flask import url_for, current_app
 
 from notebooker import constants
 from notebooker.exceptions import NotebookRunException

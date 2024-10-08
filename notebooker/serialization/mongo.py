@@ -423,7 +423,12 @@ class MongoResultSerializer(ABC):
         for report, all_runs in jobs_by_name.items():
             latest_start_time = max(r["job_start_time"] for r in all_runs)
             scheduled_runs = len([x for x in all_runs if x.get("scheduler_job_id")])
-            output[report] = {"count": len(all_runs), "latest_run": latest_start_time, "scheduler_runs": scheduled_runs, "category": r["category"]}
+            output[report] = {
+                "count": len(all_runs),
+                "latest_run": latest_start_time,
+                "scheduler_runs": scheduled_runs,
+                "category": r["category"],
+            }
         return output
 
     def get_all_results(

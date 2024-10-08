@@ -65,7 +65,9 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
                 if categorization:
                     category = _extract_category(full_path)
                     if category:
-                        parent.setdefault(rootdir.split(os.sep)[-1], {}).setdefault(category, {})[os.path.join(*folders[1:], f)] = None
+                        parent.setdefault(rootdir.split(os.sep)[-1], {}).setdefault(category, {})[
+                            os.path.join(*folders[1:], f)
+                        ] = None
                 else:
                     subdir[os.path.join(*folders[1:], f)] = None
 
@@ -78,8 +80,12 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
 
     if categorization:
         all_dirs = filter_for_code_files(all_dirs)
-        path_to_category_name = {name: original_key for original_key, sub_dict in all_dirs.get(rootdir.split(os.sep)[-1], {}).items()
-                                 for name, value in sub_dict.items() if value is None}
+        path_to_category_name = {
+            name: original_key
+            for original_key, sub_dict in all_dirs.get(rootdir.split(os.sep)[-1], {}).items()
+            for name, value in sub_dict.items()
+            if value is None
+        }
         current_app.config["PATH_TO_CATEGORY_DICT"] = path_to_category_name
 
     stripped = strip_extensions(all_dirs)
@@ -90,9 +96,9 @@ def get_directory_structure(starting_point: Optional[str] = None) -> Dict[str, U
 def strip_extensions(d):
     def strip_extension(item):
         """Strips .py or .ipynb extension from a given item, if present."""
-        for ext in ('.py', '.ipynb'):
+        for ext in (".py", ".ipynb"):
             if item.endswith(ext):
-                return item[:-len(ext)]
+                return item[: -len(ext)]
         return item
 
     """
@@ -133,7 +139,7 @@ def filter_for_code_files(d):
         for k, v in sub_d.items():
             if isinstance(v, dict) and has_code_files(v):
                 return True
-            if k.endswith(('.py', '.ipynb')):
+            if k.endswith((".py", ".ipynb")):
                 return True
         return False
 
@@ -148,7 +154,7 @@ def filter_for_code_files(d):
                 filtered_sub_d = filter_dict(v)
                 if has_code_files(filtered_sub_d):  # Retain if leads to code files
                     new_dict[k] = filtered_sub_d
-            elif k.endswith(('.py', '.ipynb')):
+            elif k.endswith((".py", ".ipynb")):
                 new_dict[k] = v
         return new_dict
 

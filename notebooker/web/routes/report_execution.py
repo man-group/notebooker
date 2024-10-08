@@ -142,7 +142,11 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
     logger.info(f"Validating input params: {params} for {report_name}")
     # Find and cleanse the title of the report
     category = params.get("category", "")
-    report_title = validate_title(params.get("report_title") or (category + "/" + report_name.strip("/").split("/")[-1] if category else report_name), issues)
+    report_title = validate_title(
+        params.get("report_title")
+        or (category + "/" + report_name.strip("/").split("/")[-1] if category else report_name),
+        issues,
+    )
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
     error_mailto = validate_mailto(params.get("error_mailto"), issues)
@@ -152,7 +156,6 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
     hide_code = params.get("hide_code") in ("on", "True", True)
     is_slideshow = params.get("is_slideshow") in ("on", "True", True)
     email_subject = validate_title(params.get("email_subject") or "", issues)
-
 
     out = RunReportParams(
         report_title=report_title,

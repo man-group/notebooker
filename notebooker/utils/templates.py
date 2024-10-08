@@ -21,20 +21,23 @@ def _valid_dirname(d):
 def _valid_filename(f):
     return (f.endswith(".py") or f.endswith(".ipynb")) and "__init__" not in f and "__pycache__" not in f
 
+
 def _extract_category(path) -> Optional[str]:
     if path.endswith(".ipynb"):
         nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
         return _get_category(nb)
     return None
 
+
 def _get_category(notebook: nbformat.NotebookNode) -> Optional[int]:
     for idx, cell in enumerate(notebook["cells"]):
         tags = cell.get("metadata", {}).get("tags", [])
         for tag in tags:
-            clean_tag = tag.translate({ord(' '): None}) # Remove spaces
-            if clean_tag.startswith('category='):
-                return clean_tag.split('=')[1]
+            clean_tag = tag.translate({ord(" "): None})  # Remove spaces
+            if clean_tag.startswith("category="):
+                return clean_tag.split("=")[1]
     return None
+
 
 def _get_parameters_cell_idx(notebook: nbformat.NotebookNode) -> Optional[int]:
     for idx, cell in enumerate(notebook["cells"]):
@@ -45,7 +48,7 @@ def _get_parameters_cell_idx(notebook: nbformat.NotebookNode) -> Optional[int]:
 
 
 def template_name_to_notebook_node(
-        template_name: str, notebooker_disable_git: bool, py_template_dir: str, warn_on_local: Optional[bool] = True
+    template_name: str, notebooker_disable_git: bool, py_template_dir: str, warn_on_local: Optional[bool] = True
 ) -> nbformat.NotebookNode:
     path = generate_ipynb_from_py(
         get_template_dir(), template_name, notebooker_disable_git, py_template_dir, warn_on_local=warn_on_local
@@ -55,7 +58,7 @@ def template_name_to_notebook_node(
 
 
 def _get_preview(
-        template_name: str, notebooker_disable_git: bool, py_template_dir: str, warn_on_local: Optional[bool] = True
+    template_name: str, notebooker_disable_git: bool, py_template_dir: str, warn_on_local: Optional[bool] = True
 ) -> str:
     """Returns an HTML render of a report template, with parameters highlighted."""
     cached = get_cache(("preview", template_name))

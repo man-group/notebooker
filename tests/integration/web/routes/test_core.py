@@ -86,12 +86,12 @@ def test_get_all_templates_with_results(flask_app, setup_workspace):
                 data = json.loads(rv.data)
                 assert data == {
                     "Report Name": {
-                        'category': None,
+                        "category": None,
                         "count": 2,
                         "scheduler_runs": 1,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
-                        'original_report': 'report_name',
+                        "original_report": "report_name",
                         "time_diff": "1 month",
                     }
                 }
@@ -189,21 +189,21 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
                 data = json.loads(rv.data)
                 assert data == {
                     "Bad Report": {
-                        'category': None,
+                        "category": None,
                         "count": 1,
                         "scheduler_runs": 0,
                         "report_name": "BadReport",
                         "latest_run": "Thu, 02 Jan 2014 00:00:00 GMT",
-                        'original_report': 'BadReport',
+                        "original_report": "BadReport",
                         "time_diff": "7 years",
                     },
                     "Report Name": {
-                        'category': None,
+                        "category": None,
                         "count": 2,
                         "scheduler_runs": 1,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
-                        'original_report': 'report_name',
+                        "original_report": "report_name",
                         "time_diff": "1 month",
                     },
                 }
@@ -216,12 +216,12 @@ def test_get_all_templates_with_results_then_delete(flask_app, setup_workspace):
                 data = json.loads(rv.data)
                 assert data == {
                     "Report Name": {
-                        'category': None,
+                        "category": None,
                         "count": 1,
                         "scheduler_runs": 0,
                         "report_name": "report_name",
                         "latest_run": "Sat, 02 Jan 2021 00:00:00 GMT",
-                        'original_report': 'report_name',
+                        "original_report": "report_name",
                         "time_diff": "1 month",
                     }
                 }

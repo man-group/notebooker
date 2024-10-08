@@ -98,7 +98,16 @@ def test_main(mongo_host, setup_and_cleanup_notebooker_filesystem, webapp_config
             "notebooker@example.com",
         ),
         (
-            ["--report-name", "crashyreport", "--category", "cat1", "--error-mailto", "sad@email", "--mailfrom", "notebooker@example.com"],
+            [
+                "--report-name",
+                "crashyreport",
+                "--category",
+                "cat1",
+                "--error-mailto",
+                "sad@email",
+                "--mailfrom",
+                "notebooker@example.com",
+            ],
             "sad@email",
             "notebooker@example.com",
         ),

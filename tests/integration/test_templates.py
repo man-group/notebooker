@@ -9,6 +9,7 @@ from notebooker.utils.filesystem import mkdir_p
 from notebooker.utils.templates import _valid_dirname
 from notebooker.web.utils import get_directory_structure
 
+
 @pytest.fixture
 def app_context():
     app = Flask(__name__)
@@ -19,6 +20,7 @@ def app_context():
     yield app  # This makes the app available to the test functions
 
     ctx.pop()  # Removes the application context after test completion
+
 
 @pytest.mark.parametrize(
     "input_dirname, expected_result",
@@ -77,14 +79,17 @@ def test_get_directory_structure(app_context):
     finally:
         shutil.rmtree(temp_dir)
 
+
 def test_get_directory_structure_categorized(app_context):
-    app_context.config['CATEGORIZATION'] = True
+    app_context.config["CATEGORIZATION"] = True
     temp_dir = tempfile.mkdtemp()
     try:
-        expected_structure = {'cat1': {'cat1_nb': None, 'subdir/cat1_nb_subdir': None},
-                              'cat2': {'cat2_nb': None, 'subdir/cat2_nb_subdir': None}}
+        expected_structure = {
+            "cat1": {"cat1_nb": None, "subdir/cat1_nb_subdir": None},
+            "cat2": {"cat2_nb": None, "subdir/cat2_nb_subdir": None},
+        }
 
-        templates_path = os.path.join(os.path.dirname(__file__), 'templates')
+        templates_path = os.path.join(os.path.dirname(__file__), "templates")
         actual_structure = get_directory_structure(templates_path)
         assert actual_structure == expected_structure
     finally:
