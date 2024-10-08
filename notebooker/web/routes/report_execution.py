@@ -81,6 +81,10 @@ def run_report_http(report_name):
 
     :returns: An HTML template which is the Run Report interface.
     """
+    if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+        category = current_app.config["PATH_TO_CATEGORY_DICT"][report_name]
+    else:
+        category = ""
     report_name = convert_report_name_url_to_path(report_name)
     json_params = request.args.get("json_params")
     initial_python_parameters = json_to_python(json_params) or ""
@@ -95,6 +99,7 @@ def run_report_http(report_name):
             has_prefix=False,
             has_suffix=False,
             report_name=report_name,
+            category=category,
             all_reports=get_all_possible_templates(),
             initialPythonParameters={},
             readonly_mode=current_app.config["READONLY_MODE"],
@@ -111,6 +116,7 @@ def run_report_http(report_name):
         has_prefix=has_prefix,
         has_suffix=has_suffix,
         report_name=report_name,
+        category=category,
         all_reports=get_all_possible_templates(),
         initialPythonParameters=initial_python_parameters,
         default_mailfrom=current_app.config["DEFAULT_MAILFROM"],
@@ -129,12 +135,14 @@ class RunReportParams(NamedTuple):
     scheduler_job_id: Optional[str]
     is_slideshow: bool
     email_subject: Optional[str]
+    category: Optional[str]
 
 
 def validate_run_params(report_name, params, issues: List[str]) -> RunReportParams:
     logger.info(f"Validating input params: {params} for {report_name}")
     # Find and cleanse the title of the report
-    report_title = validate_title(params.get("report_title") or report_name, issues)
+    category = params.get("category", "")
+    report_title = validate_title(params.get("report_title") or (category + "/" + report_name.strip("/").split("/")[-1] if category else report_name), issues)
     # Get mailto email address
     mailto = validate_mailto(params.get("mailto"), issues)
     error_mailto = validate_mailto(params.get("error_mailto"), issues)
@@ -144,6 +152,7 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
     hide_code = params.get("hide_code") in ("on", "True", True)
     is_slideshow = params.get("is_slideshow") in ("on", "True", True)
     email_subject = validate_title(params.get("email_subject") or "", issues)
+
 
     out = RunReportParams(
         report_title=report_title,
@@ -155,6 +164,7 @@ def validate_run_params(report_name, params, issues: List[str]) -> RunReportPara
         scheduler_job_id=params.get("scheduler_job_id"),
         is_slideshow=is_slideshow,
         email_subject=email_subject,
+        category=category,
     )
     logger.info(f"Validated params: {out}")
     return out
@@ -179,6 +189,7 @@ def _handle_run_report(
         f"mailfrom={params.mailfrom} "
         f"email_subject={params.email_subject} "
         f"is_slideshow={params.is_slideshow} "
+        f"category={params.category} "
     )
     try:
         with current_app.app_context():
@@ -196,6 +207,7 @@ def _handle_run_report(
                 mailfrom=params.mailfrom,
                 email_subject=params.email_subject,
                 is_slideshow=params.is_slideshow,
+                category=params.category,
             )
             return (
                 jsonify({"id": job_id}),
