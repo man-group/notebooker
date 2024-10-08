@@ -66,6 +66,7 @@ def test_validate_run_params():
         mailfrom="test@example.com",
         is_slideshow=True,
         email_subject="Subject of the email",
+        category="",
     )
     actual_output = validate_run_params("lovely_report_name", input_params, issues)
     assert issues == []
