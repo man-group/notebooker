@@ -80,9 +80,25 @@ load_all_templates = (callback) => {
         dataType: "json",
         success: (result) => {
             let templates = Array();
-            for (let i = 0; i < result.result.length; i++) {
-                let value = result.result[i];
-                templates = templates.concat({ name: value, value: value });
+            if (Array.isArray(result.result)) {
+                // This logic handles basic templates
+                for (let i = 0; i < result.result.length; i++) {
+                    let value = result.result[i];
+                    templates = templates.concat({ name: value, value: value });
+                }
+            } else if (typeof result.result === "object") {
+                // This logic handles categorized templates
+                for (let key in result.result) {
+                    if (result.result.hasOwnProperty(key)) {
+                        let value = result.result[key];
+                        for (let subKey in value) {
+                            if (value.hasOwnProperty(subKey)) {
+                                let lastPart = subKey.split("/").pop();
+                                templates = templates.concat({ name: key + "/" + lastPart, value: subKey });
+                            }
+                        }
+                    }
+                }
             }
             $(".selection.dropdown").dropdown({
                 values: templates,
@@ -296,20 +312,20 @@ $(document).ready(() => {
     const schedulerDataTable = schedulerTable.DataTable({
         columns: [
             {
-                title: "Report Unique ID",
-                name: "id",
-                data: "id",
-            },
-            {
                 title: "Report Title",
                 name: "report_title",
                 data: "params.report_title",
             },
             {
-                title: "Report Name",
-                name: "report_name",
-                data: "params.report_name",
+                title: "Report Unique ID",
+                name: "id",
+                data: "id",
             },
+            // {
+            //     title: "Report Name",
+            //     name: "report_name",
+            //     data: "params.report_name",
+            // },
             {
                 title: "Cron Schedule",
                 name: "cron_schedule",
