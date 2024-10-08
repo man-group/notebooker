@@ -6,7 +6,7 @@ from typing import Callable, Dict, Iterator, List, Mapping, Optional, Tuple
 
 import babel.dates
 import inflection
-from flask import url_for
+from flask import url_for,current_app
 
 from notebooker import constants
 from notebooker.exceptions import NotebookRunException
@@ -140,12 +140,20 @@ def get_all_available_results_json(
 
 
 def get_count_and_latest_time_per_report(serializer: MongoResultSerializer, subfolder: Optional[str] = None):
-    reports = serializer.get_count_and_latest_time_per_report(subfolder)
+    if subfolder and current_app.config["CATEGORIZATION"]:
+        category = subfolder.rstrip("/")
+        reports = serializer.get_count_and_latest_time_per_report_per_category(category)
+    else:
+        reports = serializer.get_count_and_latest_time_per_report(subfolder)
     output = {}
     for report_name, metadata in sorted(reports.items(), key=lambda x: x[1]["latest_run"], reverse=True):
-        metadata["report_name"] = report_name
+        title_name = report_name
+        if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+            title_name = current_app.config["PATH_TO_CATEGORY_DICT"][report_name] + "/" + report_name.split("/")[-1]
+        metadata["report_name"] = title_name
+        metadata["original_report"] = report_name
         metadata["time_diff"] = babel.dates.format_timedelta(datetime.datetime.now() - metadata["latest_run"])
-        output[inflection.titleize(report_name)] = metadata
+        output[inflection.titleize(title_name)] = metadata
     return output
 
 
