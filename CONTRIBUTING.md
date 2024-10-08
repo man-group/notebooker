@@ -20,7 +20,7 @@ Do also make sure to run the webapp and make sure you haven't broken anything.
 When releasing a new version, please increment the version number in:
 * `notebooker/version.py`
 * `.circleci/config.yml`
-* `docs/config.yml`
+* `docs/conf.py`
 * `notebooker/web/static/package.json`
 
 This build will validate that these numbers match those given in `.circleci/config.yml`.
