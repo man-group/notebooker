@@ -16,9 +16,7 @@ def app_context():
     # Configure your app for testing here
     ctx = app.app_context()
     ctx.push()  # Pushes the application context
-
     yield app  # This makes the app available to the test functions
-
     ctx.pop()  # Removes the application context after test completion
 
 
