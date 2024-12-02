@@ -71,6 +71,12 @@ def filesystem_default_value(dirname):
     help="If selected, notebooker set current working directory to absolute path of the notebook to keep it local context available",
 )
 @click.option(
+    "--categorization",
+    default=False,
+    is_flag=True,
+    help="If selected, discovers only templates with the 'category=example' tags set to any cell and groups notebooks by their category names",
+)
+@click.option(
     "--default-mailfrom", default=DEFAULT_MAILFROM_ADDRESS, help="Set a new value for the default mailfrom setting."
 )
 @click.option(
@@ -91,6 +97,7 @@ def base_notebooker(
     py_template_subdir,
     notebooker_disable_git,
     execute_at_origin,
+    categorization,
     default_mailfrom,
     running_timeout,
     serializer_cls,
@@ -106,6 +113,7 @@ def base_notebooker(
         PY_TEMPLATE_SUBDIR=py_template_subdir,
         NOTEBOOKER_DISABLE_GIT=notebooker_disable_git,
         EXECUTE_AT_ORIGIN=execute_at_origin,
+        CATEGORIZATION=categorization,
         DEFAULT_MAILFROM=default_mailfrom,
         RUNNING_TIMEOUT=running_timeout,
     )
@@ -180,6 +188,7 @@ def start_webapp(
 
 @base_notebooker.command()
 @click.option("--report-name", help="The name of the template to execute, relative to the template directory.")
+@click.option("--category", default="", help="Category of the template.")
 @click.option(
     "--overrides-as-json", default="{}", help="The parameters to inject into the notebook template, in JSON format."
 )
@@ -230,6 +239,7 @@ def start_webapp(
 def execute_notebook(
     config: BaseConfig,
     report_name,
+    category,
     overrides_as_json,
     iterate_override_values_of,
     report_title,
@@ -250,6 +260,7 @@ def execute_notebook(
     return execute_notebook_entrypoint(
         config,
         report_name,
+        category,
         overrides_as_json,
         iterate_override_values_of,
         report_title,

@@ -41,6 +41,7 @@ def test_create_schedule(flask_app, setup_workspace, report_name):
                 "scheduler_job_id": f"{report_name}_test2",
                 "mailfrom": "test@example.com",
                 "email_subject": "Subject",
+                "category": "",
             },
             "trigger": {
                 "fields": {
