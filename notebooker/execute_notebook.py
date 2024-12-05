@@ -54,6 +54,7 @@ def _run_checks(
     scheduler_job_id: Optional[str] = None,
     mailfrom: Optional[str] = None,
     is_slideshow: bool = False,
+    category: Optional[str] = None,
 ) -> NotebookResultComplete:
     """
     This is the actual method which executes a notebook, whether running in the webapp or via the entrypoint.
@@ -152,6 +153,7 @@ def _run_checks(
         generate_pdf_output=generate_pdf_output,
         report_name=template_name,
         report_title=report_title,
+        category=category,
         overrides=overrides,
         scheduler_job_id=scheduler_job_id,
         mailfrom=mailfrom,
@@ -164,6 +166,7 @@ def _run_checks(
 def run_report(
     job_submit_time,
     report_name,
+    category,
     overrides,
     result_serializer,
     report_title="",
@@ -222,6 +225,7 @@ def run_report(
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
             is_slideshow=is_slideshow,
+            category=category,
         )
         logger.info("Successfully got result.")
         result_serializer.save_check_result(result)
@@ -234,6 +238,7 @@ def run_report(
             job_start_time=job_submit_time,
             report_name=report_name,
             report_title=report_title,
+            category=category,
             error_info=error_info,
             overrides=overrides,
             mailto=mailto,
@@ -257,6 +262,7 @@ def run_report(
             return run_report(
                 job_submit_time,
                 report_name,
+                category,
                 overrides,
                 result_serializer,
                 report_title=report_title,
@@ -351,6 +357,7 @@ def _get_overrides(overrides_as_json: AnyStr, iterate_override_values_of: Option
 def execute_notebook_entrypoint(
     config: BaseConfig,
     report_name: str,
+    category: str,
     overrides_as_json: str,
     iterate_override_values_of: Union[List[str], str],
     report_title: str,
@@ -377,6 +384,7 @@ def execute_notebook_entrypoint(
     start_time = datetime.datetime.now()
     logger.info("Running a report with these parameters:")
     logger.info("report_name = %s", report_name)
+    logger.info("category = %s", category)
     logger.info("overrides_as_json = %s", overrides_as_json)
     logger.info("iterate_override_values_of = %s", iterate_override_values_of)
     logger.info("report_title = %s", report_title)
@@ -407,6 +415,7 @@ def execute_notebook_entrypoint(
         result = run_report(
             start_time,
             report_name,
+            category,
             overrides,
             result_serializer,
             report_title=report_title,
@@ -495,6 +504,7 @@ def run_report_in_subprocess(
     email_subject=None,
     n_retries=3,
     is_slideshow=False,
+    category=None,
 ) -> str:
     """
     Execute the Notebooker report in a subprocess.
@@ -513,6 +523,7 @@ def run_report_in_subprocess(
     :param email_subject: `str` if passed, then this string will be used in the email subject
     :param n_retries: The number of retries to attempt.
     :param is_slideshow: Whether the notebook is a reveal.js slideshow or not.
+    :param category: Category of the notebook
     :return: The unique job_id.
     """
     if error_mailto is None:
@@ -535,6 +546,7 @@ def run_report_in_subprocess(
         is_slideshow=is_slideshow,
         email_subject=email_subject,
         mailfrom=mailfrom,
+        category=category,
     )
 
     command = (
@@ -578,6 +590,7 @@ def run_report_in_subprocess(
         + (["--is-slideshow"] if is_slideshow else [])
         + ([f"--scheduler-job-id={scheduler_job_id}"] if scheduler_job_id is not None else [])
         + ([f"--mailfrom={mailfrom}"] if mailfrom is not None else [])
+        + ([f"--category={category}"] if category is not None else [])
         + ([f"--email-subject={email_subject}"] if email_subject else [])
     )
     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

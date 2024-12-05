@@ -209,6 +209,7 @@ class MongoResultSerializer(ABC):
         is_slideshow: bool = False,
         email_subject: Optional[str] = None,
         mailfrom: Optional[str] = None,
+        category: Optional[str] = None,
     ) -> None:
         """Call this when we are just starting a check. Saves a "pending" job into storage."""
         job_start_time = job_start_time or datetime.datetime.now()
@@ -228,6 +229,7 @@ class MongoResultSerializer(ABC):
             scheduler_job_id=scheduler_job_id,
             is_slideshow=is_slideshow,
             mailfrom=mailfrom,
+            category=category,
         )
         self._save_to_db(pending_result)
 
@@ -325,6 +327,7 @@ class MongoResultSerializer(ABC):
                 scheduler_job_id=result.get("scheduler_job_id", None),
                 is_slideshow=result.get("is_slideshow", False),
                 email_subject=result.get("email_subject", None),
+                category=result.get("category", None),
             )
         elif cls == NotebookResultPending:
             return NotebookResultPending(
@@ -344,6 +347,7 @@ class MongoResultSerializer(ABC):
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", None),
                 is_slideshow=result.get("is_slideshow", False),
+                category=result.get("category", None),
             )
 
         elif cls == NotebookResultError:
@@ -370,6 +374,7 @@ class MongoResultSerializer(ABC):
                 stdout=result.get("stdout", []),
                 scheduler_job_id=result.get("scheduler_job_id", False),
                 is_slideshow=result.get("is_slideshow", False),
+                category=result.get("category", None),
             )
         else:
             raise ValueError("Could not deserialise {} into result object.".format(result))
@@ -397,10 +402,17 @@ class MongoResultSerializer(ABC):
 
     def get_count_and_latest_time_per_report(self, subfolder: Optional[str]):
         base_filer = {} if not subfolder else {"report_name": {"$regex": subfolder + ".*"}}
+        return self.fetch_reports(base_filer)
+
+    def get_count_and_latest_time_per_report_per_category(self, category: Optional[str]):
+        base_filer = {} if not category else {"category": category}
+        return self.fetch_reports(base_filer)
+
+    def fetch_reports(self, base_filer: Dict[str, Any]):
         reports = list(
             self._get_raw_results(
                 base_filter=base_filer,
-                projection={"report_name": 1, "job_start_time": 1, "scheduler_job_id": 1, "_id": 0},
+                projection={"report_name": 1, "job_start_time": 1, "scheduler_job_id": 1, "category": 1, "_id": 0},
                 limit=0,
             )
         )
@@ -411,7 +423,12 @@ class MongoResultSerializer(ABC):
         for report, all_runs in jobs_by_name.items():
             latest_start_time = max(r["job_start_time"] for r in all_runs)
             scheduled_runs = len([x for x in all_runs if x.get("scheduler_job_id")])
-            output[report] = {"count": len(all_runs), "latest_run": latest_start_time, "scheduler_runs": scheduled_runs}
+            output[report] = {
+                "count": len(all_runs),
+                "latest_run": latest_start_time,
+                "scheduler_runs": scheduled_runs,
+                "category": r["category"],
+            }
         return output
 
     def get_all_results(

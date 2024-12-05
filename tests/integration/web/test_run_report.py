@@ -19,6 +19,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
         is_slideshow = True
         scheduler_job_id = "abc/123"
         email_subject = "Subject"
+        category = ""
         payload = {
             "overrides": json.dumps(overrides),
             "report_title": report_title,
@@ -50,6 +51,7 @@ def test_run_report_json_parameters(flask_app, setup_workspace):
                 mailfrom=mailfrom,
                 is_slideshow=is_slideshow,
                 email_subject=email_subject,
+                category=category,
             )
 
 

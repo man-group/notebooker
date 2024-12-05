@@ -41,6 +41,10 @@ def result_listing(report_name):
     result_limit = int(request.args.get("limit") or DEFAULT_RESULT_LIMIT)
     all_reports = get_all_possible_templates()
     with current_app.app_context():
+        if "PATH_TO_CATEGORY_DICT" in current_app.config and report_name in current_app.config["PATH_TO_CATEGORY_DICT"]:
+            title_name = current_app.config["PATH_TO_CATEGORY_DICT"][report_name] + "/" + report_name.split("/")[-1]
+        else:
+            title_name = inflection.titleize(report_name)
         result = render_template(
             "result_listing.html",
             all_reports=all_reports,
@@ -49,7 +53,7 @@ def result_listing(report_name):
             report_name=report_name,
             result_limit=result_limit,
             n_results_available=get_serializer().n_all_results_for_report_name(report_name),
-            titleised_report_name=inflection.titleize(report_name),
+            titleised_report_name=title_name,
             readonly_mode=current_app.config["READONLY_MODE"],
             scheduler_disabled=current_app.config["DISABLE_SCHEDULER"],
         )

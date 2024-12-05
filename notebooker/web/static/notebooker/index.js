@@ -66,7 +66,7 @@ const updateContents = (currentFolder, entries) => {
             const displayName = entryAfterLevel(report, level);
             const stats = entries[report];
             reportParts.push(
-                `<a class="ui card" href="/result_listing/${stats.report_name}">` +
+                `<a class="ui card" href="/result_listing/${stats.original_report}">` +
                     '  <div class="content">' +
                     `    <h1>${displayName}</h1>\n` +
                     '    <div class="meta">\n' +
@@ -81,7 +81,7 @@ const updateContents = (currentFolder, entries) => {
                     "    </span>" +
                     "  </div>" +
                     '  <div class="extra content">' +
-                    `      <span>Original report name: ${stats.report_name}</span>\n` +
+                    `      <span>Original report name: ${stats.original_report}</span>\n` +
                     "  </div>" +
                     "</a>"
             );

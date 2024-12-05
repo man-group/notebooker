@@ -24,6 +24,7 @@ def run_report(
     is_slideshow: bool = False,
     error_mailto: Optional[str] = None,
     email_subject: Optional[str] = None,
+    category: Optional[str] = None,
 ):
     """
     This is the entrypoint of the scheduler; APScheduler has to
@@ -46,6 +47,7 @@ def run_report(
             n_retries=0,
             is_slideshow=is_slideshow,
             email_subject=email_subject,
+            category=category,
         )
     else:
         # Fall back to using API. This will not work in readonly mode.
