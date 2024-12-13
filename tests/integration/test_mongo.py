@@ -2,7 +2,6 @@ import datetime
 import uuid
 
 import pytest
-from gridfs.errors import NoFile
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError
 from notebooker.serialization.serialization import initialize_serializer_from_config
@@ -83,9 +82,9 @@ def test_delete(bson_library, webapp_config):
     assert result is not None
     assert result.raw_html == raw_html
     deleted_stuff = serializer.delete_result(job_id)
+    assert [r for r in serializer.result_data_store.list()] == []
     for filename in deleted_stuff["gridfs_filenames"]:
-        with pytest.raises(NoFile):
-            serializer.result_data_store.get(filename)
+        assert serializer.result_data_store.exists(filename=filename) is False
     assert serializer.get_check_result(job_id) is None
 
 
@@ -111,7 +110,7 @@ def test_delete_error(bson_library, webapp_config, job_status):
     result = serializer.get_check_result(job_id)
     assert result is not None
     deleted_stuff = serializer.delete_result(job_id)
+    assert [r for r in serializer.result_data_store.list()] == []
     for filename in deleted_stuff["gridfs_filenames"]:
-        with pytest.raises(NoFile):
-            serializer.result_data_store.get(filename)
+        assert serializer.result_data_store.exists(filename=filename) is False
     assert serializer.get_check_result(job_id) is None

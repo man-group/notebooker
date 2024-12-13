@@ -524,15 +524,14 @@ class MongoResultSerializer(ABC):
     def delete_result(self, job_id: AnyStr) -> Dict[str, Any]:
         result = self._get_raw_check_result(job_id)
         status = JobStatus.from_string(result["status"])
-        gridfs_filenames = []
-        if status == JobStatus.DONE:
-            gridfs_filenames = load_files_from_gridfs(self.result_data_store, result, do_read=False)
-        elif status in (JobStatus.ERROR, JobStatus.TIMEOUT, JobStatus.CANCELLED):
-            gridfs_filenames = [_error_info_filename(job_id)]
+        gridfs_filenames = load_files_from_gridfs(self.result_data_store, result, do_read=False)
+        if status in (JobStatus.ERROR, JobStatus.TIMEOUT, JobStatus.CANCELLED):
+            gridfs_filenames.append(_error_info_filename(job_id))
         self.update_check_status(job_id, JobStatus.DELETED)
         for filename in gridfs_filenames:
             logger.info(f"Deleting {filename}")
-            self.result_data_store.delete(filename)
+            for grid_out in self.result_data_store.find({"filename": filename}):
+                self.result_data_store.delete(grid_out._id)
         return {"deleted_result_document": result, "gridfs_filenames": gridfs_filenames}
 
 
