@@ -82,7 +82,7 @@
             {% for report, subreports in all_reports|dictsort() recursive %}
                 {% if subreports is none %}
                     <!-- At each leaf, create a link to run the report !-->
-                    <a class="item" href="/run_report/{{report}}">{{ report }}</a>
+                    <a class="item" href="/run_report/{{report}}" {% if '/' in report %}title="{{report}}"{% endif %}>{{ report.split('/')[-1] }}</a>
                 {% else %}
                     <!-- Create a new dropdown list for this level !-->
                     <div class="ui inverted dropdown item">
@@ -96,7 +96,7 @@
             {% endfor %}
             <a class="item bottom" href="https://notebooker.readthedocs.io/en/latest/templates.html#creating-a-notebook-template">
                 <i class="plus icon"></i>
-                <i>Add a new notebook</i>
+                <i>How to add a new notebook</i>
             </a>
         </div>
         </body>

@@ -16,7 +16,7 @@
         <form class="ui form" id="run-check-form">
             <div class="field">
                 <h3>Report Title:</h3>
-                <input name="report_title" placeholder="{{ report_name }}" id="titleInput" width="100%"/>
+                <input name="report_title" placeholder="{{ category }}/{{ report_name.split('/')[-1] if category else report_name }}" id="titleInput" width="100%"/>
             </div>
             <div class="field">
                 <h3>Existing parameters:</h3>
@@ -33,6 +33,10 @@ You can import anything, but ensure that in any x=y statements, y is JSON serial
             <div class="field">
                 <!-- Hidden field to inject the report_name from jinja !-->
                 <input name="report_name" value="{{ report_name }}" style="display:none">
+            </div>
+            <div class="field">
+                <!-- Hidden field to inject the category from jinja !-->
+                <input name="category" value="{{ category }}" style="display:none">
             </div>
             <div class="field">
                 <h3>Email result to:</h3>

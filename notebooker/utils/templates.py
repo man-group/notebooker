@@ -22,6 +22,23 @@ def _valid_filename(f):
     return (f.endswith(".py") or f.endswith(".ipynb")) and "__init__" not in f and "__pycache__" not in f
 
 
+def _extract_category(path) -> Optional[str]:
+    if path.endswith(".ipynb"):
+        nb = nbformat.read(path, as_version=nbformat.v4.nbformat)
+        return _get_category(nb)
+    return None
+
+
+def _get_category(notebook: nbformat.NotebookNode) -> Optional[int]:
+    for idx, cell in enumerate(notebook["cells"]):
+        tags = cell.get("metadata", {}).get("tags", [])
+        for tag in tags:
+            clean_tag = tag.translate({ord(" "): None})  # Remove spaces
+            if clean_tag.startswith("category="):
+                return clean_tag.split("=")[1]
+    return None
+
+
 def _get_parameters_cell_idx(notebook: nbformat.NotebookNode) -> Optional[int]:
     for idx, cell in enumerate(notebook["cells"]):
         tags = cell.get("metadata", {}).get("tags", [])
