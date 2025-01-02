@@ -34,7 +34,7 @@ RUN set -eux \
   ; pip install nbformat jupyter-core jupyter-client Pandoc --upgrade \
   ; pip install -r ./notebooker/notebook_templates_example/notebook_requirements.txt \
   ; python setup.py develop \
-  ; python setup.py build_sphinx \
+  ; sphinx-build -b html docs/ build/sphinx/html \
   ; py.test tests \
   ; python setup.py bdist_wheel --universal
 

@@ -1,3 +1,11 @@
+0.7.0 (pending)
+------------------
+
+* compat: compatibility with python 3.11 and later
+* deps: do not pin werkzeug/flask 2.
+* docs: do not pin old versions of docutils/sphinx, optional extra dependencies to build docs
+* bugfix: fix an issue where deleting a report was not deleting the associated GridFS objects as expected.
+
 0.6.3 (2024-07-11)
 ------------------
 * Feature: Flag to preserve original working directory when running notebooks to make local imports and relative paths work.
