@@ -154,7 +154,7 @@ commands:
           set -e
           . ci/bin/activate
           pip install -e ".[docs]"
-          python setup.py build_sphinx
+          sphinx-build -b html docs/ build/sphinx/html
           cp -r ./build "$CIRCLE_ARTIFACTS"
     - run:
         name: Build distribution
