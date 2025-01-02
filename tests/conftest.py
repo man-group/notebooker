@@ -101,7 +101,7 @@ def safe_cache_clear():
 def clean_file_cache(monkeypatch, workspace):
     """Set up cache environment."""
     safe_cache_clear()
-    monkeypatch.setenv("CACHE_DIR", workspace.workspace)
+    monkeypatch.setenv("CACHE_DIR", str(workspace.workspace))
     yield
     # purge the cache
     safe_cache_clear()
