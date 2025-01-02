@@ -18,6 +18,7 @@ def get_long_description():
     for filename in ("README.md", "CHANGELOG.md"):
         with open(filename, "r", encoding="utf-8") as f:
             desc += f.read()
+        desc += "\n\n"
     return desc
 
 
@@ -25,9 +26,11 @@ setup(
     version=get_version(),
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
     namespace_packages=["notebooker"],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     zip_safe=False,
     include_package_data=True,
+    long_description=get_long_description(),
+    long_description_content_type='text/markdown',
     entry_points={
         "console_scripts": [
             "notebooker-cli = notebooker._entrypoints:base_notebooker",
