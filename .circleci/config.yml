@@ -39,9 +39,10 @@ commands:
     - run:
         name: Version checks
         command: |
-            grep -q $VERSION notebooker/version.py || (echo "ERROR: Version number not found in notebooker/_version.py: $VERSION"; exit 1)
+            set -ex
+            grep -q $VERSION notebooker/version.py || (echo "ERROR: Version number not found in notebooker/version.py: $VERSION"; exit 1)
             grep -q $VERSION CHANGELOG.md || (echo "ERROR: Version number not found in CHANGES.md: $VERSION"; exit 1)
-            grep -q $VERSION docs/conf.py || (echo "ERROR: Version number not found in docs/source/conf.py: $VERSION"; exit 1)
+            grep -q $VERSION docs/conf.py || (echo "ERROR: Version number not found in docs/conf.py: $VERSION"; exit 1)
             grep -q $VERSION notebooker/web/static/package.json || (echo "ERROR: Version number not found in package.json: $VERSION"; exit 1)
     - run:
         name: Output useful stuff
