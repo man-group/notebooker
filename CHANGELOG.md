@@ -1,4 +1,9 @@
-0.7.0 (pending)
+0.7.1 (2025-01-02)
+------------------
+
+* packaging: refresh package description and metadata for pypi
+
+0.7.0 (2025-01-02)
 ------------------
 
 * compat: compatibility with python 3.11 and later
