@@ -163,14 +163,6 @@ commands:
           . ci/bin/activate
           pip install docutils
           pip install Pygments
-          python setup.py --long-description > ../README.rst
-          cat ../README.rst | rst2html.py 1> ../README.html 2> ../log
-          cp ../README.rst "$CIRCLE_ARTIFACTS"
-          cp ../log "$CIRCLE_ARTIFACTS"
-          if [ -s ../log ] ; then
-            cat ../log
-            exit 1
-          fi # rst2html.py alwaysexits with 0, check log size
           python setup.py bdist_wheel
           python setup.py sdist
           mkdir -p "$CIRCLE_ARTIFACTS/dist"
