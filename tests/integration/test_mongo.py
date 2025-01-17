@@ -77,6 +77,7 @@ def test_delete(bson_library, webapp_config):
             raw_html_resources={"inlining": {"big_thing": "a" * 32 * (2**20)}, "other_stuff": "Yep"},
         )
     )
+    assert serializer.get_job_ids_older_than(datetime.datetime(2020, 1, 1), report_name=report_name) == [job_id]
     assert bson_library.find_one({"job_id": job_id}) is not None
     result = serializer.get_check_result(job_id)
     assert result is not None
