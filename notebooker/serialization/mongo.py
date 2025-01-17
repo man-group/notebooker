@@ -521,18 +521,33 @@ class MongoResultSerializer(ABC):
     def n_all_results_for_report_name(self, report_name: str) -> int:
         return self._get_result_count({"report_name": report_name})
 
-    def delete_result(self, job_id: AnyStr) -> Dict[str, Any]:
+    def delete_result(self, job_id: AnyStr, dry_run: bool = False) -> Dict[str, Any]:
         result = self._get_raw_check_result(job_id)
         status = JobStatus.from_string(result["status"])
         gridfs_filenames = load_files_from_gridfs(self.result_data_store, result, do_read=False)
         if status in (JobStatus.ERROR, JobStatus.TIMEOUT, JobStatus.CANCELLED):
             gridfs_filenames.append(_error_info_filename(job_id))
-        self.update_check_status(job_id, JobStatus.DELETED)
+        if not dry_run:
+            self.update_check_status(job_id, JobStatus.DELETED)
+        deleted_gridfs_files = []
         for filename in gridfs_filenames:
-            logger.info(f"Deleting {filename}")
+            logger.debug(f"Deleting {filename}")
+            existed = False
             for grid_out in self.result_data_store.find({"filename": filename}):
-                self.result_data_store.delete(grid_out._id)
-        return {"deleted_result_document": result, "gridfs_filenames": gridfs_filenames}
+                existed = True
+                if not dry_run:
+                    self.result_data_store.delete(grid_out._id)
+            if existed:
+                deleted_gridfs_files.append(filename)
+        return {"deleted_result_document": result, "gridfs_filenames": deleted_gridfs_files}
+
+    def get_job_ids_older_than(self, cutoff: datetime.datetime, report_name: Optional[str] = None) -> List[str]:
+        query = {"job_start_time": {"$lte": cutoff}}
+        query = _add_deleted_status_to_filter(query)
+        if report_name:
+            query["report_name"] = report_name
+        to_delete = [d["job_id"] for d in self.library.find(query, {"_id": 0, "job_id": 1})]
+        return to_delete
 
 
 def _pdf_filename(job_id: str) -> str:

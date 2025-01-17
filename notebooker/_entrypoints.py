@@ -1,5 +1,6 @@
 import os
 import uuid
+from typing import Optional
 
 import click
 
@@ -10,6 +11,7 @@ from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
 from notebooker.settings import BaseConfig, WebappConfig
 from notebooker.snapshot import snap_latest_successful_notebooks
+from notebooker.utils.cleanup import delete_old_reports
 from notebooker.web.app import main
 
 
@@ -265,6 +267,17 @@ def execute_notebook(
         mailfrom,
         is_slideshow=is_slideshow,
     )
+
+
+@base_notebooker.command()
+@click.option("--days", "--days-cutoff", "-d", type=int, required=True, help="Delete reports older than this many days")
+@click.option(
+    "--report-name", required=False, help="The name of the template to retrieve, relative to the template directory."
+)
+@click.option("--dry-run", is_flag=True, default=False, help="Show what would be deleted without actually deleting")
+@pass_config
+def cleanup_old_reports(config: BaseConfig, days: int, report_name: Optional[str], dry_run: bool):
+    delete_old_reports(config, days_cutoff=days, report_name=report_name, dry_run=dry_run)
 
 
 @base_notebooker.command()
