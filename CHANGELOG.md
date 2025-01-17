@@ -1,3 +1,8 @@
+0.7.2 (2025-01-17)
+------------------
+
+* feature: added a cleanup script to delete reports older than a given number of days, optionally filterable by report name.
+
 0.7.1 (2025-01-02)
 ------------------
 
