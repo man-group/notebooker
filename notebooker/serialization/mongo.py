@@ -549,6 +549,10 @@ class MongoResultSerializer(ABC):
         to_delete = [d["job_id"] for d in self.library.find(query, {"_id": 0, "job_id": 1})]
         return to_delete
 
+    def delete_all_for_report_name(self, report_name: AnyStr) -> Dict[str, Any]:
+        results = self.get_all_result_keys(mongo_filter={"report_name": report_name})
+        return {job_id: self.delete_result(job_id) for _, job_id in results}
+
 
 def _pdf_filename(job_id: str) -> str:
     return f"{job_id}.pdf"
