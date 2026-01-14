@@ -181,3 +181,50 @@ environments or where the reports can reveal sensitive data if misconfigured.
     Please note that read-only mode does not change the functionality of the scheduler; users will still be able to
     modify schedules and it will execute as intended. To disable the scheduler you can add :code:`--disable-scheduler`
     to the command line arguments of the webapp; likewise git pulls can be prevented by using :code:`--disable-git`.
+
+
+Standalone scheduler
+--------------------
+
+.. note::
+    Available from version 0.8.0 onwards.
+
+By default, the scheduler runs as a background thread within the webapp process. While convenient,
+this approach has a drawback: if the scheduler thread dies, the only way to recover is to restart
+the entire webapp.
+
+For production deployments, especially in Kubernetes, you can run the scheduler as a standalone
+process. This allows the scheduler to be restarted independently without affecting the webapp,
+improving reliability.
+
+**Starting the standalone scheduler:**
+
+.. code-block:: bash
+
+    notebooker-cli start-scheduler --mongo-host localhost:27017
+
+**Starting the webapp in management-only mode:**
+
+When using a standalone scheduler, the webapp should be started with :code:`--scheduler-management-only`.
+This allows users to create, update, and delete scheduled jobs via the UI, but the webapp won't
+execute them - that's handled by the standalone scheduler.
+
+.. code-block:: bash
+
+    notebooker-cli start-webapp --scheduler-management-only --mongo-host localhost:27017
+
+**Deployment configuration:**
+
++---------------------------+----------------------------------------+-----------------------------------+
+| Deployment                | Webapp flags                           | Scheduler process                 |
++===========================+========================================+===================================+
+| Traditional (default)     | (none)                                 | Not needed                        |
++---------------------------+----------------------------------------+-----------------------------------+
+| Standalone scheduler      | :code:`--scheduler-management-only`    | :code:`start-scheduler`           |
++---------------------------+----------------------------------------+-----------------------------------+
+| No scheduling             | :code:`--disable-scheduler`            | Not needed                        |
++---------------------------+----------------------------------------+-----------------------------------+
+
+.. warning::
+    Only run one scheduler process at a time. Running multiple schedulers won't corrupt data
+    (APScheduler uses MongoDB locking), but may cause inefficiencies.

@@ -61,4 +61,5 @@ class WebappConfig(BaseConfig):
     SCHEDULER_MONGO_DATABASE: str = ""
     SCHEDULER_MONGO_COLLECTION: str = ""
     DISABLE_SCHEDULER: bool = False
+    SCHEDULER_MANAGEMENT_ONLY: bool = False  # When True, job CRUD works but jobs aren't executed
     READONLY_MODE: bool = False
