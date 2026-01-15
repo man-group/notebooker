@@ -1,3 +1,11 @@
+0.8.0 (2026-01-15)
+------------------
+
+* feature: standalone scheduler process for improved reliability in Kubernetes deployments
+* feature: new `--scheduler-management-only` flag for webapp to manage jobs without executing them
+* bugfix: fix scheduler race condition by starting in paused state
+* bugfix: fix template dropdown showing folder names instead of templates
+
 0.7.2 (2025-01-17)
 ------------------
 
