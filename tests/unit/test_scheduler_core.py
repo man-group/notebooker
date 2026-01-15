@@ -34,10 +34,7 @@ class TestGetJobstoreConfig:
 
     def test_raises_for_non_mongo_serializer(self):
         """Test that a non-Mongo serializer raises ValueError."""
-        config = WebappConfig(
-            SERIALIZER_CLS="PyMongoResultSerializer",  # valid but we'll mock it
-            SERIALIZER_CONFIG={},
-        )
+        config = WebappConfig(SERIALIZER_CLS="PyMongoResultSerializer", SERIALIZER_CONFIG={})  # valid but we'll mock it
 
         # Mock get_serializer_from_cls to return a non-Mongo serializer (just a mock object)
         with mock.patch("notebooker.scheduler_core.get_serializer_from_cls") as mock_get_serializer:
@@ -50,11 +47,7 @@ class TestCreateScheduler:
     def test_creates_running_scheduler(self):
         """Test that create_scheduler creates a running scheduler."""
         mock_client = mock.MagicMock()
-        jobstore_config = {
-            "client": mock_client,
-            "database": "test_db",
-            "collection": "test_scheduler",
-        }
+        jobstore_config = {"client": mock_client, "database": "test_db", "collection": "test_scheduler"}
 
         with mock.patch("notebooker.scheduler_core.BackgroundScheduler") as mock_scheduler_cls:
             with mock.patch("notebooker.scheduler_core.MongoDBJobStore") as mock_jobstore_cls:
@@ -65,9 +58,7 @@ class TestCreateScheduler:
 
                 # Verify jobstore was created with correct params
                 mock_jobstore_cls.assert_called_once_with(
-                    database="test_db",
-                    collection="test_scheduler",
-                    client=mock_client,
+                    database="test_db", collection="test_scheduler", client=mock_client
                 )
 
                 # Verify scheduler was started but not paused
@@ -78,13 +69,9 @@ class TestCreateScheduler:
                 assert scheduler is mock_scheduler
 
     def test_creates_paused_scheduler(self):
-        """Test that create_scheduler with paused=True pauses the scheduler."""
+        """Test that create_scheduler with paused=True starts scheduler in paused state."""
         mock_client = mock.MagicMock()
-        jobstore_config = {
-            "client": mock_client,
-            "database": "test_db",
-            "collection": "test_scheduler",
-        }
+        jobstore_config = {"client": mock_client, "database": "test_db", "collection": "test_scheduler"}
 
         with mock.patch("notebooker.scheduler_core.BackgroundScheduler") as mock_scheduler_cls:
             with mock.patch("notebooker.scheduler_core.MongoDBJobStore"):
@@ -93,20 +80,15 @@ class TestCreateScheduler:
 
                 scheduler = create_scheduler(jobstore_config, paused=True)
 
-                # Verify scheduler was started AND paused
-                mock_scheduler.start.assert_called_once()
-                mock_scheduler.pause.assert_called_once()
+                # Verify scheduler was started with paused=True (no race condition)
+                mock_scheduler.start.assert_called_once_with(paused=True)
 
                 assert scheduler is mock_scheduler
 
     def test_scheduler_created_with_correct_defaults(self):
         """Test that scheduler is created with correct job defaults."""
         mock_client = mock.MagicMock()
-        jobstore_config = {
-            "client": mock_client,
-            "database": "test_db",
-            "collection": "test_scheduler",
-        }
+        jobstore_config = {"client": mock_client, "database": "test_db", "collection": "test_scheduler"}
 
         with mock.patch("notebooker.scheduler_core.BackgroundScheduler") as mock_scheduler_cls:
             with mock.patch("notebooker.scheduler_core.MongoDBJobStore"):

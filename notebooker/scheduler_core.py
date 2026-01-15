@@ -53,15 +53,10 @@ def get_jobstore_config(config: BaseConfig) -> Dict[str, Any]:
     # Allow config overrides for database/collection, with sensible defaults
     scheduler_db = getattr(config, "SCHEDULER_MONGO_DATABASE", "") or serializer.database_name
     scheduler_collection = (
-        getattr(config, "SCHEDULER_MONGO_COLLECTION", "")
-        or f"{serializer.result_collection_name}_scheduler"
+        getattr(config, "SCHEDULER_MONGO_COLLECTION", "") or f"{serializer.result_collection_name}_scheduler"
     )
 
-    return {
-        "client": client,
-        "database": scheduler_db,
-        "collection": scheduler_collection,
-    }
+    return {"client": client, "database": scheduler_db, "collection": scheduler_collection}
 
 
 def create_scheduler(jobstore_config: Dict[str, Any], paused: bool = False) -> BackgroundScheduler:
@@ -91,16 +86,15 @@ def create_scheduler(jobstore_config: Dict[str, Any], paused: bool = False) -> B
     }
 
     scheduler = BackgroundScheduler(
-        jobstores=jobstores,
-        job_defaults={"misfire_grace_time": 60 * 60},  # 1 hour grace time
+        jobstores=jobstores, job_defaults={"misfire_grace_time": 60 * 60}  # 1 hour grace time
     )
 
-    scheduler.start()
-
     if paused:
-        scheduler.pause()
+        # Start in paused state to prevent any jobs from firing
+        scheduler.start(paused=True)
         logger.info("Scheduler started in paused (management-only) mode")
     else:
+        scheduler.start()
         logger.info("Scheduler started")
 
     scheduler.print_jobs()

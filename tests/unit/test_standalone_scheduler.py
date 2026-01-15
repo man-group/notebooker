@@ -12,12 +12,17 @@ class TestStandaloneScheduler:
                 with mock.patch("notebooker.standalone_scheduler.signal.signal"):
                     with mock.patch("notebooker.standalone_scheduler.time.sleep", side_effect=KeyboardInterrupt):
                         with mock.patch("notebooker.standalone_scheduler._shutdown_handler"):
-                            mock_get_config.return_value = {"client": mock.MagicMock(), "database": "db", "collection": "coll"}
+                            mock_get_config.return_value = {
+                                "client": mock.MagicMock(),
+                                "database": "db",
+                                "collection": "coll",
+                            }
                             mock_scheduler = mock.MagicMock()
                             mock_create.return_value = mock_scheduler
 
                             # Import the app module to check GLOBAL_CONFIG
                             from notebooker.web import app as app_module
+
                             original_config = app_module.GLOBAL_CONFIG
 
                             try:
@@ -38,7 +43,11 @@ class TestStandaloneScheduler:
                 with mock.patch("notebooker.standalone_scheduler.signal.signal"):
                     with mock.patch("notebooker.standalone_scheduler.time.sleep", side_effect=KeyboardInterrupt):
                         with mock.patch("notebooker.standalone_scheduler._shutdown_handler"):
-                            mock_get_config.return_value = {"client": mock.MagicMock(), "database": "db", "collection": "coll"}
+                            mock_get_config.return_value = {
+                                "client": mock.MagicMock(),
+                                "database": "db",
+                                "collection": "coll",
+                            }
                             mock_scheduler = mock.MagicMock()
                             mock_create.return_value = mock_scheduler
 
@@ -59,7 +68,11 @@ class TestStandaloneScheduler:
                 with mock.patch("notebooker.standalone_scheduler.signal.signal") as mock_signal:
                     with mock.patch("notebooker.standalone_scheduler.time.sleep", side_effect=KeyboardInterrupt):
                         with mock.patch("notebooker.standalone_scheduler._shutdown_handler"):
-                            mock_get_config.return_value = {"client": mock.MagicMock(), "database": "db", "collection": "coll"}
+                            mock_get_config.return_value = {
+                                "client": mock.MagicMock(),
+                                "database": "db",
+                                "collection": "coll",
+                            }
                             mock_scheduler = mock.MagicMock()
                             mock_create.return_value = mock_scheduler
 

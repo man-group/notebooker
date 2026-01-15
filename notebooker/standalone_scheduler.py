@@ -28,7 +28,6 @@ _scheduler = None
 
 def _shutdown_handler(signum, frame):
     """Handle SIGTERM/SIGINT for graceful shutdown."""
-    global _scheduler
     sig_name = signal.Signals(signum).name
     logger.info(f"Received {sig_name}, shutting down scheduler...")
 
@@ -64,6 +63,7 @@ def run_standalone_scheduler(config: BaseConfig):
     # This is needed because scheduled jobs call run_report() which
     # relies on GLOBAL_CONFIG being set
     from notebooker.web import app as app_module
+
     app_module.GLOBAL_CONFIG = config
 
     logger.info("Starting standalone scheduler...")

@@ -20,7 +20,7 @@ def test_setup_scheduler(flask_app, webapp_config, test_db_name, test_lib_name):
 
 
 def test_setup_scheduler_management_only(flask_app, webapp_config, test_db_name, test_lib_name):
-    """Test that SCHEDULER_MANAGEMENT_ONLY creates a paused scheduler."""
+    """Test that SCHEDULER_MANAGEMENT_ONLY starts scheduler in paused state."""
     webapp_config.DISABLE_SCHEDULER = False
     webapp_config.SCHEDULER_MANAGEMENT_ONLY = True
     scheduler_coll = f"{test_lib_name}_scheduler"
@@ -32,7 +32,6 @@ def test_setup_scheduler_management_only(flask_app, webapp_config, test_db_name,
             app = setup_scheduler(flask_app, webapp_config)
 
             assert app.apscheduler is not None
-            # Verify scheduler was started AND paused
-            mock_scheduler.start.assert_called_once()
-            mock_scheduler.pause.assert_called_once()
+            # Verify scheduler was started with paused=True (no race condition)
+            mock_scheduler.start.assert_called_once_with(paused=True)
             jobstore.assert_called_with(database=test_db_name, collection=scheduler_coll, client=mock.ANY)

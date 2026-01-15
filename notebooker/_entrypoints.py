@@ -205,12 +205,7 @@ def start_webapp(
     "Defaults to the same as the serializer's mongo collection + '_scheduler'.",
 )
 @pass_config
-def start_scheduler(
-    config: BaseConfig,
-    logging_level,
-    scheduler_mongo_database,
-    scheduler_mongo_collection,
-):
+def start_scheduler(config: BaseConfig, logging_level, scheduler_mongo_database, scheduler_mongo_collection):
     """
     Start the scheduler as a standalone process.
 
@@ -222,6 +217,7 @@ def start_scheduler(
     using a standalone scheduler.
     """
     import logging
+
     logging.basicConfig(level=logging.getLevelName(logging_level))
 
     # Copy config and add scheduler-specific settings

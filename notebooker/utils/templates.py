@@ -64,8 +64,9 @@ def _get_preview(
 
 def _gen_all_templates(template_dict):
     for template_name, children in template_dict.items():
-        if children:
+        if children is not None:
             for x in _gen_all_templates(children):  # Replace with "yield from" when we have py3
                 yield x
-        else:
+        elif children is None:
             yield template_name
+        # Skip entries with empty dicts (folders with no valid templates)
