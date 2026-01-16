@@ -201,7 +201,13 @@ improving reliability.
 
 .. code-block:: bash
 
-    notebooker-cli start-scheduler --mongo-host localhost:27017
+    notebooker-cli \
+        --py-template-base-dir /path/to/your/repo \
+        --py-template-subdir notebook_templates \
+        --mongo-host localhost:27017 \
+        --database-name notebooker \
+        --result-collection-name notebooker_results \
+        start-scheduler
 
 **Starting the webapp in management-only mode:**
 
@@ -211,7 +217,15 @@ execute them - that's handled by the standalone scheduler.
 
 .. code-block:: bash
 
-    notebooker-cli start-webapp --scheduler-management-only --mongo-host localhost:27017
+    notebooker-cli \
+        --py-template-base-dir /path/to/your/repo \
+        --py-template-subdir notebook_templates \
+        --mongo-host localhost:27017 \
+        --database-name notebooker \
+        --result-collection-name notebooker_results \
+        start-webapp \
+        --port 8080 \
+        --scheduler-management-only
 
 **Deployment configuration:**
 
