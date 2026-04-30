@@ -4,7 +4,7 @@ import shutil
 import tempfile
 
 from notebooker.utils.filesystem import mkdir_p
-from notebooker.utils.templates import _valid_dirname
+from notebooker.utils.templates import _gen_all_templates, _valid_dirname
 from notebooker.web.utils import get_directory_structure
 
 
@@ -64,3 +64,8 @@ def test_get_directory_structure():
         assert get_directory_structure(temp_dir) == expected_structure
     finally:
         shutil.rmtree(temp_dir)
+
+
+def test_gen_all_templates_skips_empty_folders():
+    template_dict = {"leaf": None, "empty_folder": {}, "folder": {"folder/deep": None}}
+    assert set(_gen_all_templates(template_dict)) == {"leaf", "folder/deep"}

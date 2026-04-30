@@ -3,7 +3,7 @@ import pytest
 
 from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_DATABASE_NAME, DEFAULT_RESULT_COLLECTION_NAME
 from notebooker.settings import WebappConfig
-from notebooker.scheduler_core import get_jobstore_config, create_scheduler
+from notebooker.scheduler_core import get_jobstore_config, create_scheduler, create_blocking_scheduler
 
 
 class TestGetJobstoreConfig:
@@ -100,3 +100,29 @@ class TestCreateScheduler:
                 # Verify misfire_grace_time is set to 1 hour
                 call_kwargs = mock_scheduler_cls.call_args[1]
                 assert call_kwargs["job_defaults"] == {"misfire_grace_time": 60 * 60}
+
+
+class TestCreateBlockingScheduler:
+    def test_creates_blocking_scheduler_without_starting(self):
+        """create_blocking_scheduler builds a BlockingScheduler with the right jobstore but does NOT start it."""
+        mock_client = mock.MagicMock()
+        jobstore_config = {"client": mock_client, "database": "test_db", "collection": "test_scheduler"}
+
+        with mock.patch("notebooker.scheduler_core.BlockingScheduler") as mock_scheduler_cls:
+            with mock.patch("notebooker.scheduler_core.MongoDBJobStore") as mock_jobstore_cls:
+                mock_scheduler = mock.MagicMock()
+                mock_scheduler_cls.return_value = mock_scheduler
+
+                scheduler = create_blocking_scheduler(jobstore_config)
+
+                mock_jobstore_cls.assert_called_once_with(
+                    database="test_db", collection="test_scheduler", client=mock_client
+                )
+
+                # Caller is responsible for .start() - we should not have called it.
+                mock_scheduler.start.assert_not_called()
+
+                call_kwargs = mock_scheduler_cls.call_args[1]
+                assert call_kwargs["job_defaults"] == {"misfire_grace_time": 60 * 60}
+
+                assert scheduler is mock_scheduler
