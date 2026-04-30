@@ -101,7 +101,9 @@ notebooker-cli start-webapp --scheduler-management-only
 notebooker-cli start-scheduler
 ```
 
-Key files: `scheduler_core.py` (shared infrastructure), `standalone_scheduler.py` (standalone process)
+Key files: `scheduler_core.py` (shared infrastructure), `standalone_scheduler.py` (standalone process), `global_config.py` (shared GLOBAL_CONFIG state)
+
+The standalone scheduler exposes `GET /healthz` on port 11829 by default (set `--liveness-port 0` to disable).
 
 ## Version Consistency
 

@@ -238,12 +238,15 @@ execute them - that's handled by the standalone scheduler.
 +---------------------------+----------------------------------------+-----------------------------------+
 | No scheduling             | :code:`--disable-scheduler`            | Not needed                        |
 +---------------------------+----------------------------------------+-----------------------------------+
-| Liveness probe (default)  | n/a                                    | :code:`--liveness-port 11829`     |
-+---------------------------+----------------------------------------+-----------------------------------+
 
-The standalone scheduler exposes a ``GET /healthz`` endpoint on ``--liveness-port``
-(default ``11829``; set to ``0`` to disable). It returns ``200 OK`` while the scheduler
-is running, and ``503`` otherwise – suitable for a Kubernetes liveness probe.
+The standalone scheduler exposes a ``GET /healthz`` endpoint on port ``11829`` by default,
+suitable for a Kubernetes liveness probe. It returns ``200 OK`` while the scheduler is
+running and ``503`` otherwise. Use :code:`--liveness-port 0` to disable it.
+
+.. warning::
+    If you start the webapp with :code:`--scheduler-management-only` but do not run a
+    standalone scheduler process, scheduled jobs will never execute. The webapp will accept
+    job creation and show them in the UI, but nothing will fire them.
 
 .. warning::
     Only run one scheduler process at a time. Running multiple schedulers won't corrupt data
