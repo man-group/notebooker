@@ -1,4 +1,4 @@
-0.8.0 (2026-01-15)
+0.8.0 (TBD)
 ------------------
 
 * feature: standalone scheduler process for improved reliability in Kubernetes deployments
