@@ -238,6 +238,12 @@ execute them - that's handled by the standalone scheduler.
 +---------------------------+----------------------------------------+-----------------------------------+
 | No scheduling             | :code:`--disable-scheduler`            | Not needed                        |
 +---------------------------+----------------------------------------+-----------------------------------+
+| Liveness probe (default)  | n/a                                    | :code:`--liveness-port 11829`     |
++---------------------------+----------------------------------------+-----------------------------------+
+
+The standalone scheduler exposes a ``GET /healthz`` endpoint on ``--liveness-port``
+(default ``11829``; set to ``0`` to disable). It returns ``200 OK`` while the scheduler
+is running, and ``503`` otherwise – suitable for a Kubernetes liveness probe.
 
 .. warning::
     Only run one scheduler process at a time. Running multiple schedulers won't corrupt data

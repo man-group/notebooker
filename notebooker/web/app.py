@@ -9,6 +9,7 @@ import time
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 
+from notebooker import global_config
 from notebooker.constants import CANCEL_MESSAGE, JobStatus
 from notebooker.scheduler_core import get_jobstore_config, create_scheduler
 from notebooker.serialization.serialization import initialize_serializer_from_config, get_serializer_from_cls
@@ -26,11 +27,10 @@ from notebooker.web.routes.templates import templates_bp
 
 logger = logging.getLogger(__name__)
 all_report_refresher: Optional[threading.Thread] = None
-GLOBAL_CONFIG: Optional[WebappConfig] = None
 
 
 def _cancel_all_jobs():
-    serializer = initialize_serializer_from_config(GLOBAL_CONFIG)
+    serializer = initialize_serializer_from_config(global_config.GLOBAL_CONFIG)
     all_pending = serializer.get_all_results(
         mongo_filter={"status": {"$in": [JobStatus.SUBMITTED.value, JobStatus.PENDING.value]}}
     )
@@ -44,7 +44,7 @@ def _cleanup_on_exit():
         return
     os.environ["NOTEBOOKER_APP_STOPPING"] = "1"
     _cancel_all_jobs()
-    _cleanup_dirs(GLOBAL_CONFIG)
+    _cleanup_dirs(global_config.GLOBAL_CONFIG)
     if all_report_refresher:
         # Wait until it terminates.
         logger.info('Stopping "report hunter" thread.')
@@ -123,8 +123,7 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
 
 
 def main(web_config: WebappConfig):
-    global GLOBAL_CONFIG
-    GLOBAL_CONFIG = web_config
+    global_config.GLOBAL_CONFIG = web_config
     flask_app = create_app(web_config)
     flask_app = setup_app(flask_app, web_config)
     serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)

@@ -63,3 +63,11 @@ class WebappConfig(BaseConfig):
     DISABLE_SCHEDULER: bool = False
     SCHEDULER_MANAGEMENT_ONLY: bool = False  # When True, job CRUD works but jobs aren't executed
     READONLY_MODE: bool = False
+
+
+@dataclass
+class SchedulerConfig(BaseConfig):
+    LOGGING_LEVEL: str = "INFO"
+    SCHEDULER_MONGO_DATABASE: str = ""
+    SCHEDULER_MONGO_COLLECTION: str = ""
+    LIVENESS_PORT: int = 11829  # 0 disables the probe.

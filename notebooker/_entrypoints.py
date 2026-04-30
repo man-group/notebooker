@@ -9,7 +9,7 @@ from notebooker.version import __version__
 from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS, DEFAULT_RUNNING_TIMEOUT
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
-from notebooker.settings import BaseConfig, WebappConfig
+from notebooker.settings import BaseConfig, SchedulerConfig, WebappConfig
 from notebooker.snapshot import snap_latest_successful_notebooks
 from notebooker.standalone_scheduler import run_standalone_scheduler
 from notebooker.utils.cleanup import delete_old_reports
@@ -204,8 +204,16 @@ def start_webapp(
     help="The name of the mongo collection for the scheduler. "
     "Defaults to the same as the serializer's mongo collection + '_scheduler'.",
 )
+@click.option(
+    "--liveness-port",
+    default=11829,
+    type=int,
+    help="Port for the standalone scheduler's liveness probe HTTP endpoint. Set to 0 to disable.",
+)
 @pass_config
-def start_scheduler(config: BaseConfig, logging_level, scheduler_mongo_database, scheduler_mongo_collection):
+def start_scheduler(
+    config: BaseConfig, logging_level, scheduler_mongo_database, scheduler_mongo_collection, liveness_port
+):
     """
     Start the scheduler as a standalone process.
 
@@ -216,14 +224,11 @@ def start_scheduler(config: BaseConfig, logging_level, scheduler_mongo_database,
     The webapp should be started with --scheduler-management-only when
     using a standalone scheduler.
     """
-    import logging
-
-    logging.basicConfig(level=logging.getLevelName(logging_level))
-
-    # Copy config and add scheduler-specific settings
-    scheduler_config = BaseConfig.copy_existing(config)
+    scheduler_config = SchedulerConfig.copy_existing(config)
+    scheduler_config.LOGGING_LEVEL = logging_level
     scheduler_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
     scheduler_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
+    scheduler_config.LIVENESS_PORT = liveness_port
 
     return run_standalone_scheduler(scheduler_config)
 

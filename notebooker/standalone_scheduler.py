@@ -12,17 +12,19 @@ Usage:
 The webapp should be started with --scheduler-management-only when using
 a standalone scheduler, so that it can manage jobs without executing them.
 """
+import json
 import logging
 import signal
-import sys
-import time
+import socketserver
+import threading
+from http.server import BaseHTTPRequestHandler
 
-from notebooker.scheduler_core import get_jobstore_config, create_scheduler
+from notebooker.scheduler_core import get_jobstore_config, create_blocking_scheduler
 from notebooker.settings import BaseConfig
 
 logger = logging.getLogger(__name__)
 
-# Global reference to scheduler for signal handler
+# Global reference to scheduler for signal handler and liveness probe
 _scheduler = None
 
 
@@ -38,7 +40,35 @@ def _shutdown_handler(signum, frame):
         except Exception as e:
             logger.error(f"Error during scheduler shutdown: {e}")
 
-    sys.exit(0)
+
+class _LivenessHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path != "/healthz":
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        if _scheduler is not None and _scheduler.running:
+            status, body = 200, {"status": "ok"}
+        else:
+            status, body = 503, {"status": "unavailable"}
+
+        payload = json.dumps(body).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, format, *args):  # noqa: A002 - stdlib signature
+        logger.debug("liveness: " + format, *args)
+
+
+def _start_liveness_probe(port: int) -> None:
+    server = socketserver.TCPServer(("", port), _LivenessHandler)
+    thread = threading.Thread(target=server.serve_forever, name="liveness-probe", daemon=True)
+    thread.start()
+    logger.info(f"Liveness probe listening on port {port}")
 
 
 def run_standalone_scheduler(config: BaseConfig):
@@ -47,42 +77,34 @@ def run_standalone_scheduler(config: BaseConfig):
 
     This function:
     1. Sets up the GLOBAL_CONFIG for run_report() to use
-    2. Creates and starts the scheduler with MongoDB jobstore
-    3. Registers signal handlers for graceful shutdown
-    4. Keeps the process alive until terminated
-
-    Parameters
-    ----------
-    config : BaseConfig
-        The notebooker configuration containing serializer settings and
-        scheduler configuration (SCHEDULER_MONGO_DATABASE, SCHEDULER_MONGO_COLLECTION).
+    2. Optionally starts a liveness probe HTTP server
+    3. Creates a BlockingScheduler with MongoDB jobstore
+    4. Registers signal handlers for graceful shutdown
+    5. Calls .start() which blocks until shutdown
     """
     global _scheduler
 
-    # Set up GLOBAL_CONFIG so run_report() can access it
-    # This is needed because scheduled jobs call run_report() which
-    # relies on GLOBAL_CONFIG being set
-    from notebooker.web import app as app_module
+    from notebooker import global_config
 
-    app_module.GLOBAL_CONFIG = config
+    global_config.GLOBAL_CONFIG = config
 
+    logging.basicConfig(level=logging.getLevelName(getattr(config, "LOGGING_LEVEL", "INFO")))
     logger.info("Starting standalone scheduler...")
 
-    # Get jobstore configuration from serializer
     jobstore_config = get_jobstore_config(config)
 
-    # Create and start scheduler (not paused - we want to execute jobs)
-    _scheduler = create_scheduler(jobstore_config, paused=False)
+    _scheduler = create_blocking_scheduler(jobstore_config)
 
-    # Register signal handlers for graceful shutdown
     signal.signal(signal.SIGTERM, _shutdown_handler)
     signal.signal(signal.SIGINT, _shutdown_handler)
 
+    liveness_port = getattr(config, "LIVENESS_PORT", 0)
+    if liveness_port:
+        _start_liveness_probe(liveness_port)
+
     logger.info("Standalone scheduler is running. Press Ctrl+C to stop.")
 
-    # Keep the process alive
     try:
-        while True:
-            time.sleep(1)
+        _scheduler.start()
     except KeyboardInterrupt:
         _shutdown_handler(signal.SIGINT, None)

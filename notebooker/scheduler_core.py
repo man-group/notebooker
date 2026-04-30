@@ -9,6 +9,7 @@ import logging
 from typing import Dict, Any
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 
 from notebooker.serialization.mongo import MongoResultSerializer
@@ -98,5 +99,27 @@ def create_scheduler(jobstore_config: Dict[str, Any], paused: bool = False) -> B
         logger.info("Scheduler started")
 
     scheduler.print_jobs()
+
+    return scheduler
+
+
+def create_blocking_scheduler(jobstore_config: Dict[str, Any]) -> BlockingScheduler:
+    """
+    Create a BlockingScheduler with MongoDB jobstore for the standalone scheduler process.
+
+    The caller is responsible for calling ``.start()`` (which blocks) after registering
+    any signal handlers.
+    """
+    jobstores = {
+        "mongo": MongoDBJobStore(
+            database=jobstore_config["database"],
+            collection=jobstore_config["collection"],
+            client=jobstore_config["client"],
+        )
+    }
+
+    scheduler = BlockingScheduler(
+        jobstores=jobstores, job_defaults={"misfire_grace_time": 60 * 60}  # 1 hour grace time
+    )
 
     return scheduler
