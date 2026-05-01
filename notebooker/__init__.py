@@ -1,8 +1,5 @@
+from pkgutil import extend_path
+
 from .version import __version__
 
-try:
-    import pkg_resources
-
-    pkg_resources.declare_namespace(__name__)
-except ImportError:
-    pass
+__path__ = extend_path(__path__, __name__)
