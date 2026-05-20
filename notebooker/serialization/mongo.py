@@ -142,7 +142,7 @@ class MongoResultSerializer(ABC):
 
     def check_connection(self) -> bool:
         try:
-            self.get_mongo_connection().admin.command("ping")
+            self.get_mongo_connection()[self.database_name].command("ping")
             return True
         except pymongo.errors.PyMongoError:
             return False
