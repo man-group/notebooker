@@ -12,13 +12,12 @@ Usage:
 The webapp should be started with --scheduler-management-only when using
 a standalone scheduler, so that it can manage jobs without executing them.
 """
-import json
 import logging
 import signal
-import socketserver
 import threading
 import time
-from http.server import BaseHTTPRequestHandler
+
+from flask import Flask, jsonify
 
 from notebooker.scheduler_core import get_jobstore_config, create_blocking_scheduler
 from notebooker.settings import BaseConfig
@@ -42,32 +41,19 @@ def _shutdown_handler(signum, frame):
             logger.error(f"Error during scheduler shutdown: {e}")
 
 
-class _LivenessHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path != "/healthz":
-            self.send_response(404)
-            self.end_headers()
-            return
-
-        if _scheduler is not None and _scheduler.running:
-            status, body = 200, {"status": "ok"}
-        else:
-            status, body = 503, {"status": "unavailable"}
-
-        payload = json.dumps(body).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(payload)))
-        self.end_headers()
-        self.wfile.write(payload)
-
-    def log_message(self, format, *args):  # noqa: A002 - stdlib signature
-        logger.debug("liveness: " + format, *args)
-
-
 def _start_liveness_probe(port: int) -> None:
-    server = socketserver.TCPServer(("", port), _LivenessHandler)
-    thread = threading.Thread(target=server.serve_forever, name="liveness-probe", daemon=True)
+    app = Flask(__name__)
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
+    @app.route("/healthz")
+    def healthz():
+        if _scheduler is not None and _scheduler.running:
+            return jsonify({"status": "ok"})
+        return jsonify({"status": "unavailable"}), 503
+
+    thread = threading.Thread(
+        target=lambda: app.run(port=port, use_reloader=False), name="liveness-probe", daemon=True
+    )
     thread.start()
     logger.info(f"Liveness probe listening on port {port}")
 
