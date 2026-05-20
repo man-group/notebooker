@@ -17,6 +17,7 @@ import logging
 import signal
 import socketserver
 import threading
+import time
 from http.server import BaseHTTPRequestHandler
 
 from notebooker.scheduler_core import get_jobstore_config, create_blocking_scheduler
@@ -71,6 +72,20 @@ def _start_liveness_probe(port: int) -> None:
     logger.info(f"Liveness probe listening on port {port}")
 
 
+def _start_jobstore_poller(interval: int = 60) -> None:
+    # APScheduler sleeps indefinitely when the jobstore is empty. This thread
+    # periodically wakes the scheduler so it picks up jobs added externally
+    # (e.g. by the webapp running in a separate process).
+    def _poll():
+        while True:
+            time.sleep(interval)
+            if _scheduler is not None and _scheduler.running:
+                _scheduler.wakeup()
+
+    thread = threading.Thread(target=_poll, name="jobstore-poller", daemon=True)
+    thread.start()
+
+
 def run_standalone_scheduler(config: BaseConfig):
     """
     Run the scheduler as a standalone process.
@@ -102,6 +117,7 @@ def run_standalone_scheduler(config: BaseConfig):
     if liveness_port:
         _start_liveness_probe(liveness_port)
 
+    _start_jobstore_poller()
     logger.info("Standalone scheduler is running. Press Ctrl+C to stop.")
 
     try:
