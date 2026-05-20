@@ -18,6 +18,7 @@ import threading
 import time
 
 from flask import Flask, jsonify
+from werkzeug.serving import make_server
 
 from notebooker.scheduler_core import get_jobstore_config, create_blocking_scheduler
 from notebooker.settings import BaseConfig
@@ -51,9 +52,8 @@ def _start_liveness_probe(port: int) -> None:
             return jsonify({"status": "ok"})
         return jsonify({"status": "unavailable"}), 503
 
-    thread = threading.Thread(
-        target=lambda: app.run(port=port, use_reloader=False), name="liveness-probe", daemon=True
-    )
+    server = make_server("", port, app)
+    thread = threading.Thread(target=server.serve_forever, name="liveness-probe", daemon=True)
     thread.start()
     logger.info(f"Liveness probe listening on port {port}")
 
