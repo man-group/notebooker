@@ -3,9 +3,7 @@
 
 * feature: standalone scheduler process for improved reliability in Kubernetes deployments
 * feature: new `--scheduler-management-only` flag for webapp to manage jobs without executing them
-* bugfix: fix scheduler race condition by starting in paused state
 * bugfix: fix template dropdown showing folder names instead of templates
-* bugfix: fix standalone scheduler not picking up jobs added after startup
 
 0.7.3 (2026-05-20)
 ------------------
