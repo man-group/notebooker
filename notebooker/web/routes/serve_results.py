@@ -1,5 +1,6 @@
 import json
 import os
+import urllib.parse
 from logging import getLogger
 from typing import Any, Union
 
@@ -24,6 +25,10 @@ logger = getLogger(__name__)
 
 
 # ------------------- Serving results -------------------- #
+
+
+def _clone_url_with_overrides(clone_url: str, overrides: dict) -> str:
+    return "{}?{}".format(clone_url, urllib.parse.urlencode({"json_params": json.dumps(overrides)}))
 
 
 def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -> str:
@@ -57,7 +62,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
                 )
 
         if result and result.overrides and urls["clone_url"]:
-            urls["clone_url"] = urls["clone_url"] + "?json_params={}".format(json.dumps(result.overrides))
+            urls["clone_url"] = _clone_url_with_overrides(urls["clone_url"], result.overrides)
         return render_template(
             "results.html",
             job_id=job_id,
