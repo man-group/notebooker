@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, abort
 
 import notebooker.version
 from notebooker.constants import DEFAULT_RESULT_LIMIT
@@ -6,6 +6,13 @@ from notebooker.utils.results import get_all_available_results_json
 from notebooker.web.utils import get_serializer
 
 core_bp = Blueprint("core_bp", __name__)
+
+
+@core_bp.route("/healthz")
+def healthz():
+    if not get_serializer().check_connection():
+        abort(503)
+    return jsonify({"status": "ok"})
 
 
 @core_bp.route("/core/user_profile")

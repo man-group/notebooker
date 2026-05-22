@@ -5,8 +5,8 @@ import urllib
 import requests
 from logging import getLogger
 
+from notebooker import global_config
 from notebooker.execute_notebook import run_report_in_subprocess
-from notebooker.web.app import GLOBAL_CONFIG
 
 logger = getLogger(__name__)
 
@@ -29,9 +29,10 @@ def run_report(
     This is the entrypoint of the scheduler; APScheduler has to
     run a python function and so we invoke an API call from a thin wrapper.
     """
-    if GLOBAL_CONFIG:
+    config = global_config.GLOBAL_CONFIG
+    if config:
         run_report_in_subprocess(
-            GLOBAL_CONFIG,
+            config,
             report_name,
             report_title,
             mailto,

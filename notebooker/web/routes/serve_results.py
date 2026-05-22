@@ -2,6 +2,7 @@ import json
 import os
 from logging import getLogger
 from typing import Any, Union
+from urllib.parse import urlencode
 
 from flask import Blueprint, Response, abort, render_template, request, url_for, jsonify, current_app
 
@@ -57,7 +58,7 @@ def _render_results(job_id: str, report_name: str, result: NotebookResultBase) -
                 )
 
         if result and result.overrides and urls["clone_url"]:
-            urls["clone_url"] = urls["clone_url"] + "?json_params={}".format(json.dumps(result.overrides))
+            urls["clone_url"] = urls["clone_url"] + "?" + urlencode({"json_params": json.dumps(result.overrides)})
         return render_template(
             "results.html",
             job_id=job_id,

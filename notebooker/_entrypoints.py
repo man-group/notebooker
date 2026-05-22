@@ -9,8 +9,9 @@ from notebooker.version import __version__
 from notebooker.constants import DEFAULT_SERIALIZER, DEFAULT_MAILFROM_ADDRESS, DEFAULT_RUNNING_TIMEOUT
 from notebooker.execute_notebook import execute_notebook_entrypoint
 from notebooker.serialization import SERIALIZER_TO_CLI_OPTIONS
-from notebooker.settings import BaseConfig, WebappConfig
+from notebooker.settings import BaseConfig, SchedulerConfig, WebappConfig
 from notebooker.snapshot import snap_latest_successful_notebooks
+from notebooker.standalone_scheduler import run_standalone_scheduler
 from notebooker.utils.cleanup import delete_old_reports
 from notebooker.web.app import main
 
@@ -138,6 +139,13 @@ def base_notebooker(
     "not display the scheduler from the front-end of the webapp.",
 )
 @click.option(
+    "--scheduler-management-only",
+    default=False,
+    is_flag=True,
+    help="If --scheduler-management-only is given, the webapp can create/update/delete scheduled jobs but will not "
+    "execute them. Use this when running a separate standalone scheduler process.",
+)
+@click.option(
     "--scheduler-mongo-database",
     default="",
     help="The name of the mongo database which is used for the scheduling back-end. "
@@ -164,6 +172,7 @@ def start_webapp(
     debug,
     base_cache_dir,
     disable_scheduler,
+    scheduler_management_only,
     scheduler_mongo_database,
     scheduler_mongo_collection,
     readonly_mode,
@@ -174,10 +183,54 @@ def start_webapp(
     web_config.DEBUG = debug
     web_config.CACHE_DIR = base_cache_dir
     web_config.DISABLE_SCHEDULER = disable_scheduler
+    web_config.SCHEDULER_MANAGEMENT_ONLY = scheduler_management_only
     web_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
     web_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
     web_config.READONLY_MODE = readonly_mode
     return main(web_config)
+
+
+@base_notebooker.command()
+@click.option("--logging-level", default="INFO", help="The logging level. Set to DEBUG for lots of extra info.")
+@click.option(
+    "--scheduler-mongo-database",
+    default="",
+    help="The name of the mongo database which is used for the scheduler. "
+    "Defaults to the same as the serializer's mongo database.",
+)
+@click.option(
+    "--scheduler-mongo-collection",
+    default="",
+    help="The name of the mongo collection for the scheduler. "
+    "Defaults to the same as the serializer's mongo collection + '_scheduler'.",
+)
+@click.option(
+    "--liveness-port",
+    default=11829,
+    type=int,
+    help="Port for the standalone scheduler's liveness probe HTTP endpoint. Set to 0 to disable.",
+)
+@pass_config
+def start_scheduler(
+    config: BaseConfig, logging_level, scheduler_mongo_database, scheduler_mongo_collection, liveness_port
+):
+    """
+    Start the scheduler as a standalone process.
+
+    Use this when you want to run the scheduler separately from the webapp,
+    for example in a Kubernetes deployment where the scheduler can be
+    restarted independently.
+
+    The webapp should be started with --scheduler-management-only when
+    using a standalone scheduler.
+    """
+    scheduler_config = SchedulerConfig.copy_existing(config)
+    scheduler_config.LOGGING_LEVEL = logging_level
+    scheduler_config.SCHEDULER_MONGO_DATABASE = scheduler_mongo_database
+    scheduler_config.SCHEDULER_MONGO_COLLECTION = scheduler_mongo_collection
+    scheduler_config.LIVENESS_PORT = liveness_port
+
+    return run_standalone_scheduler(scheduler_config)
 
 
 @base_notebooker.command()

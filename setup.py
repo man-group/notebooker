@@ -25,7 +25,6 @@ def get_long_description():
 setup(
     version=get_version(),
     packages=find_packages(exclude=["tests", "tests.*", "benchmarks"]),
-    namespace_packages=["notebooker"],
     python_requires=">=3.6",
     zip_safe=False,
     include_package_data=True,

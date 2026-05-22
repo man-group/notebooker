@@ -6,7 +6,6 @@ import git
 import jupytext
 import nbconvert
 import nbformat
-import pkg_resources
 from nbconvert import HTMLExporter, PDFExporter, SlidesExporter
 from nbconvert.exporters.exporter import ResourcesDict
 from packaging import version
@@ -38,7 +37,7 @@ def ipython_to_html(
             template_filename = "notebooker_html_output.tpl"
         else:
             template_filename = "notebooker_html_output_deprecated.tpl"
-        c.HTMLExporter.template_file = pkg_resources.resource_filename(__name__, f"../nbtemplates/{template_filename}")
+        c.HTMLExporter.template_file = os.path.join(os.path.dirname(__file__), f"../nbtemplates/{template_filename}")
 
         c.HTMLExporter.exclude_input = hide_code
         c.HTMLExporter.exclude_input_prompt = hide_code
@@ -55,9 +54,7 @@ def ipython_to_pdf(raw_executed_ipynb: str, report_title: str, hide_code: bool =
     c.PDFExporter.exclude_input = hide_code
     c.PDFExporter.exclude_input_prompt = hide_code
     c.PDFExporter.exclude_output_prompt = hide_code
-    c.HTMLExporter.template_file = pkg_resources.resource_filename(
-        __name__, "../nbtemplates/notebooker_pdf_output.tplx"
-    )
+    c.HTMLExporter.template_file = os.path.join(os.path.dirname(__file__), "../nbtemplates/notebooker_pdf_output.tplx")
     pdf_exporter = PDFExporter(c)
     resources = ResourcesDict()
     resources["metadata"] = ResourcesDict()
@@ -104,7 +101,7 @@ def _get_template_path(report_path: str, warn_on_local: bool, py_template_dir: A
             logger.warning(
                 "Loading from notebooker default templates. This is only expected if you are running locally."
             )
-        return _template(report_path, pkg_resources.resource_filename(__name__, "../notebook_templates_example"))
+        return _template(report_path, os.path.join(os.path.dirname(__file__), "../notebook_templates_example"))
 
 
 def _get_output_path_hex(notebooker_disable_git, py_template_dir) -> str:

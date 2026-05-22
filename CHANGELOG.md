@@ -1,3 +1,18 @@
+0.8.0 (2026-05-22)
+------------------
+
+* feature: standalone scheduler process for improved reliability in Kubernetes deployments
+* feature: new `--scheduler-management-only` flag for webapp to manage jobs without executing them
+* feature: add `/healthz` liveness probe endpoint to the webapp
+* bugfix: fix template dropdown showing folder names instead of templates
+* bugfix: Encode cloned report parameters in the results page URL so values containing `#` are preserved. (#210)
+
+0.7.3 (2026-05-20)
+------------------
+
+* breaking: namespace packages (`notebooker` and `notebooker.serializers`) now use `pkgutil.extend_path` instead of `pkg_resources.declare_namespace`. Plugins contributing to the `notebooker.serializers` namespace must update their own `__init__.py` files to use `pkgutil.extend_path` and remove `namespace_packages` from their `setup.py`.
+* packaging: remove dependency on `pkg_resources` / `setuptools` at import time, fixing `ModuleNotFoundError` on Python 3.11 in fresh virtualenvs.
+
 0.7.2 (2025-01-17)
 ------------------
 

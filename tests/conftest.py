@@ -30,7 +30,7 @@ def _mongo_server():
         test_server.teardown()
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 @yield_requires_config(CONFIG, ["mongo_bin"])
 def mongo_server():
     """Function-scoped MongoDB server started in a local thread.

@@ -6,13 +6,12 @@ from typing import Optional
 
 import sys
 import time
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.mongodb import MongoDBJobStore
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 
+from notebooker import global_config
 from notebooker.constants import CANCEL_MESSAGE, JobStatus
-from notebooker.serialization.mongo import MongoResultSerializer
+from notebooker.scheduler_core import get_jobstore_config, create_scheduler
 from notebooker.serialization.serialization import initialize_serializer_from_config, get_serializer_from_cls
 from notebooker.settings import WebappConfig
 from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
@@ -28,11 +27,10 @@ from notebooker.web.routes.templates import templates_bp
 
 logger = logging.getLogger(__name__)
 all_report_refresher: Optional[threading.Thread] = None
-GLOBAL_CONFIG: Optional[WebappConfig] = None
 
 
 def _cancel_all_jobs():
-    serializer = initialize_serializer_from_config(GLOBAL_CONFIG)
+    serializer = initialize_serializer_from_config(global_config.GLOBAL_CONFIG)
     all_pending = serializer.get_all_results(
         mongo_filter={"status": {"$in": [JobStatus.SUBMITTED.value, JobStatus.PENDING.value]}}
     )
@@ -42,12 +40,11 @@ def _cancel_all_jobs():
 
 @atexit.register
 def _cleanup_on_exit():
-    global all_report_refresher
     if "pytest" in sys.modules or not all_report_refresher:
         return
     os.environ["NOTEBOOKER_APP_STOPPING"] = "1"
     _cancel_all_jobs()
-    _cleanup_dirs(GLOBAL_CONFIG)
+    _cleanup_dirs(global_config.GLOBAL_CONFIG)
     if all_report_refresher:
         # Wait until it terminates.
         logger.info('Stopping "report hunter" thread.')
@@ -66,9 +63,7 @@ def start_app(webapp_config: WebappConfig):
 
 
 def create_app(webapp_config=None):
-    import pkg_resources
-
-    flask_app = Flask(__name__, template_folder=f"{pkg_resources.resource_filename(__name__, 'templates')}")
+    flask_app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), "templates"))
 
     flask_app.url_map.converters["date"] = DateConverter
     flask_app.register_blueprint(index_bp)
@@ -99,21 +94,15 @@ def setup_scheduler(flask_app, web_config):
     if web_config.DISABLE_SCHEDULER:
         flask_app.apscheduler = None
         return flask_app
-    serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)
-    if isinstance(serializer, MongoResultSerializer):
-        client = serializer.get_mongo_connection()
-        database = web_config.SCHEDULER_MONGO_DATABASE or serializer.database_name
-        collection = web_config.SCHEDULER_MONGO_COLLECTION or f"{serializer.result_collection_name}_scheduler"
-        jobstores = {"mongo": MongoDBJobStore(database=database, collection=collection, client=client)}
-    else:
-        raise ValueError(
-            "We cannot support scheduling if we are not using a Mongo Result serializer, "
-            "since we re-use the connection details from the serializer to store metadata "
-            "about scheduling."
-        )
-    scheduler = BackgroundScheduler(jobstores=jobstores, job_defaults={"misfire_grace_time": 60 * 60})
-    scheduler.start()
-    scheduler.print_jobs()
+
+    jobstore_config = get_jobstore_config(web_config)
+
+    # In management-only mode, the scheduler is paused so jobs can be
+    # created/updated/deleted but won't be executed. Use this when running
+    # a separate standalone scheduler process.
+    paused = getattr(web_config, "SCHEDULER_MANAGEMENT_ONLY", False)
+
+    scheduler = create_scheduler(jobstore_config, paused=paused)
     flask_app.apscheduler = scheduler
     return flask_app
 
@@ -134,8 +123,7 @@ def setup_app(flask_app: Flask, web_config: WebappConfig):
 
 
 def main(web_config: WebappConfig):
-    global GLOBAL_CONFIG
-    GLOBAL_CONFIG = web_config
+    global_config.GLOBAL_CONFIG = web_config
     flask_app = create_app(web_config)
     flask_app = setup_app(flask_app, web_config)
     serializer = get_serializer_from_cls(web_config.SERIALIZER_CLS, **web_config.SERIALIZER_CONFIG)

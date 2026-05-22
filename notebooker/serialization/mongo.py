@@ -140,6 +140,13 @@ class MongoResultSerializer(ABC):
     def get_name(cls):
         return cls.__name__
 
+    def check_connection(self) -> bool:
+        try:
+            self.get_mongo_connection()[self.database_name].command("ping")
+            return True
+        except pymongo.errors.PyMongoError:
+            return False
+
     def get_mongo_connection(self):
         raise NotImplementedError()
 
