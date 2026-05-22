@@ -8,7 +8,7 @@
     "cron-expression-validator": "^1.0.18",
     "cron-parser": "^3.5.0",
     "datatables": "1.10.18",
-    "diff": "^3.5.0",
+    "diff": "^3.5.1",
     "eslint": "^6.8.0",
     "fomantic-ui": "2.8.8",
     "jquery": "^3.5.1",
