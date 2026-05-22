@@ -1,10 +1,11 @@
-0.8.0 (TBD)
+0.8.0 (2026-05-22)
 ------------------
 
 * feature: standalone scheduler process for improved reliability in Kubernetes deployments
 * feature: new `--scheduler-management-only` flag for webapp to manage jobs without executing them
 * feature: add `/healthz` liveness probe endpoint to the webapp
 * bugfix: fix template dropdown showing folder names instead of templates
+* bugfix: Encode cloned report parameters in the results page URL so values containing `#` are preserved. (#210)
 
 0.7.3 (2026-05-20)
 ------------------
