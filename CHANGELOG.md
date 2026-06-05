@@ -1,7 +1,7 @@
 0.8.1 (2026-06-05)
 ------------------
 
-* packaging: switch jQuery, fomantic-ui, datatables, and bootstrap-table to jsDelivr CDN; reduces sdist from 42 MB to 1.9 MB and removes node_modules from the wheel entirely
+* packaging: switch jQuery, fomantic-ui, datatables, and bootstrap-table to jsDelivr CDN; reduces sdist from 42 MB to 145KB and removes node_modules from the wheel entirely
 * packaging: add MANIFEST.in prune directives to exclude node_modules, dist, and yarn.lock from source distributions
 * packaging: move browserify and eslint to devDependencies; remove unused diff and yargs-parser
 * packaging: update Dockerfile base from Node 10 (EOL) to Node 20 LTS
