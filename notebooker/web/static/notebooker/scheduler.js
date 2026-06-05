@@ -1,7 +1,6 @@
-var parser = require("cron-parser");
 var schedulerModalState = "Add";
 
-addCallbacks = () => {
+const addCallbacks = () => {
     $("#schedulerTable").on("click", "tbody tr", handleRowClick);
     $(".deleteScheduleButton").click((clicked) => {
         const deleteHref = clicked.target.closest("button").dataset.href;
@@ -32,7 +31,7 @@ addCallbacks = () => {
     });
 };
 
-load_data = (callback) => {
+const load_data = (callback) => {
     $.ajax({
         url: `/scheduler/jobs`,
         dataType: "json",
@@ -74,7 +73,7 @@ function setScheduleModalMode(mode) {
     }
 }
 
-load_all_templates = (callback) => {
+const load_all_templates = (callback) => {
     $.ajax({
         url: "/core/all_possible_templates_flattened",
         dataType: "json",
@@ -208,7 +207,7 @@ $(document).ready(() => {
                 return;
             }
             try {
-                var interval = parser.parseExpression(event.target.value);
+                var interval = parseExpression(event.target.value);
                 let cpo = $("#crontabParserOutput");
                 cpo.text("Next schedule: " + interval.next().toString());
                 cpo.addClass("yellow");

@@ -1,17 +1,3 @@
-FROM node:10.16.0-alpine as node_build
-
-RUN set -eux \
-  ; apk add git
-
-COPY . /workspace
-
-WORKDIR /workspace/notebooker/web/static
-RUN set -eux \
-  ; npm install \
-  ; yarn bundle \
-  ; ls -lah node_modules
-
-
 FROM continuumio/anaconda3:2020.07-alpine as python_build
 
 # this is needed for the a mongodb test fixture
@@ -22,7 +8,7 @@ RUN set -eux \
   ; apk update \
   ; apk add mongodb=4.0.5-r0 git
 
-COPY --from=node_build /workspace /workspace
+COPY . /workspace
 
 ENV PATH="/opt/conda/bin/:${PATH}"
 

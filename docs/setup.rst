@@ -14,8 +14,6 @@ Prerequisites
 -------------
 * python 3.6+
 * `mongodb <https://www.mongodb.com/download-center/community?jmp=docs>`_ >= 2.4.x
-* npm
-* yarn
 
 
 I've only just installed mongodb
@@ -91,38 +89,28 @@ NB: mongo should be running as above for these steps to work!
     python setup.py develop
 
 
-3. Run npm install & yarn bundle
-
-.. code:: bash
-
-    cd ./notebooker/web/static/
-    npm install
-    yarn bundle
-    cd ../../../
-
-
-4. Set up the ipykernel which runs Notebooks
+3. Set up the ipykernel which runs Notebooks
 
 .. code:: bash
 
     $ python -m ipykernel install --user --name=notebooker_kernel
 
 
-5. Install notebook requirements
+4. Install notebook requirements
 
 .. code:: bash
 
     $ pip install -r notebooker/notebook_templates_example/notebook_requirements.txt
 
 
-6. Run the webapp!
+5. Run the webapp!
 
 .. code:: bash
 
     $ notebooker-cli --mongo-host localhost:27017 --mongo-user jon --mongo-password hello start-webapp --port 11828
 
 
-7. Open the link that is printed in your web browser.
+6. Open the link that is printed in your web browser.
 
 .. code::
 
