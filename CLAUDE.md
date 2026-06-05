@@ -34,7 +34,7 @@ cd notebooker/web/static/
 
 yarn install --frozen-lockfile
 yarn run lint      # ESLint
-yarn run format    # Prettier
+yarn run format    # Prettier (run this before committing any JS changes)
 yarn run bundle    # Browserify scheduler.js
 yarn test          # Jest
 ```
@@ -104,6 +104,14 @@ notebooker-cli start-scheduler
 Key files: `scheduler_core.py` (shared infrastructure), `standalone_scheduler.py` (standalone process), `global_config.py` (shared GLOBAL_CONFIG state)
 
 The standalone scheduler exposes `GET /healthz` on port 11829 by default (set `--liveness-port 0` to disable).
+
+## Version Consistency
+
+If regenerating yarn.lock, use the public registry to avoid embedding internal URLs that break CI:
+```bash
+cd notebooker/web/static/
+rm yarn.lock && yarn install --registry https://registry.yarnpkg.com
+```
 
 ## Version Consistency
 
