@@ -1,4 +1,10 @@
 include CHANGELOG.md
 recursive-include notebooker/web/templates *
 recursive-include notebooker/web/static *
+prune notebooker/web/static/node_modules
+prune notebooker/web/static/dist
+prune notebooker/web/static/src
+prune notebooker/web/static/tasks
+exclude notebooker/web/static/yarn.lock
+exclude notebooker/web/static/yarn-error.log
 recursive-include notebooker *.tpl
