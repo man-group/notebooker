@@ -1,3 +1,14 @@
+0.8.1 (2026-06-05)
+------------------
+
+* packaging: switch jQuery, fomantic-ui, datatables, and bootstrap-table to jsDelivr CDN; reduces sdist from 42 MB to 1.9 MB and removes node_modules from the wheel entirely
+* packaging: add MANIFEST.in prune directives to exclude node_modules, dist, and yarn.lock from source distributions
+* packaging: move browserify and eslint to devDependencies; remove unused diff and yargs-parser
+* packaging: update Dockerfile base from Node 10 (EOL) to Node 20 LTS
+* bugfix: scheduler cron preview now matches APScheduler day-of-week convention (0=Mon); fixes incorrect next-run times for expressions with a DOW constraint
+* bugfix: DOW ranges that wrap in croner space (e.g. 0-6) are now expanded correctly rather than raising a parser error
+* bugfix: out-of-range DOW values (> 6) now raise a validation error in the cron preview
+
 0.8.0 (2026-05-22)
 ------------------
 
