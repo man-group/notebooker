@@ -78,7 +78,9 @@ describe("parseExpression", () => {
         });
 
         test("throws on out-of-range DOW value", () => {
-            expect(() => parseExpression("1 1 19 1 11231231231231233312312313123")).toThrow("Invalid day-of-week value");
+            expect(() => parseExpression("1 1 19 1 11231231231231233312312313123")).toThrow(
+                "Invalid day-of-week value"
+            );
         });
 
         test("throws on DOW value 7", () => {
@@ -87,13 +89,7 @@ describe("parseExpression", () => {
     });
 
     describe("next() returns a Date strictly in the future", () => {
-        const expressions = [
-            "* * * * *",
-            "0 9 * * *",
-            "30 14 * * 4",
-            "*/15 * * * *",
-            "0 12 * * 0-4",
-        ];
+        const expressions = ["* * * * *", "0 9 * * *", "30 14 * * 4", "*/15 * * * *", "0 12 * * 0-4"];
         test.each(expressions)("%s returns a future date", (expr) => {
             const result = parseExpression(expr).next();
             expect(result).toBeInstanceOf(Date);
@@ -156,7 +152,7 @@ describe("parseExpression", () => {
         test("0-4 (Mon-Fri) returns a weekday", () => {
             const day = parseExpression("0 9 * * 0-4").next().getDay();
             expect(day).toBeGreaterThanOrEqual(1); // JS Mon
-            expect(day).toBeLessThanOrEqual(5);    // JS Fri
+            expect(day).toBeLessThanOrEqual(5); // JS Fri
         });
 
         test("0,2,4 (Mon/Wed/Fri) returns one of those days", () => {
