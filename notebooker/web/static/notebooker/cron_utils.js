@@ -32,20 +32,23 @@ function _convertDowRange(part) {
 
 function _convertDowField(field) {
     if (field === "*") return "*";
-    return field.split(",").map(part => {
-        if (part.includes("/")) {
-            const [range, step] = part.split("/");
-            if (range === "*") {
-                // Expand */N to explicit values so the Monday-origin is preserved.
-                const s = parseInt(step);
-                const values = [];
-                for (let i = 0; i < 7; i += s) values.push(_convertDowValue(i));
-                return values.join(",");
+    return field
+        .split(",")
+        .map((part) => {
+            if (part.includes("/")) {
+                const [range, step] = part.split("/");
+                if (range === "*") {
+                    // Expand */N to explicit values so the Monday-origin is preserved.
+                    const s = parseInt(step);
+                    const values = [];
+                    for (let i = 0; i < 7; i += s) values.push(_convertDowValue(i));
+                    return values.join(",");
+                }
+                return _convertDowRange(range) + "/" + step;
             }
-            return _convertDowRange(range) + "/" + step;
-        }
-        return _convertDowRange(part);
-    }).join(",");
+            return _convertDowRange(part);
+        })
+        .join(",");
 }
 
 function parseExpression(expr) {
@@ -64,7 +67,7 @@ function parseExpression(expr) {
             const d = job.nextRun();
             if (!d) throw new Error("No matching date found");
             return d;
-        }
+        },
     };
 }
 
