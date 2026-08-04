@@ -51,6 +51,7 @@ def _run_checks(
     execute_at_origin: bool = False,
     py_template_base_dir: str = "",
     py_template_subdir: str = "",
+    notebook_kernel_name: Optional[str] = None,
     scheduler_job_id: Optional[str] = None,
     mailfrom: Optional[str] = None,
     is_slideshow: bool = False,
@@ -87,6 +88,8 @@ def _run_checks(
         Whether to disable git pulling of the notebook templates.
     execute_at_origin : `bool`
         Whether to execute the notebook at the original path of the template notebook.
+    notebook_kernel_name : `Optional[str]`
+        The kernel name to write to generated notebook metadata.
     scheduler_job_id : `Optional[str]`
         If available, it will be part of the Error or Completed run report.
     mailfrom : `Optional[str]`
@@ -112,7 +115,13 @@ def _run_checks(
         os.makedirs(output_dir)
 
     py_template_dir = python_template_dir(py_template_base_dir, py_template_subdir)
-    ipynb_raw_path = generate_ipynb_from_py(template_base_dir, template_name, notebooker_disable_git, py_template_dir)
+    ipynb_raw_path = generate_ipynb_from_py(
+        template_base_dir,
+        template_name,
+        notebooker_disable_git,
+        py_template_dir,
+        notebook_kernel_name=notebook_kernel_name,
+    )
     ipynb_executed_path = os.path.join(output_dir, output_ipynb)
 
     logger.info("Executing notebook at {} using parameters {} --> {}".format(ipynb_raw_path, overrides, output_ipynb))
@@ -181,6 +190,7 @@ def run_report(
     execute_at_origin=False,
     py_template_base_dir="",
     py_template_subdir="",
+    notebook_kernel_name=None,
     scheduler_job_id=None,
     mailfrom=None,
     is_slideshow=False,
@@ -219,6 +229,7 @@ def run_report(
             execute_at_origin=execute_at_origin,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
+            notebook_kernel_name=notebook_kernel_name,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
             is_slideshow=is_slideshow,
@@ -273,6 +284,7 @@ def run_report(
                 notebooker_disable_git=notebooker_disable_git,
                 py_template_base_dir=py_template_base_dir,
                 py_template_subdir=py_template_subdir,
+                notebook_kernel_name=notebook_kernel_name,
                 scheduler_job_id=scheduler_job_id,
                 mailfrom=mailfrom,
                 is_slideshow=is_slideshow,
@@ -397,6 +409,7 @@ def execute_notebook_entrypoint(
     logger.info("execute_at_origin = %s", execute_at_origin)
     logger.info("py_template_base_dir = %s", py_template_base_dir)
     logger.info("py_template_subdir = %s", py_template_subdir)
+    logger.info("notebook_kernel_name = %s", config.NOTEBOOK_KERNEL_NAME)
     logger.info("serializer_cls = %s", config.SERIALIZER_CLS)
     logger.info("serializer_config = %s", config.SERIALIZER_CONFIG)
 
@@ -424,6 +437,7 @@ def execute_notebook_entrypoint(
             execute_at_origin=execute_at_origin,
             py_template_base_dir=py_template_base_dir,
             py_template_subdir=py_template_subdir,
+            notebook_kernel_name=config.NOTEBOOK_KERNEL_NAME,
             scheduler_job_id=scheduler_job_id,
             mailfrom=mailfrom,
             is_slideshow=is_slideshow,
@@ -553,6 +567,7 @@ def run_report_in_subprocess(
         ]
         + (["--notebooker-disable-git"] if base_config.NOTEBOOKER_DISABLE_GIT else [])
         + (["--execute-at-origin"] if base_config.EXECUTE_AT_ORIGIN else [])
+        + (["--notebook-kernel-name", base_config.NOTEBOOK_KERNEL_NAME] if base_config.NOTEBOOK_KERNEL_NAME else [])
         + ["--serializer-cls", result_serializer.__class__.__name__]
         + result_serializer.serializer_args_to_cmdline_args()
         + [
