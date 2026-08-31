@@ -29,6 +29,5 @@ iplot(
         go.Histogram2dContour(x=x, y=y, contours=dict(coloring="heatmap")),
         go.Scatter(x=x, y=y, mode="markers", marker=dict(color="white", size=3, opacity=0.3)),
     ],
-    show_link=False,
     image_width=100,
 )
