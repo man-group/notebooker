@@ -79,8 +79,11 @@ def test_report_hunter_with_status_change(bson_library, webapp_config):
     [
         (JobStatus.SUBMITTED, datetime.timedelta(minutes=1), False),
         (JobStatus.SUBMITTED, datetime.timedelta(minutes=4), True),
+        # A job that sat for far longer than the timeout must report the real wait, not the setting.
+        (JobStatus.SUBMITTED, datetime.timedelta(minutes=180), True),
         (JobStatus.PENDING, datetime.timedelta(minutes=4), False),
         (JobStatus.PENDING, datetime.timedelta(minutes=61), True),
+        (JobStatus.PENDING, datetime.timedelta(minutes=600), True),
     ],
 )
 def test_report_hunter_timeout(bson_library, status, time_later, should_timeout, webapp_config):
@@ -107,7 +110,10 @@ def test_report_hunter_timeout(bson_library, status, time_later, should_timeout,
         _report_hunter(webapp_config=webapp_config, run_once=True)
 
         if should_timeout:
-            mins = (time_later.total_seconds() / 60) - 1
+            # The elapsed time is measured from job_start_time, so it is exactly time_later.
+            # It used to be measured from the cutoff, which always yielded the timeout setting.
+            mins = time_later.total_seconds() / 60
+            stage = "while being submitted to run" if status == JobStatus.SUBMITTED else "while running"
             expected = NotebookResultError(
                 job_id=job_id,
                 report_name=report_name,
@@ -115,9 +121,9 @@ def test_report_hunter_timeout(bson_library, status, time_later, should_timeout,
                 status=JobStatus.TIMEOUT,
                 update_time=time_now,
                 job_start_time=start_time,
-                error_info="This request timed out while being submitted to run. "
+                error_info="This request timed out {}. "
                 "Please try again! "
-                "Timed out after {:.0f} minutes 0 seconds.".format(mins),
+                "Timed out after {:.0f} minutes 0 seconds.".format(stage, mins),
             )
         else:
             # expected does not change

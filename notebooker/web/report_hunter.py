@@ -97,13 +97,21 @@ def _report_hunter(webapp_config: WebappConfig, run_once: bool = False, timeout:
             for result in all_pending:
                 this_cutoff = cutoff.get(result.status)
                 if result.job_start_time <= this_cutoff:
-                    delta_seconds = (now - this_cutoff).total_seconds()
+                    # Measure from when the job actually started, not from the cutoff. The cutoff is
+                    # now minus the timeout, so (now - this_cutoff) is always exactly the timeout
+                    # setting and tells the user nothing about how long their job really sat there.
+                    delta_seconds = (now - result.job_start_time).total_seconds()
+                    minutes, seconds = divmod(int(delta_seconds), 60)
+                    if result.status in (JobStatus.SUBMITTED, JobStatus.SUBMITTED.value):
+                        stage = "while being submitted to run"
+                    else:
+                        stage = "while running"
                     serializer.update_check_status(
                         result.job_id,
                         JobStatus.TIMEOUT,
-                        error_info="This request timed out while being submitted to run. "
-                        "Please try again! Timed out after {:.0f} minutes "
-                        "{:.0f} seconds.".format(delta_seconds / 60, delta_seconds % 60),
+                        error_info="This request timed out {}. "
+                        "Please try again! Timed out after {} minutes "
+                        "{} seconds.".format(stage, minutes, seconds),
                     )
             # Finally, check we have the latest updates with a small buffer
             _last_query = datetime.datetime.now() - datetime.timedelta(seconds=refresh_period_seconds)
