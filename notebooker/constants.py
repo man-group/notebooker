@@ -25,11 +25,12 @@ DEFAULT_MONGO_HOST = "localhost"
 DEFAULT_MAILFROM_ADDRESS = "notebooker@localhost"
 
 
-def kernel_spec():
+def kernel_spec(kernel_name: Optional[str] = None):
+    kernel_name = kernel_name or os.getenv("NOTEBOOK_KERNEL_NAME", "notebooker_kernel")
     return {
-        "display_name": os.getenv("NOTEBOOK_KERNEL_NAME", "notebooker_kernel"),
+        "display_name": kernel_name,
         "language": "python",
-        "name": os.getenv("NOTEBOOK_KERNEL_NAME", "notebooker_kernel"),
+        "name": kernel_name,
     }
 
 

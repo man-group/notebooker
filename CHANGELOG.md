@@ -1,3 +1,8 @@
+0.8.2 (unreleased)
+------------------
+
+* bugfix: apply `--notebook-kernel-name` to generated notebook metadata and invalidate cached templates when the configured kernel changes. (#182)
+
 0.8.1 (2026-06-05)
 ------------------
 

@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from typing import Any, AnyStr, Dict, Optional
@@ -137,6 +138,7 @@ def generate_ipynb_from_py(
     notebooker_disable_git: bool,
     py_template_dir: str,
     warn_on_local: Optional[bool] = True,
+    notebook_kernel_name: Optional[str] = None,
 ) -> str:
     """
     This method EITHER:
@@ -151,6 +153,7 @@ def generate_ipynb_from_py(
     :param notebooker_disable_git: Whether or not to pull the latest version from git, if a change is available.
     :param py_template_dir: The directory which contains raw py/ipynb templates. This should be a subdir in a git repo.
     :param warn_on_local: Whether to warn when we are searching for notebooks in the notebooker repo itself.
+    :param notebook_kernel_name: The kernel name to write to the generated notebook metadata.
 
     :return: The filepath of the .ipynb which we have just converted.
     """
@@ -162,12 +165,16 @@ def generate_ipynb_from_py(
 
     mkdir_p(os.path.dirname(output_template_path))
 
+    requested_kernel_spec = kernel_spec(notebook_kernel_name)
+
     try:
         with open(output_template_path, "r") as f:
-            if f.read():
+            cached_notebook = f.read()
+            cached_kernel_spec = json.loads(cached_notebook).get("metadata", {}).get("kernelspec", {})
+            if cached_notebook and cached_kernel_spec == requested_kernel_spec:
                 print("Loading ipynb from cached location: %s", output_template_path)
                 return output_template_path
-    except IOError:
+    except (IOError, ValueError):
         pass
 
     # "touch" the output file
@@ -176,7 +183,7 @@ def generate_ipynb_from_py(
         os.utime(output_template_path, None)
 
     jupytext_nb = jupytext.read(template_path)
-    jupytext_nb["metadata"]["kernelspec"] = kernel_spec()  # Override the kernel spec since we want to run it..
+    jupytext_nb["metadata"]["kernelspec"] = requested_kernel_spec  # Override the kernel used to run the notebook.
     jupytext.write(jupytext_nb, output_template_path)
 
     return output_template_path
