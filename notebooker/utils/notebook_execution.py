@@ -27,7 +27,7 @@ def _send_email(from_email: str, to_email: str, result: Union[NotebookResultComp
     tmp_dir = None
     try:
         if isinstance(result, NotebookResultComplete):
-            tmp_dir = tempfile.mkdtemp(dir=os.path.expanduser("~"))
+            tmp_dir = tempfile.mkdtemp()
             # Attach PDF output to the email. Has to be saved to disk temporarily for the mail API to work.
             report_name = result.report_name.replace(os.sep, TEMPLATE_DIR_SEPARATOR)
             if isinstance(report_name, bytes):
