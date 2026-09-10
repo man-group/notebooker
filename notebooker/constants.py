@@ -128,8 +128,10 @@ class NotebookResultError(NotebookResultBase):
 
     @property
     def raw_html(self):
-        return """<p>This job resulted in an error: <br/><code style="white-space: pre-wrap;">{}</code></p>""".format(
-            self.error_info
+        formatted_stdout = "<br/>".join(self.stdout) if self.stdout else ""
+        return """<p>This job resulted in an error: <br/><code style="white-space: pre-wrap;">{}</code></p>
+                  <p><b>stdout</b></p><code>{}</code>""".format(
+            self.error_info, formatted_stdout
         )
 
     @property
