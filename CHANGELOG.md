@@ -1,3 +1,10 @@
+0.8.2 (unreleased)
+------------------
+
+* bugfix: the report timeout message reported the timeout setting rather than how long the job actually waited, so a submission stuck for a day read "Timed out after 3 minutes 0 seconds". It is now measured from the job start time.
+* bugfix: timed-out PENDING jobs said they timed out "while being submitted to run" despite having already started; the message now reflects the actual stage.
+* bugfix: the elapsed minutes in the timeout message were rounded rather than truncated, so 3m54s displayed as "4 minutes 54 seconds".
+
 0.8.1 (2026-06-05)
 ------------------
 
